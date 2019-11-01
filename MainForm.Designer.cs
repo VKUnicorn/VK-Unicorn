@@ -62,7 +62,7 @@
             this.LogTextBox.Size = new System.Drawing.Size(661, 309);
             this.LogTextBox.TabIndex = 1;
             this.LogTextBox.TabStop = false;
-            this.LogTextBox.Text = "Проверка текста\nTest jumps over lazy dog";
+            this.LogTextBox.Text = "";
             // 
             // ShowResults
             // 
