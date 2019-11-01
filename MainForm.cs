@@ -35,7 +35,7 @@ namespace VK_Unicorn
             var database = new Database();
 
             // Статистика
-            StatisticsLabel.Text = "Профилей: " + database.GetProfilesCount();
+            StatisticsLabel.Text = "Профилей: " + database.GetProfilesCount() + " Групп: " + database.GetGroupsCount();
 
             // Запускаем веб сервер
             Utils.Log("Пытаемся запустить веб сервер на порт " + Constants.WEB_PORT + ". Он нужен для просмотра результатов сканирования в браузере в виде привычной веб страницы", LogLevel.NOTIFY);

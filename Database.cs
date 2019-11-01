@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SQLite;
+using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SQLite;
 
 namespace VK_Unicorn
 {
     class Database
     {
+        // Версия базы данных. Увеличивается если база как-то кардинально меняется
+        // Не нужно увеличивать если в таблицу просто добавляется новая колонка
         const int SCHEME_VERSION = 1;
 
         public enum HiddenStatus
@@ -39,6 +38,26 @@ namespace VK_Unicorn
 
             // Настройка того скрыт ли профиль
             public HiddenStatus Hidden { get; set; }
+        }
+
+        // Таблица с группами
+        public class Group
+        {
+            // Id группы, уникальный для каждой
+            [PrimaryKey, Unique]
+            public string Id { get; set; }
+
+            // Имя группы
+            public string Name { get; set; }
+
+            // Как давно было найдено чего-нибудь полезное в этой группе
+            public DateTime LastActivity { get; set; }
+
+            // Как давно был последний скан группы
+            public DateTime LastScanned { get; set; }
+
+            // Сколько времени заняло сканирование этого паблика в секундах
+            public int ScanTimeInSeconds { get; set; }
         }
 
         // Таблица активности когда кто-то лайкает пост
@@ -80,7 +99,7 @@ namespace VK_Unicorn
         }
 
         // Таблица для служебного использования
-        public class _System
+        class _System
         {
             // Всегда "db"
             [PrimaryKey, Unique]
@@ -91,11 +110,6 @@ namespace VK_Unicorn
         }
 
         public Database()
-        {
-            CreateDatabaseIfDontExists();
-        }
-
-        void CreateDatabaseIfDontExists()
         {
             try
             {
@@ -131,6 +145,7 @@ namespace VK_Unicorn
 
                 // Создаём все остальные таблицы
                 connection.CreateTable<Profile>();
+                connection.CreateTable<Group>();
                 connection.CreateTable<LikeActivity>();
                 connection.CreateTable<PostActivity>();
             });
@@ -191,6 +206,18 @@ namespace VK_Unicorn
             ForDatabaseLocked((db) =>
             {
                 result = db.Table<Profile>().Count();
+            });
+
+            return result;
+        }
+
+        public int GetGroupsCount()
+        {
+            var result = 0;
+
+            ForDatabaseLocked((db) =>
+            {
+                result = db.Table<Group>().Count();
             });
 
             return result;
