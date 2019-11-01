@@ -2,3 +2,5 @@
 /obj/
 /bin/VK Unicorn.exe.config
 /notes/
+/packages/
+/bin/database.db

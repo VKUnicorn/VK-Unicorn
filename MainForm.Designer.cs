@@ -63,6 +63,7 @@
             this.LogTextBox.TabIndex = 1;
             this.LogTextBox.TabStop = false;
             this.LogTextBox.Text = "";
+            this.LogTextBox.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.LogTextBox_LinkClicked);
             // 
             // ShowResults
             // 
@@ -74,6 +75,7 @@
             this.ShowResults.TabStop = false;
             this.ShowResults.Text = "Результаты";
             this.ShowResults.UseVisualStyleBackColor = true;
+            this.ShowResults.Click += new System.EventHandler(this.ShowResults_Click);
             // 
             // LogGroupBox
             // 
@@ -92,13 +94,15 @@
             // 
             this.VersionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.VersionLabel.AutoSize = true;
-            this.VersionLabel.Enabled = false;
-            this.VersionLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.VersionLabel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.VersionLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.VersionLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.VersionLabel.Location = new System.Drawing.Point(1, 351);
             this.VersionLabel.Name = "VersionLabel";
-            this.VersionLabel.Size = new System.Drawing.Size(40, 16);
+            this.VersionLabel.Size = new System.Drawing.Size(56, 16);
             this.VersionLabel.TabIndex = 4;
-            this.VersionLabel.Text = "v1.0";
+            this.VersionLabel.Text = "Версия";
+            this.VersionLabel.Click += new System.EventHandler(this.VersionLabel_Click);
             // 
             // StatisticsLabel
             // 
@@ -128,6 +132,7 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "VK Unicorn";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.LogGroupBox.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
