@@ -59,8 +59,6 @@ namespace VK_Unicorn
                             // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
                             () =>
                             {
-                                return;
-
                                 if (!isAuthorized)
                                 {
                                     currentTask = async () => { await AuthorizationTask(settings); };
