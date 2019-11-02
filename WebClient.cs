@@ -21,7 +21,7 @@ namespace VK_Unicorn
             var buffer = new byte[4096];
             while (true)
             {
-                int bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length);
+                var bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length);
                 if (bytesRead == 0)
                 {
                     return;

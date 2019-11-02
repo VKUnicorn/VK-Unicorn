@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -13,6 +7,8 @@ namespace VK_Unicorn
     public partial class MainForm : Form
     {
         public static MainForm Instance { get; private set; }
+
+        Database database;
 
         public MainForm()
         {
@@ -24,7 +20,7 @@ namespace VK_Unicorn
             InitializeComponent();
         }
 
-        void MainForm_Load(object sender, EventArgs e)
+        void MainForm_Shown(object sender, EventArgs e)
         {
             Text = Constants.APP_NAME + " - " + Constants.APP_VERSION;
             VersionLabel.Text = Constants.APP_VERSION;
@@ -32,7 +28,7 @@ namespace VK_Unicorn
 
             // Готовим базу данных
             Utils.Log("Подготавливаем базу данных к работе", LogLevel.NOTIFY);
-            var database = new Database();
+            database = new Database();
 
             // Статистика
             StatisticsLabel.Text = "Профилей: " + database.GetProfilesCount() + " Групп: " + database.GetGroupsCount();
@@ -42,11 +38,25 @@ namespace VK_Unicorn
             try
             {
                 var listener = new WebListener(Constants.WEB_PORT);
+                ShowResults.Enabled = true;
                 Utils.Log("Веб сервер подключен по адресу " + Constants.RESULTS_WEB_PAGE, LogLevel.SUCCESS);
             }
             catch (System.Exception ex)
             {
                 Utils.Log("Веб сервер не подключен на порт " + Constants.WEB_PORT + ". Причина: " + ex.Message, LogLevel.ERROR);
+            }
+
+            MainThread();
+        }
+
+        async void MainThread()
+        {
+            await Task.Delay(TimeSpan.FromSeconds(0.1f));
+
+            // Если не установлены настройки, то показываем окно настроек сразу же
+            if (!database.IsSettingsValid())
+            {
+                OpenSettingsWindow();
             }
         }
 
@@ -55,12 +65,17 @@ namespace VK_Unicorn
             Close();
         }
 
-        private void ShowResults_Click(object sender, EventArgs e)
+        void SettingsButton_Click(object sender, EventArgs e)
+        {
+            OpenSettingsWindow();
+        }
+
+        void ShowResults_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start(Constants.RESULTS_WEB_PAGE);
         }
 
-        private void VersionLabel_Click(object sender, EventArgs e)
+        void VersionLabel_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start(Constants.PROJECT_WEB_PAGE);
         }
@@ -73,6 +88,23 @@ namespace VK_Unicorn
         public RichTextBox GetLogTextBox()
         {
             return LogTextBox;
+        }
+
+        void OpenSettingsWindow()
+        {
+            using (var settingsForm = new SettingsForm())
+            {
+                settingsForm.ShowInTaskbar = false;
+                settingsForm.ShowDialog(this);
+            }
+        }
+
+        public void ShowErrorIfSettingsAreInvalid()
+        {
+            if (!database.IsSettingsValid())
+            {
+                Utils.Log("Неправильные настройки программы. Сканирование начнётся только после установки правильных настроек", LogLevel.ERROR);
+            }
         }
     }
 }

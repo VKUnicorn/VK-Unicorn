@@ -20,15 +20,18 @@ namespace VK_Unicorn
             HIDDEN_PERMANENTLY,
         }
 
-        // Основная таблица с профилями
+        // Основная таблица с интересными нам профилями
         public class Profile
         {
             // Id профиля, уникальный для каждого
             [PrimaryKey, Unique]
             public string Id { get; set; }
 
-            // Имя в профиле
-            public string Name { get; set; }
+            // Имя
+            public string FirstName { get; set; }
+
+            // Фамилия
+            public string LastName { get; set; }
 
             // Id города откуда был добавлен профиль
             public int CityId { get; set; }
@@ -37,7 +40,7 @@ namespace VK_Unicorn
             public DateTime WhenAdded { get; set; }
 
             // Настройка того скрыт ли профиль
-            public HiddenStatus Hidden { get; set; }
+            public HiddenStatus IsHidden { get; set; }
         }
 
         // Таблица с группами
@@ -98,6 +101,26 @@ namespace VK_Unicorn
             public DateTime WhenAdded { get; set; }
         }
 
+        // Таблица настроек приложения
+        public class Settings
+        {
+            // Всегда "db"
+            [PrimaryKey, Unique]
+            public string Id { get; set; }
+
+            // Id приложения
+            public string ApplicationId { get; set; }
+
+            // Логин
+            public string Login { get; set; }
+
+            // Пароль
+            public string Password { get; set; }
+
+            // Id города
+            public int CityId { get; set; }
+        }
+
         // Таблица для служебного использования
         class _System
         {
@@ -109,8 +132,17 @@ namespace VK_Unicorn
             public int SchemeVersion { get; set; }
         }
 
+        public static Database Instance { get; private set; }
+
+        SQLiteConnection database;
+
         public Database()
         {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+
             try
             {
                 CreateTables();
@@ -118,7 +150,7 @@ namespace VK_Unicorn
             catch (System.Exception ex)
             {
                 Utils.Log("Не удалось инициализировать базу данных " + Constants.DATABASE_FILENAME + " для хранения базы данных. Причина: " + ex.Message, LogLevel.ERROR);
-                return;
+                throw;
             }
 
             Utils.Log("Обновляем таблицы базы данных, если это необходимо", LogLevel.NOTIFY);
@@ -130,7 +162,7 @@ namespace VK_Unicorn
             catch (System.Exception ex)
             {
                 Utils.Log("Не удалось обновить таблицы в базе данных. Причина: " + ex.Message, LogLevel.ERROR);
-                return;
+                throw;
             }
 
             Utils.Log("База данных готова к работе", LogLevel.SUCCESS);
@@ -140,8 +172,9 @@ namespace VK_Unicorn
         {
             ForDatabaseLocked((connection) =>
             {
-                // Создаём таблицу для служебного использования
+                // Создаём таблицы для служебного использования
                 connection.CreateTable<_System>();
+                connection.CreateTable<Settings>();
 
                 // Создаём все остальные таблицы
                 connection.CreateTable<Profile>();
@@ -183,7 +216,8 @@ namespace VK_Unicorn
 
         void ForDatabaseLocked(Callback<SQLiteConnection> callback)
         {
-            using (var db = GetConnection())
+            var db = GetConnection();
+            if (db != null)
             {
                 db.RunInTransaction(() =>
                 {
@@ -192,18 +226,32 @@ namespace VK_Unicorn
             }
         }
 
+        void ForDatabaseUnlocked(Callback<SQLiteConnection> callback)
+        {
+            var db = GetConnection();
+            if (db != null)
+            {
+                callback(db);
+            }
+        }
+
         SQLiteConnection GetConnection()
         {
-            var db = new SQLiteConnection(Constants.DATABASE_FILENAME);
-            db.BusyTimeout = TimeSpan.FromSeconds(5d);
-            return db;
+            if (database != null)
+            {
+                return database;
+            }
+
+            database = new SQLiteConnection(Constants.DATABASE_FILENAME);
+            database.BusyTimeout = TimeSpan.FromSeconds(5d);
+            return database;
         }
 
         public int GetProfilesCount()
         {
             var result = 0;
 
-            ForDatabaseLocked((db) =>
+            ForDatabaseUnlocked((db) =>
             {
                 result = db.Table<Profile>().Count();
             });
@@ -215,12 +263,49 @@ namespace VK_Unicorn
         {
             var result = 0;
 
-            ForDatabaseLocked((db) =>
+            ForDatabaseUnlocked((db) =>
             {
                 result = db.Table<Group>().Count();
             });
 
             return result;
+        }
+
+        public bool IsSettingsValid()
+        {
+            var result = false;
+
+            ForSettings((settings) =>
+            {
+                result = !string.IsNullOrEmpty(settings.ApplicationId)
+                      && !string.IsNullOrEmpty(settings.Login)
+                      && !string.IsNullOrEmpty(settings.Password)
+                      ;
+            });
+
+            return result;
+        }
+
+        public void ForSettings(Callback<Settings> callback)
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                var settings = db.Table<Settings>().Where(v => v.Id == "db").SingleOrDefault();
+                if (settings != null)
+                {
+                    callback(settings);
+                }
+            });
+        }
+
+        public void SaveSettings(Settings settings)
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                settings.Id = "db";
+
+                db.InsertOrReplace(settings);
+            });
         }
     }
 }

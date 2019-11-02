@@ -35,6 +35,7 @@
             this.LogGroupBox = new System.Windows.Forms.GroupBox();
             this.VersionLabel = new System.Windows.Forms.Label();
             this.StatisticsLabel = new System.Windows.Forms.Label();
+            this.SettingsButton = new System.Windows.Forms.Button();
             this.LogGroupBox.SuspendLayout();
             this.SuspendLayout();
             //
@@ -68,7 +69,8 @@
             // ShowResults
             //
             this.ShowResults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ShowResults.Location = new System.Drawing.Point(425, 331);
+            this.ShowResults.Enabled = false;
+            this.ShowResults.Location = new System.Drawing.Point(301, 331);
             this.ShowResults.Name = "ShowResults";
             this.ShowResults.Size = new System.Drawing.Size(118, 38);
             this.ShowResults.TabIndex = 2;
@@ -116,11 +118,24 @@
             this.StatisticsLabel.TabIndex = 5;
             this.StatisticsLabel.Text = "Статистика";
             //
+            // SettingsButton
+            //
+            this.SettingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.SettingsButton.Location = new System.Drawing.Point(425, 331);
+            this.SettingsButton.Name = "SettingsButton";
+            this.SettingsButton.Size = new System.Drawing.Size(118, 38);
+            this.SettingsButton.TabIndex = 6;
+            this.SettingsButton.TabStop = false;
+            this.SettingsButton.Text = "Настройки";
+            this.SettingsButton.UseVisualStyleBackColor = true;
+            this.SettingsButton.Click += new System.EventHandler(this.SettingsButton_Click);
+            //
             // MainForm
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(667, 371);
+            this.Controls.Add(this.SettingsButton);
             this.Controls.Add(this.StatisticsLabel);
             this.Controls.Add(this.VersionLabel);
             this.Controls.Add(this.LogGroupBox);
@@ -132,7 +147,7 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "VK Unicorn";
-            this.Load += new System.EventHandler(this.MainForm_Load);
+            this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.LogGroupBox.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -147,6 +162,7 @@
         private System.Windows.Forms.GroupBox LogGroupBox;
         private System.Windows.Forms.Label VersionLabel;
         private System.Windows.Forms.Label StatisticsLabel;
+        private System.Windows.Forms.Button SettingsButton;
     }
 }
 
