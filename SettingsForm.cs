@@ -12,12 +12,15 @@ namespace VK_Unicorn
 
         void SettingsForm_Shown(object sender, EventArgs e)
         {
+            StopWordsTextBox.Text = Constants.DEFAULT_STOP_WORDS;
+
             Database.Instance.ForSettings((settings) =>
             {
                 ApplicationIdTextBox.Text = settings.ApplicationId != null ? settings.ApplicationId : "";
                 LoginTextBox.Text = settings.Login != null ? settings.Login : "";
                 PasswordTextBox.Text = settings.Password != null ? settings.Password : "";
                 CityIdNumericUpDown.Value = settings.CityId;
+                StopWordsTextBox.Text = settings.StopWords != null ? settings.StopWords : Constants.DEFAULT_STOP_WORDS;
             });
         }
 
@@ -30,6 +33,7 @@ namespace VK_Unicorn
                 Login = LoginTextBox.Text,
                 Password = PasswordTextBox.Text,
                 CityId = Decimal.ToInt32(CityIdNumericUpDown.Value),
+                StopWords = StopWordsTextBox.Text,
             });
 
             Close();

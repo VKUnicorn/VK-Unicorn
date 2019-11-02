@@ -38,10 +38,11 @@
             this.SettingsButton = new System.Windows.Forms.Button();
             this.LogGroupBox.SuspendLayout();
             this.SuspendLayout();
-            //
+            // 
             // ExitButton
-            //
+            // 
             this.ExitButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.ExitButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.ExitButton.Location = new System.Drawing.Point(548, 331);
             this.ExitButton.Name = "ExitButton";
             this.ExitButton.Size = new System.Drawing.Size(118, 38);
@@ -50,9 +51,9 @@
             this.ExitButton.Text = "Выйти";
             this.ExitButton.UseVisualStyleBackColor = true;
             this.ExitButton.Click += new System.EventHandler(this.ExitButton_Click);
-            //
+            // 
             // LogTextBox
-            //
+            // 
             this.LogTextBox.BackColor = System.Drawing.SystemColors.Window;
             this.LogTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LogTextBox.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -65,11 +66,12 @@
             this.LogTextBox.TabStop = false;
             this.LogTextBox.Text = "";
             this.LogTextBox.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.LogTextBox_LinkClicked);
-            //
+            // 
             // ShowResults
-            //
+            // 
             this.ShowResults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ShowResults.Enabled = false;
+            this.ShowResults.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.ShowResults.Location = new System.Drawing.Point(301, 331);
             this.ShowResults.Name = "ShowResults";
             this.ShowResults.Size = new System.Drawing.Size(118, 38);
@@ -78,11 +80,11 @@
             this.ShowResults.Text = "Результаты";
             this.ShowResults.UseVisualStyleBackColor = true;
             this.ShowResults.Click += new System.EventHandler(this.ShowResults_Click);
-            //
+            // 
             // LogGroupBox
-            //
-            this.LogGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            // 
+            this.LogGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LogGroupBox.Controls.Add(this.LogTextBox);
             this.LogGroupBox.Location = new System.Drawing.Point(0, 0);
@@ -91,9 +93,9 @@
             this.LogGroupBox.TabIndex = 3;
             this.LogGroupBox.TabStop = false;
             this.LogGroupBox.Text = "Лог";
-            //
+            // 
             // VersionLabel
-            //
+            // 
             this.VersionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.VersionLabel.AutoSize = true;
             this.VersionLabel.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -105,9 +107,9 @@
             this.VersionLabel.TabIndex = 4;
             this.VersionLabel.Text = "Версия";
             this.VersionLabel.Click += new System.EventHandler(this.VersionLabel_Click);
-            //
+            // 
             // StatisticsLabel
-            //
+            // 
             this.StatisticsLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.StatisticsLabel.AutoSize = true;
             this.StatisticsLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -117,10 +119,11 @@
             this.StatisticsLabel.Size = new System.Drawing.Size(88, 16);
             this.StatisticsLabel.TabIndex = 5;
             this.StatisticsLabel.Text = "Статистика";
-            //
+            // 
             // SettingsButton
-            //
+            // 
             this.SettingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.SettingsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.SettingsButton.Location = new System.Drawing.Point(425, 331);
             this.SettingsButton.Name = "SettingsButton";
             this.SettingsButton.Size = new System.Drawing.Size(118, 38);
@@ -129,9 +132,9 @@
             this.SettingsButton.Text = "Настройки";
             this.SettingsButton.UseVisualStyleBackColor = true;
             this.SettingsButton.Click += new System.EventHandler(this.SettingsButton_Click);
-            //
+            // 
             // MainForm
-            //
+            // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(667, 371);

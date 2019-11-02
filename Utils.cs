@@ -39,6 +39,8 @@ namespace VK_Unicorn
 
         public static void Log(string text, Color? color = null)
         {
+            text = "[" + DateTime.Now.ToLongTimeString() + "] " + text;
+
             var logTextBox = MainForm.Instance.GetLogTextBox();
 
             logTextBox.SuspendLayout();

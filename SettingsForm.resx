@@ -123,7 +123,7 @@
 Залогинился на фейковый аккаунт? Далее делаем по пунктам:</value>
   </data>
   <data name="AccountCredentialsHelpLabel.Text" xml:space="preserve">
-    <value>Данные от фейкового аккаунта ВКонтакте, который будет не жалко потерять в случае чего. Этот же аккаунт будет добавляться в закрытые группы. Тот же аккаунт, на котором добавляли приложение для получения его ID.</value>
+    <value>Данные от фейкового аккаунта ВКонтакте, который будет не жалко потерять в случае чего. Этот же аккаунт будет добавляться в закрытые группы. Нужен тот, на котором добавляли приложение для получения его ID.</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

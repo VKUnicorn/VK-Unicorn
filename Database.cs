@@ -119,6 +119,9 @@ namespace VK_Unicorn
 
             // Id города
             public int CityId { get; set; }
+
+            // Стоп слова
+            public string StopWords { get; set; }
         }
 
         // Таблица для служебного использования
