@@ -20,6 +20,16 @@ namespace VK_Unicorn
             HIDDEN_PERMANENTLY,
         }
 
+        public enum SearchMethod
+        {
+            // Только профили, в которых указан твой город
+            BY_CITY,
+            // Все профили из закрытых групп, остальные по городу
+            SMART,
+            // Ищет все профили женского пола. Огромное количество спама и ботов
+            ALL_FEMALES,
+        }
+
         // Основная таблица с интересными нам профилями
         public class Profile
         {
@@ -119,6 +129,9 @@ namespace VK_Unicorn
 
             // Id города
             public int CityId { get; set; }
+
+            // Метод поиска профилей
+            public SearchMethod SearchMethod { get; set; }
 
             // Стоп слова
             public string StopWords { get; set; }

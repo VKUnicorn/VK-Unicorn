@@ -57,6 +57,11 @@
             this.CityIdHelperLabel2 = new System.Windows.Forms.Label();
             this.CityIdHelperLabel3 = new System.Windows.Forms.Label();
             this.CityIdHelperLabel4 = new System.Windows.Forms.Label();
+            this.CityFilterLabel = new System.Windows.Forms.Label();
+            this.SearchByCityRadioButton = new System.Windows.Forms.RadioButton();
+            this.SearchSmartRadioButton = new System.Windows.Forms.RadioButton();
+            this.SearchAllRadioButton = new System.Windows.Forms.RadioButton();
+            this.CityIdHelperLabel5 = new System.Windows.Forms.Label();
             this.ApplicationIdGroupBox.SuspendLayout();
             this.AccountCredentialsGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CopyApplicationIdPictureBox)).BeginInit();
@@ -69,7 +74,7 @@
             // 
             this.CancelAndCloseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.CancelAndCloseButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.CancelAndCloseButton.Location = new System.Drawing.Point(712, 747);
+            this.CancelAndCloseButton.Location = new System.Drawing.Point(712, 857);
             this.CancelAndCloseButton.Name = "CancelAndCloseButton";
             this.CancelAndCloseButton.Size = new System.Drawing.Size(118, 38);
             this.CancelAndCloseButton.TabIndex = 1;
@@ -82,7 +87,7 @@
             // 
             this.ApplyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ApplyButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.ApplyButton.Location = new System.Drawing.Point(588, 747);
+            this.ApplyButton.Location = new System.Drawing.Point(588, 857);
             this.ApplyButton.Name = "ApplyButton";
             this.ApplyButton.Size = new System.Drawing.Size(118, 38);
             this.ApplyButton.TabIndex = 2;
@@ -117,7 +122,7 @@
             this.WelcomeLabel.AutoSize = true;
             this.WelcomeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.WelcomeLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(102)))), ((int)(((byte)(0)))));
-            this.WelcomeLabel.Location = new System.Drawing.Point(240, 0);
+            this.WelcomeLabel.Location = new System.Drawing.Point(240, 2);
             this.WelcomeLabel.Name = "WelcomeLabel";
             this.WelcomeLabel.Size = new System.Drawing.Size(350, 39);
             this.WelcomeLabel.TabIndex = 4;
@@ -221,9 +226,9 @@
             this.LoginLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.LoginLabel.Location = new System.Drawing.Point(8, 52);
             this.LoginLabel.Name = "LoginLabel";
-            this.LoginLabel.Size = new System.Drawing.Size(47, 16);
+            this.LoginLabel.Size = new System.Drawing.Size(202, 16);
             this.LoginLabel.TabIndex = 9;
-            this.LoginLabel.Text = "Логин";
+            this.LoginLabel.Text = "Логин. Это телефон или email";
             // 
             // LoginTextBox
             // 
@@ -280,6 +285,11 @@
             // 
             this.SettingsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.SettingsGroupBox.Controls.Add(this.CityIdHelperLabel5);
+            this.SettingsGroupBox.Controls.Add(this.SearchAllRadioButton);
+            this.SettingsGroupBox.Controls.Add(this.SearchSmartRadioButton);
+            this.SettingsGroupBox.Controls.Add(this.SearchByCityRadioButton);
+            this.SettingsGroupBox.Controls.Add(this.CityFilterLabel);
             this.SettingsGroupBox.Controls.Add(this.CityIdHelperLabel4);
             this.SettingsGroupBox.Controls.Add(this.CityIdHelperLabel3);
             this.SettingsGroupBox.Controls.Add(this.CityIdHelperLabel2);
@@ -292,7 +302,7 @@
             this.SettingsGroupBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.SettingsGroupBox.Location = new System.Drawing.Point(1, 621);
             this.SettingsGroupBox.Name = "SettingsGroupBox";
-            this.SettingsGroupBox.Size = new System.Drawing.Size(829, 123);
+            this.SettingsGroupBox.Size = new System.Drawing.Size(829, 233);
             this.SettingsGroupBox.TabIndex = 6;
             this.SettingsGroupBox.TabStop = false;
             this.SettingsGroupBox.Text = "Настройки";
@@ -343,20 +353,22 @@
             // 
             // StopWordsLabel
             // 
-            this.StopWordsLabel.AutoSize = true;
+            this.StopWordsLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.StopWordsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.StopWordsLabel.Location = new System.Drawing.Point(7, 70);
+            this.StopWordsLabel.Location = new System.Drawing.Point(7, 162);
             this.StopWordsLabel.Name = "StopWordsLabel";
-            this.StopWordsLabel.Size = new System.Drawing.Size(387, 16);
+            this.StopWordsLabel.Size = new System.Drawing.Size(816, 34);
             this.StopWordsLabel.TabIndex = 13;
-            this.StopWordsLabel.Text = "Стоп слова. Разделитель по умолчанию - точка с запятой";
+            this.StopWordsLabel.Text = resources.GetString("StopWordsLabel.Text");
             // 
             // StopWordsTextBox
             // 
+            this.StopWordsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.StopWordsTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.StopWordsTextBox.Location = new System.Drawing.Point(9, 89);
+            this.StopWordsTextBox.Location = new System.Drawing.Point(9, 199);
             this.StopWordsTextBox.Name = "StopWordsTextBox";
-            this.StopWordsTextBox.Size = new System.Drawing.Size(462, 26);
+            this.StopWordsTextBox.Size = new System.Drawing.Size(814, 26);
             this.StopWordsTextBox.TabIndex = 12;
             this.StopWordsTextBox.WordWrap = false;
             // 
@@ -364,11 +376,12 @@
             // 
             this.CityIdHelperLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.CityIdHelperLabel1.AutoSize = true;
             this.CityIdHelperLabel1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.CityIdHelperLabel1.ForeColor = System.Drawing.SystemColors.GrayText;
             this.CityIdHelperLabel1.Location = new System.Drawing.Point(244, 12);
             this.CityIdHelperLabel1.Name = "CityIdHelperLabel1";
-            this.CityIdHelperLabel1.Size = new System.Drawing.Size(112, 51);
+            this.CityIdHelperLabel1.Size = new System.Drawing.Size(108, 52);
             this.CityIdHelperLabel1.TabIndex = 14;
             this.CityIdHelperLabel1.Text = "Москва - 1\r\nСанкт-Петербург - 2\r\nКиев - 314\r\nМинск - 282";
             // 
@@ -376,11 +389,12 @@
             // 
             this.CityIdHelperLabel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.CityIdHelperLabel2.AutoSize = true;
             this.CityIdHelperLabel2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.CityIdHelperLabel2.ForeColor = System.Drawing.SystemColors.GrayText;
-            this.CityIdHelperLabel2.Location = new System.Drawing.Point(352, 12);
+            this.CityIdHelperLabel2.Location = new System.Drawing.Point(357, 12);
             this.CityIdHelperLabel2.Name = "CityIdHelperLabel2";
-            this.CityIdHelperLabel2.Size = new System.Drawing.Size(122, 51);
+            this.CityIdHelperLabel2.Size = new System.Drawing.Size(120, 52);
             this.CityIdHelperLabel2.TabIndex = 15;
             this.CityIdHelperLabel2.Text = "Новосибирск - 99\r\nЕкатеринбург - 49\r\nНижний Новгород - 95\r\nКазань - 60";
             // 
@@ -388,11 +402,12 @@
             // 
             this.CityIdHelperLabel3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.CityIdHelperLabel3.AutoSize = true;
             this.CityIdHelperLabel3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.CityIdHelperLabel3.ForeColor = System.Drawing.SystemColors.GrayText;
-            this.CityIdHelperLabel3.Location = new System.Drawing.Point(473, 12);
+            this.CityIdHelperLabel3.Location = new System.Drawing.Point(482, 12);
             this.CityIdHelperLabel3.Name = "CityIdHelperLabel3";
-            this.CityIdHelperLabel3.Size = new System.Drawing.Size(122, 51);
+            this.CityIdHelperLabel3.Size = new System.Drawing.Size(114, 52);
             this.CityIdHelperLabel3.TabIndex = 16;
             this.CityIdHelperLabel3.Text = "Челябинск - 158\r\nОмск - 104\r\nСамара - 123\r\nРостов-на-Дону - 119";
             // 
@@ -400,19 +415,77 @@
             // 
             this.CityIdHelperLabel4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.CityIdHelperLabel4.AutoSize = true;
             this.CityIdHelperLabel4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.CityIdHelperLabel4.ForeColor = System.Drawing.SystemColors.GrayText;
-            this.CityIdHelperLabel4.Location = new System.Drawing.Point(587, 12);
+            this.CityIdHelperLabel4.Location = new System.Drawing.Point(601, 12);
             this.CityIdHelperLabel4.Name = "CityIdHelperLabel4";
-            this.CityIdHelperLabel4.Size = new System.Drawing.Size(95, 51);
+            this.CityIdHelperLabel4.Size = new System.Drawing.Size(89, 52);
             this.CityIdHelperLabel4.TabIndex = 17;
             this.CityIdHelperLabel4.Text = "Уфа - 151\r\nКрасноярск - 73\r\nПермь - 110\r\nВолгоград - 10";
+            // 
+            // CityFilterLabel
+            // 
+            this.CityFilterLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CityFilterLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.CityFilterLabel.Location = new System.Drawing.Point(6, 68);
+            this.CityFilterLabel.Name = "CityFilterLabel";
+            this.CityFilterLabel.Size = new System.Drawing.Size(817, 36);
+            this.CityFilterLabel.TabIndex = 18;
+            this.CityFilterLabel.Text = resources.GetString("CityFilterLabel.Text");
+            // 
+            // SearchByCityRadioButton
+            // 
+            this.SearchByCityRadioButton.AutoSize = true;
+            this.SearchByCityRadioButton.Location = new System.Drawing.Point(11, 102);
+            this.SearchByCityRadioButton.Name = "SearchByCityRadioButton";
+            this.SearchByCityRadioButton.Size = new System.Drawing.Size(515, 20);
+            this.SearchByCityRadioButton.TabIndex = 19;
+            this.SearchByCityRadioButton.TabStop = true;
+            this.SearchByCityRadioButton.Text = "По городу. Только профили, в которых указан твой город (рекомендуется)";
+            this.SearchByCityRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // SearchSmartRadioButton
+            // 
+            this.SearchSmartRadioButton.AutoSize = true;
+            this.SearchSmartRadioButton.Location = new System.Drawing.Point(11, 122);
+            this.SearchSmartRadioButton.Name = "SearchSmartRadioButton";
+            this.SearchSmartRadioButton.Size = new System.Drawing.Size(381, 20);
+            this.SearchSmartRadioButton.TabIndex = 20;
+            this.SearchSmartRadioButton.TabStop = true;
+            this.SearchSmartRadioButton.Text = "Все профили из закрытых групп, остальные по городу";
+            this.SearchSmartRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // SearchAllRadioButton
+            // 
+            this.SearchAllRadioButton.AutoSize = true;
+            this.SearchAllRadioButton.Location = new System.Drawing.Point(11, 142);
+            this.SearchAllRadioButton.Name = "SearchAllRadioButton";
+            this.SearchAllRadioButton.Size = new System.Drawing.Size(524, 20);
+            this.SearchAllRadioButton.TabIndex = 21;
+            this.SearchAllRadioButton.TabStop = true;
+            this.SearchAllRadioButton.Text = "Все. Ищет все профили женского пола. Огромное количество спама и ботов";
+            this.SearchAllRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // CityIdHelperLabel5
+            // 
+            this.CityIdHelperLabel5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CityIdHelperLabel5.AutoSize = true;
+            this.CityIdHelperLabel5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.CityIdHelperLabel5.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.CityIdHelperLabel5.Location = new System.Drawing.Point(695, 12);
+            this.CityIdHelperLabel5.Name = "CityIdHelperLabel5";
+            this.CityIdHelperLabel5.Size = new System.Drawing.Size(94, 52);
+            this.CityIdHelperLabel5.TabIndex = 22;
+            this.CityIdHelperLabel5.Text = "Калининград - 61\r\nКраснодар - 72\r\nВладивосток - 37\r\nХабаровск - 153";
             // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(831, 787);
+            this.ClientSize = new System.Drawing.Size(831, 897);
             this.Controls.Add(this.SettingsGroupBox);
             this.Controls.Add(this.AccountCredentialsGroupBox);
             this.Controls.Add(this.WelcomeLabel);
@@ -472,5 +545,10 @@
         private System.Windows.Forms.Label CityIdHelperLabel2;
         private System.Windows.Forms.Label CityIdHelperLabel3;
         private System.Windows.Forms.Label CityIdHelperLabel4;
+        private System.Windows.Forms.Label CityFilterLabel;
+        private System.Windows.Forms.RadioButton SearchByCityRadioButton;
+        private System.Windows.Forms.RadioButton SearchSmartRadioButton;
+        private System.Windows.Forms.RadioButton SearchAllRadioButton;
+        private System.Windows.Forms.Label CityIdHelperLabel5;
     }
 }

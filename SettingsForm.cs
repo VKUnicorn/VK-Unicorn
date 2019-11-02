@@ -12,8 +12,11 @@ namespace VK_Unicorn
 
         void SettingsForm_Shown(object sender, EventArgs e)
         {
+            // Значения по умолчанию для некоторых полей
             StopWordsTextBox.Text = Constants.DEFAULT_STOP_WORDS;
+            SearchByCityRadioButton.Checked = true;
 
+            // Загружаем настройки
             Database.Instance.ForSettings((settings) =>
             {
                 ApplicationIdTextBox.Text = settings.ApplicationId != null ? settings.ApplicationId : "";
@@ -21,12 +24,38 @@ namespace VK_Unicorn
                 PasswordTextBox.Text = settings.Password != null ? settings.Password : "";
                 CityIdNumericUpDown.Value = settings.CityId;
                 StopWordsTextBox.Text = settings.StopWords != null ? settings.StopWords : Constants.DEFAULT_STOP_WORDS;
+
+                switch (settings.SearchMethod)
+                {
+                    case Database.SearchMethod.SMART:
+                        SearchSmartRadioButton.Checked = true;
+                        break;
+
+                    case Database.SearchMethod.ALL_FEMALES:
+                        SearchAllRadioButton.Checked = true;
+                        break;
+
+                    default:
+                        SearchByCityRadioButton.Checked = true;
+                        break;
+                }
             });
         }
 
         void ApplyButton_Click(object sender, EventArgs e)
         {
-            // Save settings
+            // Определяем метод поиска профилей
+            var searchMethod = Database.SearchMethod.BY_CITY;
+            if (SearchSmartRadioButton.Checked)
+            {
+                searchMethod = Database.SearchMethod.SMART;
+            }
+            if (SearchAllRadioButton.Checked)
+            {
+                searchMethod = Database.SearchMethod.ALL_FEMALES;
+            }
+
+            // Сохраняем настройки в базу
             Database.Instance.SaveSettings(new Database.Settings
             {
                 ApplicationId = ApplicationIdTextBox.Text,
@@ -34,6 +63,7 @@ namespace VK_Unicorn
                 Password = PasswordTextBox.Text,
                 CityId = Decimal.ToInt32(CityIdNumericUpDown.Value),
                 StopWords = StopWordsTextBox.Text,
+                SearchMethod = searchMethod,
             });
 
             Close();
