@@ -34,7 +34,7 @@
             this.ShowResults = new System.Windows.Forms.Button();
             this.LogGroupBox = new System.Windows.Forms.GroupBox();
             this.VersionLabel = new System.Windows.Forms.Label();
-            this.StatisticsLabel = new System.Windows.Forms.Label();
+            this.StatusLabel = new System.Windows.Forms.Label();
             this.SettingsButton = new System.Windows.Forms.Button();
             this.LogGroupBox.SuspendLayout();
             this.SuspendLayout();
@@ -108,17 +108,17 @@
             this.VersionLabel.Text = "Версия";
             this.VersionLabel.Click += new System.EventHandler(this.VersionLabel_Click);
             // 
-            // StatisticsLabel
+            // StatusLabel
             // 
-            this.StatisticsLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.StatisticsLabel.AutoSize = true;
-            this.StatisticsLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.StatisticsLabel.ForeColor = System.Drawing.Color.Green;
-            this.StatisticsLabel.Location = new System.Drawing.Point(1, 332);
-            this.StatisticsLabel.Name = "StatisticsLabel";
-            this.StatisticsLabel.Size = new System.Drawing.Size(88, 16);
-            this.StatisticsLabel.TabIndex = 5;
-            this.StatisticsLabel.Text = "Статистика";
+            this.StatusLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.StatusLabel.AutoSize = true;
+            this.StatusLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.StatusLabel.ForeColor = System.Drawing.Color.Green;
+            this.StatusLabel.Location = new System.Drawing.Point(1, 332);
+            this.StatusLabel.Name = "StatusLabel";
+            this.StatusLabel.Size = new System.Drawing.Size(56, 16);
+            this.StatusLabel.TabIndex = 5;
+            this.StatusLabel.Text = "Статус";
             // 
             // SettingsButton
             // 
@@ -139,7 +139,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(667, 371);
             this.Controls.Add(this.SettingsButton);
-            this.Controls.Add(this.StatisticsLabel);
+            this.Controls.Add(this.StatusLabel);
             this.Controls.Add(this.VersionLabel);
             this.Controls.Add(this.LogGroupBox);
             this.Controls.Add(this.ShowResults);
@@ -164,7 +164,7 @@
         private System.Windows.Forms.Button ShowResults;
         private System.Windows.Forms.GroupBox LogGroupBox;
         private System.Windows.Forms.Label VersionLabel;
-        private System.Windows.Forms.Label StatisticsLabel;
+        private System.Windows.Forms.Label StatusLabel;
         private System.Windows.Forms.Button SettingsButton;
     }
 }

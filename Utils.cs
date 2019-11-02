@@ -8,6 +8,14 @@ namespace VK_Unicorn
         NOTIFY,
         GENERAL,
         SUCCESS,
+        WARNING,
+        ERROR,
+    }
+
+    public enum StatusType
+    {
+        GENERAL,
+        SUCCESS,
         ERROR,
     }
 
@@ -23,6 +31,10 @@ namespace VK_Unicorn
                 case LogLevel.ERROR:
                     color = Color.Red;
                     prefix = "Ошибка: ";
+                    break;
+
+                case LogLevel.WARNING:
+                    color = Color.Yellow;
                     break;
 
                 case LogLevel.NOTIFY:
@@ -76,4 +88,15 @@ namespace VK_Unicorn
     public delegate void Callback<T0, T1, T2, T3, T4, T5, T6>(T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6);
     public delegate void Callback<T0, T1, T2, T3, T4, T5, T6, T7>(T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7);
     public delegate void Callback<T0, T1, T2, T3, T4, T5, T6, T7, T8>(T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8);
+
+    public delegate U CallbackWithReturn<U>();
+    public delegate U CallbackWithReturn<U, T0>(T0 arg0);
+    public delegate U CallbackWithReturn<U, T0, T1>(T0 arg0, T1 arg1);
+    public delegate U CallbackWithReturn<U, T0, T1, T2>(T0 arg0, T1 arg1, T2 arg2);
+    public delegate U CallbackWithReturn<U, T0, T1, T2, T3>(T0 arg0, T1 arg1, T2 arg2, T3 arg3);
+    public delegate U CallbackWithReturn<U, T0, T1, T2, T3, T4>(T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4);
+    public delegate U CallbackWithReturn<U, T0, T1, T2, T3, T4, T5>(T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+    public delegate U CallbackWithReturn<U, T0, T1, T2, T3, T4, T5, T6>(T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6);
+    public delegate U CallbackWithReturn<U, T0, T1, T2, T3, T4, T5, T6, T7>(T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7);
+    public delegate U CallbackWithReturn<U, T0, T1, T2, T3, T4, T5, T6, T7, T8>(T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8);
 }

@@ -188,9 +188,9 @@
             this.ApplicationIdLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.ApplicationIdLabel.Location = new System.Drawing.Point(6, 417);
             this.ApplicationIdLabel.Name = "ApplicationIdLabel";
-            this.ApplicationIdLabel.Size = new System.Drawing.Size(191, 16);
+            this.ApplicationIdLabel.Size = new System.Drawing.Size(300, 16);
             this.ApplicationIdLabel.TabIndex = 7;
-            this.ApplicationIdLabel.Text = "4. Вставляем ID приложения";
+            this.ApplicationIdLabel.Text = "4. Вставляем ID приложения (длинное число)";
             // 
             // AccountCredentialsGroupBox
             // 

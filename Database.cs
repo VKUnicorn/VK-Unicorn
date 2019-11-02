@@ -22,11 +22,11 @@ namespace VK_Unicorn
 
         public enum SearchMethod
         {
-            // Только профили, в которых указан твой город
+            // Только те профили, в которых указан твой город
             BY_CITY,
             // Все профили из закрытых групп, остальные по городу
             SMART,
-            // Ищет все профили женского пола. Огромное количество спама и ботов
+            // Все профили женского пола. Огромное количество спама и ботов
             ALL_FEMALES,
         }
 
@@ -114,7 +114,7 @@ namespace VK_Unicorn
         // Таблица настроек приложения
         public class Settings
         {
-            // Всегда "db"
+            // Всегда равен INTERNAL_DB_MARKER
             [PrimaryKey, Unique]
             public string Id { get; set; }
 
@@ -138,9 +138,10 @@ namespace VK_Unicorn
         }
 
         // Таблица для служебного использования
+        const string INTERNAL_DB_MARKER = "db"; // Маркер для служебного использования. Менять не нужно
         class _System
         {
-            // Всегда "db"
+            // Всегда такой же как INTERNAL_DB_MARKER
             [PrimaryKey, Unique]
             public string Id { get; set; }
 
@@ -204,7 +205,7 @@ namespace VK_Unicorn
         {
             ForDatabaseLocked((db) =>
             {
-                var query = db.Table<_System>().Where(v => v.Id == "db").SingleOrDefault();
+                var query = db.Table<_System>().Where(v => v.Id == INTERNAL_DB_MARKER).SingleOrDefault();
                 if (query != null)
                 {
                     Utils.Log("Загружена база данных версии " + query.SchemeVersion, LogLevel.NOTIFY);
@@ -225,7 +226,7 @@ namespace VK_Unicorn
                 }
                 else
                 {
-                    db.Insert(new _System { Id = "db", SchemeVersion = SCHEME_VERSION });
+                    db.Insert(new _System { Id = INTERNAL_DB_MARKER, SchemeVersion = SCHEME_VERSION });
                 }
             });
         }
@@ -295,8 +296,17 @@ namespace VK_Unicorn
             {
                 result = !string.IsNullOrEmpty(settings.ApplicationId)
                       && !string.IsNullOrEmpty(settings.Login)
-                      && !string.IsNullOrEmpty(settings.Password)
-                      ;
+                      && !string.IsNullOrEmpty(settings.Password);
+
+                if (result)
+                {
+                    // Проверяем правильно ли введён ID приложения
+                    var applicationId = 0ul;
+                    if (!ulong.TryParse(settings.ApplicationId.Trim(), out applicationId))
+                    {
+                        result = false;
+                    }
+                }
             });
 
             return result;
@@ -306,7 +316,7 @@ namespace VK_Unicorn
         {
             ForDatabaseUnlocked((db) =>
             {
-                var settings = db.Table<Settings>().Where(v => v.Id == "db").SingleOrDefault();
+                var settings = db.Table<Settings>().Where(v => v.Id == INTERNAL_DB_MARKER).SingleOrDefault();
                 if (settings != null)
                 {
                     callback(settings);
@@ -318,10 +328,15 @@ namespace VK_Unicorn
         {
             ForDatabaseUnlocked((db) =>
             {
-                settings.Id = "db";
+                settings.Id = INTERNAL_DB_MARKER;
 
                 db.InsertOrReplace(settings);
             });
+        }
+
+        public void ShowStatistics()
+        {
+            Utils.Log("Профилей: " + GetProfilesCount() + " Групп: " + GetGroupsCount(), LogLevel.SUCCESS);
         }
     }
 }

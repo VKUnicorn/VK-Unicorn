@@ -3,7 +3,7 @@
     public class Constants
     {
         public const string APP_NAME = "VK Unicorn";
-        public const string APP_VERSION = "v1.0";
+        public const string APP_VERSION = "v1.0.0";
         public const string PROJECT_WEB_PAGE = "https://github.com/VKUnicorn/VK-Unicorn";
 
         public const int WEB_PORT = 5051;

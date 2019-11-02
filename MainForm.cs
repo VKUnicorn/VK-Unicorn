@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -31,7 +32,7 @@ namespace VK_Unicorn
             database = new Database();
 
             // Статистика
-            StatisticsLabel.Text = "Профилей: " + database.GetProfilesCount() + " Групп: " + database.GetGroupsCount();
+            database.ShowStatistics();
 
             // Запускаем веб сервер
             Utils.Log("Пытаемся запустить веб сервер на порт " + Constants.WEB_PORT + ". Веб сервер нужен для просмотра результатов сканирования в браузере в виде привычной веб страницы", LogLevel.NOTIFY);
@@ -46,18 +47,9 @@ namespace VK_Unicorn
                 Utils.Log("Веб сервер не подключен на порт " + Constants.WEB_PORT + ". Причина: " + ex.Message, LogLevel.ERROR);
             }
 
-            MainThread();
-        }
-
-        async void MainThread()
-        {
-            await Task.Delay(TimeSpan.FromSeconds(0.1f));
-
-            // Если не установлены настройки, то показываем окно настроек сразу же
-            if (!database.IsSettingsValid())
-            {
-                OpenSettingsWindow();
-            }
+            // Запускаем основной поток выполнения
+            var worker = new Worker();
+            worker.RunMainThread();
         }
 
         void ExitButton_Click(object sender, EventArgs e)
@@ -90,7 +82,7 @@ namespace VK_Unicorn
             return LogTextBox;
         }
 
-        void OpenSettingsWindow()
+        public void OpenSettingsWindow()
         {
             using (var settingsForm = new SettingsForm())
             {
@@ -105,6 +97,24 @@ namespace VK_Unicorn
             {
                 Utils.Log("Неправильные настройки программы. Сканирование начнётся только после установки правильных настроек", LogLevel.ERROR);
             }
+        }
+
+        public void SetStatus(string status, StatusType statusType)
+        {
+            var color = Color.Black;
+            switch (statusType)
+            {
+                case StatusType.SUCCESS:
+                    color = Color.DarkGreen;
+                    break;
+
+                case StatusType.ERROR:
+                    color = Color.Red;
+                    break;
+            }
+
+            StatusLabel.Text = "Статус: " + status;
+            StatusLabel.ForeColor = color;
         }
     }
 }
