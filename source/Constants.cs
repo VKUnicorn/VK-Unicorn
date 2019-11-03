@@ -14,5 +14,10 @@
 
         public const string DEFAULT_STOP_WORDS = "выберу;лайкам;репост;прогноз;ставк;http;.com;.ru;фотограф;свинг;подработ;проездом;архив;видео;порно;прон;вирт;бесплатно;куни";
         public const char STOP_WORDS_SEPARATOR = ';';
+
+        // Id пола ВКонтакте который нам интересен
+        // 0 - мужской
+        // 1 - женский
+        public const int TARGET_SEX_ID = 1;
     }
 }

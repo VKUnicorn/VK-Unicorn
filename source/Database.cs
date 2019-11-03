@@ -1,6 +1,8 @@
 ﻿using SQLite;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace VK_Unicorn
 {
@@ -33,9 +35,9 @@ namespace VK_Unicorn
         // Основная таблица с интересными нам профилями
         public class Profile
         {
-            // Id профиля, уникальный для каждого
+            // Id профиля. Например у Павла Дурова этот Id равен единице - https://vk.com/id1
             [PrimaryKey, Unique]
-            public string Id { get; set; }
+            public int Id { get; set; }
 
             // Имя
             public string FirstName { get; set; }
@@ -43,30 +45,55 @@ namespace VK_Unicorn
             // Фамилия
             public string LastName { get; set; }
 
+            // Дата рождения
+            public DateTime BirthDate { get; set; }
+
             // Id города откуда был добавлен профиль
             public int CityId { get; set; }
 
             // Когда этот профиль был добавлен в базу данных
             public DateTime WhenAdded { get; set; }
 
-            // Настройка того скрыт ли профиль
+            // Скрыт ли этот профиль пользователем
             public HiddenStatus IsHidden { get; set; }
+        }
+
+        // Таблица с группами о которых ещё предстоит получить информацию и добавить в обычную
+        // таблицу с группами, если там ещё нету такой же
+        public class GroupToAdd
+        {
+            // Введённый пользователем id группы. Идентификатор или короткое имя сообщества
+            // Например пользователь ввёл адрес https://vk.com/public1 или https://vk.com/club1
+            // Это всё адреса одной и той же группы https://vk.com/apiclub, но по public1, как и
+            // по club1 получить информацию по запросу wall.get нельзя. Чтобы не создавать путаницу
+            // мы просто получим реальный id сообщества через запрос groups.getById и дальше уже
+            // будем работать только с ним. Нам всё равно вызывать этот запрос для получения имени
+            // сообщества и всех других данных
+            [PrimaryKey, Unique]
+            public string DomainName { get; set; }
         }
 
         // Таблица с группами
         public class Group
         {
-            // Id группы, уникальный для каждой
+            // Id группы. Например у группы "ВКонтакте API" этот Id равен единице https://vk.com/public1
+            // Не тот, который ввёл пользователь, а тот, который получим с сервера потом сами
             [PrimaryKey, Unique]
-            public string Id { get; set; }
+            public int Id { get; set; }
 
             // Имя группы
             public string Name { get; set; }
 
+            // Статус закрытости группы
+            public bool IsClosed { get; set; }
+
+            // Статус членства в группе. Актуально только для закрытых групп
+            public bool IsMember { get; set; }
+
             // Как давно было найдено чего-нибудь полезное в этой группе
             public DateTime LastActivity { get; set; }
 
-            // Как давно был последний скан группы
+            // Как давно был последний успешный скан группы
             public DateTime LastScanned { get; set; }
 
             // Сколько времени заняло сканирование этого паблика в секундах
@@ -77,16 +104,16 @@ namespace VK_Unicorn
         public class LikeActivity
         {
             // Id профиля, который что-то лайкнул
-            public string Id { get; set; }
+            public int Id { get; set; }
 
-            // Ссылка на пост
-            public int PostLink { get; set; }
+            // Id группы в которой был пост
+            public int GroupId { get; set; }
+
+            // Id поста из группы
+            public int PostId { get; set; }
 
             // Что было написано в посте, который лайкнули
             public string PostContent { get; set; }
-
-            // Id группы в которой был пост
-            public string GroupId { get; set; }
 
             // Когда этот профиль был лайкнут
             public DateTime WhenAdded { get; set; }
@@ -96,20 +123,77 @@ namespace VK_Unicorn
         public class PostActivity
         {
             // Id профиля, который что-то написал
-            public string Id { get; set; }
+            public int Id { get; set; }
 
-            // Ссылка на пост
-            public int PostLink { get; set; }
+            // Id группы в которой был пост
+            public int GroupId { get; set; }
+
+            // Id поста из группы
+            public int PostId { get; set; }
 
             // Что было написано в посте
             public string PostContent { get; set; }
 
-            // Id группы в которой был пост
-            public string GroupId { get; set; }
-
-            // Когда этот пост был написан
+            // Когда этот пост был добавлен
             public DateTime WhenAdded { get; set; }
         }
+
+        // Таблица активности когда кто-то пишет комментарий
+        public class CommentActivity
+        {
+            // Id профиля, который что-то написал
+            public int Id { get; set; }
+
+            // Id группы в которой был пост
+            public int GroupId { get; set; }
+
+            // Id поста из группы
+            public int PostId { get; set; }
+
+            // Id комментария к посту
+            public int CommentId { get; set; }
+
+            // Что было написано в комментарии
+            public string CommentContent { get; set; }
+
+            // Когда этот комментарий был добавлен
+            public DateTime WhenAdded { get; set; }
+        }
+
+        // Таблица с id тех профилей, которые мы уже просканировали.
+        // Эта таблица нужна чтобы не сканировать сто раз одни и тех же профили, а
+        // следовательно будет отправляться значительно меньше запросов на серверы
+        // ВКонтакте. После того как профиль попадает в эту таблицу мы больше не
+        // будем получать никакую информацию о нём в дальнейшем
+        public class ScannedProfiles
+        {
+            // Id профиля
+            [PrimaryKey, Unique]
+            public int Id { get; set; }
+        }
+
+        // Таблица с id тех постов, которые мы уже просканировали.
+        // Запоминается так же количество лайков и комментариев к этому посту чтобы
+        // потом повторно сканировать посты где что-то изменилось в большую сторону
+        public class ScannedPosts
+        {
+            // Id группы, в которой был написан пост
+            public int GroupId { get; set; }
+
+            // Id поста в этой группе
+            public int PostId { get; set; }
+
+            // Счётчик лайков. Если он изменится в большую сторону, то будем
+            // сканировать пост повторно
+            public int LikesCount { get; set; }
+
+            // Счётчик комментариев. Если он изменится в большую сторону, то будем
+            // сканировать пост повторно
+            public int CommentsCount { get; set; }
+        }
+
+        // Маркер для служебного использования. Менять не нужно
+        const string INTERNAL_DB_MARKER = "db";
 
         // Таблица настроек приложения
         public class Settings
@@ -138,7 +222,6 @@ namespace VK_Unicorn
         }
 
         // Таблица для служебного использования
-        const string INTERNAL_DB_MARKER = "db"; // Маркер для служебного использования. Менять не нужно
         class _System
         {
             // Всегда такой же как INTERNAL_DB_MARKER
@@ -187,17 +270,25 @@ namespace VK_Unicorn
 
         void CreateTables()
         {
-            ForDatabaseLocked((connection) =>
+            ForDatabaseLocked((db) =>
             {
                 // Создаём таблицы для служебного использования
-                connection.CreateTable<_System>();
-                connection.CreateTable<Settings>();
+                db.CreateTable<_System>();
+                db.CreateTable<Settings>();
 
                 // Создаём все остальные таблицы
-                connection.CreateTable<Profile>();
-                connection.CreateTable<Group>();
-                connection.CreateTable<LikeActivity>();
-                connection.CreateTable<PostActivity>();
+                db.CreateTable<Profile>();
+                db.CreateTable<GroupToAdd>();
+                db.CreateTable<Group>();
+                db.CreateTable<LikeActivity>();
+                db.CreateTable<PostActivity>();
+                db.CreateTable<CommentActivity>();
+                db.CreateTable<ScannedProfiles>();
+                db.CreateTable<ScannedPosts>();
+
+                // Тестовая запись
+                RegisterNewGroupToAdd("https://vk.com/best_sex_nsk");
+                RegisterNewGroupToAdd("https://vk.com/club1");
             });
         }
 
@@ -238,7 +329,14 @@ namespace VK_Unicorn
             {
                 db.RunInTransaction(() =>
                 {
-                    callback(db);
+                    try
+                    {
+                        callback(db);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Utils.Log("во время блокирующего обращения к базе была поймана ошибка: " + ex.Message, LogLevel.ERROR);
+                    }
                 });
             }
         }
@@ -337,6 +435,70 @@ namespace VK_Unicorn
         public void ShowStatistics()
         {
             Utils.Log("Профилей: " + GetProfilesCount() + " Групп: " + GetGroupsCount(), LogLevel.SUCCESS);
+        }
+
+        // Получаем ссылку на новую группу, поулчаем из неё DomainName
+        // Добавляем группу в таблицу GroupToAdd, если там такой нету
+        public void RegisterNewGroupToAdd(string groupWebUrl)
+        {
+            try
+            {
+                // Удаляем все символы перед доменным именем
+                var domainName = Regex.Replace(groupWebUrl, @".+\/", "");
+
+                if (!string.IsNullOrEmpty(domainName))
+                {
+                    var rowsModified = 0;
+                    ForDatabaseLocked((db) =>
+                    {
+                        rowsModified = db.Insert(new GroupToAdd()
+                        {
+                            DomainName = domainName,
+                        });
+                    });
+
+                    if (rowsModified > 0)
+                    {
+                        Utils.Log("Группа " + domainName + " успешно добавлена в очередь на начальное сканирование", LogLevel.SUCCESS);
+                    }
+                    else
+                    {
+                        throw new Exception("скорее всего группа уже добавлена в эту очередь ранее");
+                    }
+                }
+                else
+                {
+                    throw new Exception("не удалось получить имя группы из ссылки");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Utils.Log("не удалось добавить группу " + groupWebUrl + " в очередь на начальное сканирование. Причина: " + ex.Message, LogLevel.ERROR);
+            }
+        }
+
+        // Возвращает список групп для которых необходимо получить основную информацию
+        public List<GroupToAdd> GetGroupsToReceiveInfo()
+        {
+            var result = new List<GroupToAdd>();
+
+            ForDatabaseUnlocked((db) =>
+            {
+                result = db.Table<GroupToAdd>().Take(VkLimits.GROUPS_GETBYID_GROUP_IDS).ToList();
+            });
+
+            return result;
+        }
+
+        public void RemoveGroupsToReceiveInfo(IEnumerable<GroupToAdd> groupsToAdd)
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                foreach (var groupToAdd in groupsToAdd)
+                {
+                    db.Delete<GroupToAdd>(groupToAdd.DomainName);
+                }
+            });
         }
     }
 }

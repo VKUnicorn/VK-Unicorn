@@ -17,11 +17,8 @@ namespace VK_Unicorn
         // Ссылка на API ВКонтакте
         VkApi api;
 
-        // Авторизированы ли ВКонтакте
+        // Авторизированы ли ВКонтакте. Если нет, то будем пытаться авторизироваться заново
         bool isAuthorized;
-
-        // Счётчик для отображения изменяющегося троеточия в процессе сканирования
-        int dotsCounter = 1;
 
         public Worker()
         {
@@ -42,6 +39,15 @@ namespace VK_Unicorn
                 MainForm.Instance.OpenSettingsWindow();
             }
 
+            // Создаём класс VkApi для дальнейшей работы
+            api = new VkApi();
+            api.OnTokenExpires += (sender) =>
+            {
+                isAuthorized = false;
+
+                Utils.Log("Токен авторизации стал недействительным. Будет необходимо авторизироваться заново", LogLevel.WARNING);
+            };
+
             // Запускаем основной поток выполнения. Тут определяем что в данный момент нужно делать и делаем это
             while (true)
             {
@@ -59,9 +65,23 @@ namespace VK_Unicorn
                             // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
                             () =>
                             {
+                                return;
+
                                 if (!isAuthorized)
                                 {
                                     currentTask = async () => { await AuthorizationTask(settings); };
+                                }
+                            },
+
+                            // Проверяем нужно ли получить основную информацию о каких-либо группах, которые добавил пользователь
+                            () =>
+                            {
+                                return;
+
+                                var groupsToReceiveInfo = Database.Instance.GetGroupsToReceiveInfo();
+                                if (groupsToReceiveInfo.Count > 0)
+                                {
+                                    currentTask = async () => { await GetGroupsInfoTask(groupsToReceiveInfo); };
                                 }
                             },
 
@@ -81,6 +101,7 @@ namespace VK_Unicorn
                                 break;
                             }
 
+                            // Проверяем, нужно ли взять эту задачу
                             possibleTaskCondition();
                         }
                     });
@@ -107,22 +128,16 @@ namespace VK_Unicorn
 
         async Task AuthorizationTask(Database.Settings settings)
         {
-            MainForm.Instance.SetStatus("авторизация...", StatusType.SUCCESS);
-
-            Utils.Log("Авторизируемся в ВКонтакте", LogLevel.NOTIFY);
-
-            var applicationId = 0ul;
-            if (ulong.TryParse(settings.ApplicationId.Trim(), out applicationId))
+            try
             {
-                api = new VkApi();
-                api.OnTokenExpires += (sender) =>
-                {
-                    isAuthorized = false;
+                isAuthorized = false;
 
-                    Utils.Log("Токен авторизации стал недействительным. Будет необходимо авторизироваться заново", LogLevel.WARNING);
-                };
+                MainForm.Instance.SetStatus("авторизация...", StatusType.GENERAL);
 
-                try
+                Utils.Log("Авторизируемся в ВКонтакте", LogLevel.GENERAL);
+
+                var applicationId = 0ul;
+                if (ulong.TryParse(settings.ApplicationId.Trim(), out applicationId))
                 {
                     await api.AuthorizeAsync(new ApiAuthParams
                     {
@@ -139,19 +154,59 @@ namespace VK_Unicorn
 
                     MainForm.Instance.SetStatus("успешная авторизация", StatusType.SUCCESS);
                 }
-                catch (System.Exception ex)
+                else
                 {
-                    isAuthorized = false;
-
-                    Utils.Log("не удалось авторизироваться. Причина: " + ex.Message, LogLevel.ERROR);
-
-                    // Ждём некоторое время после неудачной авторизации
-                    await WaitAlot();
+                    throw new Exception("не удалось преобразовать ID приложения в unsigned long число");
                 }
             }
-            else
+            catch (System.Exception ex)
             {
-                Utils.Log("не удалось преобразовать ID приложения в unsigned long число", LogLevel.ERROR);
+                Utils.Log("не удалось авторизироваться. Причина: " + ex.Message, LogLevel.ERROR);
+                await WaitAlotAfterError();
+            }
+        }
+
+        async Task GetGroupsInfoTask(IEnumerable<Database.GroupToAdd> groupsToReceiveInfo)
+        {
+            try
+            {
+                var groupIds = new List<string>();
+
+                foreach (var group in groupsToReceiveInfo)
+                {
+                    groupIds.Add(group.DomainName);
+                }
+
+                var commaSeparatedGroupIds = groupIds.GenerateSeparatedString(",");
+                if (commaSeparatedGroupIds != string.Empty)
+                {
+                    MainForm.Instance.SetStatus("получаем информацию о группах", StatusType.GENERAL);
+
+                    Utils.Log("Получаем информацию о группах " + commaSeparatedGroupIds.Replace(",", ", "), LogLevel.GENERAL);
+
+                    var groupsInfo = await api.Groups.GetByIdAsync(groupIds, null, null);
+                    if (groupsInfo != null)
+                    {
+                        foreach (var groupInfo in groupsInfo)
+                        {
+
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("ничего не получено в ответ");
+                    }
+
+                    // Мы получили информацию о всех нужных группах, удаляем их из очереди на обработку
+                    Database.Instance.RemoveGroupsToReceiveInfo(groupsToReceiveInfo);
+
+                    await JustWait();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Utils.Log("не удалось получить информацию о группах. Причина: " + ex.Message, LogLevel.ERROR);
+                await WaitAlotAfterError();
             }
         }
 
@@ -162,11 +217,15 @@ namespace VK_Unicorn
             await Task.Delay(TimeSpan.FromSeconds(10d));
         }
 
-        async Task WaitAlot()
+        async Task WaitAlotAfterError()
         {
+            MainForm.Instance.SetStatus("ожидание после ошибки", StatusType.ERROR);
+
             await Task.Delay(TimeSpan.FromSeconds(20d));
         }
 
+        // Счётчик для отображения изменяющегося троеточия в процессе сканирования
+        int dotsCounter = 1;
         string GetProgressDots()
         {
             if (dotsCounter > 3)

@@ -43,7 +43,7 @@
             // 
             this.ExitButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ExitButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.ExitButton.Location = new System.Drawing.Point(548, 331);
+            this.ExitButton.Location = new System.Drawing.Point(743, 447);
             this.ExitButton.Name = "ExitButton";
             this.ExitButton.Size = new System.Drawing.Size(118, 38);
             this.ExitButton.TabIndex = 0;
@@ -61,7 +61,7 @@
             this.LogTextBox.Name = "LogTextBox";
             this.LogTextBox.ReadOnly = true;
             this.LogTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-            this.LogTextBox.Size = new System.Drawing.Size(661, 309);
+            this.LogTextBox.Size = new System.Drawing.Size(856, 425);
             this.LogTextBox.TabIndex = 1;
             this.LogTextBox.TabStop = false;
             this.LogTextBox.Text = "";
@@ -72,7 +72,7 @@
             this.ShowResults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ShowResults.Enabled = false;
             this.ShowResults.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.ShowResults.Location = new System.Drawing.Point(301, 331);
+            this.ShowResults.Location = new System.Drawing.Point(496, 447);
             this.ShowResults.Name = "ShowResults";
             this.ShowResults.Size = new System.Drawing.Size(118, 38);
             this.ShowResults.TabIndex = 2;
@@ -89,7 +89,7 @@
             this.LogGroupBox.Controls.Add(this.LogTextBox);
             this.LogGroupBox.Location = new System.Drawing.Point(0, 0);
             this.LogGroupBox.Name = "LogGroupBox";
-            this.LogGroupBox.Size = new System.Drawing.Size(667, 328);
+            this.LogGroupBox.Size = new System.Drawing.Size(862, 444);
             this.LogGroupBox.TabIndex = 3;
             this.LogGroupBox.TabStop = false;
             this.LogGroupBox.Text = "Лог";
@@ -101,7 +101,7 @@
             this.VersionLabel.Cursor = System.Windows.Forms.Cursors.Hand;
             this.VersionLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.VersionLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.VersionLabel.Location = new System.Drawing.Point(1, 351);
+            this.VersionLabel.Location = new System.Drawing.Point(1, 467);
             this.VersionLabel.Name = "VersionLabel";
             this.VersionLabel.Size = new System.Drawing.Size(56, 16);
             this.VersionLabel.TabIndex = 4;
@@ -114,7 +114,7 @@
             this.StatusLabel.AutoSize = true;
             this.StatusLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.StatusLabel.ForeColor = System.Drawing.Color.Green;
-            this.StatusLabel.Location = new System.Drawing.Point(1, 332);
+            this.StatusLabel.Location = new System.Drawing.Point(1, 448);
             this.StatusLabel.Name = "StatusLabel";
             this.StatusLabel.Size = new System.Drawing.Size(56, 16);
             this.StatusLabel.TabIndex = 5;
@@ -124,7 +124,7 @@
             // 
             this.SettingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.SettingsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.SettingsButton.Location = new System.Drawing.Point(425, 331);
+            this.SettingsButton.Location = new System.Drawing.Point(620, 447);
             this.SettingsButton.Name = "SettingsButton";
             this.SettingsButton.Size = new System.Drawing.Size(118, 38);
             this.SettingsButton.TabIndex = 6;
@@ -137,7 +137,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(667, 371);
+            this.ClientSize = new System.Drawing.Size(862, 487);
             this.Controls.Add(this.SettingsButton);
             this.Controls.Add(this.StatusLabel);
             this.Controls.Add(this.VersionLabel);

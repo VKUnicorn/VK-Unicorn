@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace VK_Unicorn
@@ -19,7 +20,7 @@ namespace VK_Unicorn
         ERROR,
     }
 
-    class Utils
+    public static class Utils
     {
         public static void Log(string text, LogLevel logLevel = LogLevel.GENERAL)
         {
@@ -75,6 +76,27 @@ namespace VK_Unicorn
             logTextBox.ScrollToCaret();
             logTextBox.SelectionColor = previousSelectionColor;
             logTextBox.ResumeLayout();
+        }
+
+        // Gets "1,2,3" from list of "1" "2" 3" if separator is ","
+        public static string GenerateSeparatedString<T>(this List<T> self, string separator)
+        {
+            var result = "";
+
+            var index = 0;
+            foreach (var item in self)
+            {
+                result += item.ToString();
+
+                if (index != self.Count - 1)
+                {
+                    result += separator;
+                }
+
+                ++index;
+            }
+
+            return result;
         }
     }
 
