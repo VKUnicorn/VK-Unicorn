@@ -222,7 +222,7 @@ namespace VK_Unicorn
             public string Id { get; set; }
 
             // Id приложения
-            public string ApplicationId { get; set; }
+            public long ApplicationId { get; set; }
 
             // Логин
             public string Login { get; set; }
@@ -397,19 +397,9 @@ namespace VK_Unicorn
 
             ForSettings((settings) =>
             {
-                result = !string.IsNullOrEmpty(settings.ApplicationId)
+                result = settings.ApplicationId > 0
                       && !string.IsNullOrEmpty(settings.Login)
                       && !string.IsNullOrEmpty(settings.Password);
-
-                if (result)
-                {
-                    // Проверяем правильно ли введён ID приложения
-                    var applicationId = 0ul;
-                    if (!ulong.TryParse(settings.ApplicationId.Trim(), out applicationId))
-                    {
-                        result = false;
-                    }
-                }
             });
 
             return result;

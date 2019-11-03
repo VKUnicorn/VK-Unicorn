@@ -125,11 +125,11 @@
   <data name="AccountCredentialsHelpLabel.Text" xml:space="preserve">
     <value>Данные от фейкового аккаунта ВКонтакте. Этот же аккаунт будет добавляться в закрытые группы, обязательно выстави у него возраст 18+ и не делай закрытым. Нужен тот аккаунт, на котором добавляли приложение для получения его ID</value>
   </data>
-  <data name="StopWordsLabel.Text" xml:space="preserve">
-    <value>Стоп слова. Если в сообщении будет найдено стоп слово, то профиль будет отмечен специальной жёлтой рамкой, но всё равно будет виден в результатах. Регистр не будет учитываться. Разделитель по умолчанию - точка с запятой</value>
-  </data>
   <data name="CityFilterLabel.Text" xml:space="preserve">
     <value>Тип поиска. По умолчанию отбираются анкеты, в которых указан город и он совпадает с твоим. Можно поставить "все", тогда результатов будет больше, но будет огромное количество спама. Не рекомендуется, если у тебя много групп</value>
+  </data>
+  <data name="StopWordsLabel.Text" xml:space="preserve">
+    <value>Стоп слова. Если в сообщении будет найдено стоп слово, то профиль будет отмечен специальной жёлтой рамкой, но всё равно будет виден в результатах. Регистр не будет учитываться. Разделитель по умолчанию - точка с запятой</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

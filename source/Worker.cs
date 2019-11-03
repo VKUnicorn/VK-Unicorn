@@ -135,28 +135,20 @@ namespace VK_Unicorn
 
                 Utils.Log("Авторизируемся в ВКонтакте", LogLevel.GENERAL);
 
-                var applicationId = 0ul;
-                if (ulong.TryParse(settings.ApplicationId.Trim(), out applicationId))
+                await api.AuthorizeAsync(new ApiAuthParams
                 {
-                    await api.AuthorizeAsync(new ApiAuthParams
-                    {
-                        ApplicationId = applicationId,
-                        Login = settings.Login.Trim(),
-                        Password = settings.Password.Trim(),
-                        Settings = Settings.Groups
-                    });
+                    ApplicationId = (ulong)settings.ApplicationId,
+                    Login = settings.Login.Trim(),
+                    Password = settings.Password.Trim(),
+                    Settings = Settings.Groups
+                });
 
-                    isAuthorized = true;
+                isAuthorized = true;
 
-                    var apiTokenShort = api.Token.Length > 8 ? api.Token.Substring(0, 4) + "..." + api.Token.Substring(api.Token.Length - 4) : api.Token;
-                    Utils.Log("Авторизация прошла успешно. Токен авторизации: " + apiTokenShort, LogLevel.SUCCESS);
+                var apiTokenShort = api.Token.Length > 8 ? api.Token.Substring(0, 4) + "..." + api.Token.Substring(api.Token.Length - 4) : api.Token;
+                Utils.Log("Авторизация прошла успешно. Токен авторизации: " + apiTokenShort, LogLevel.SUCCESS);
 
-                    MainForm.Instance.SetStatus("успешная авторизация", StatusType.SUCCESS);
-                }
-                else
-                {
-                    throw new Exception("не удалось преобразовать ID приложения в unsigned long число");
-                }
+                MainForm.Instance.SetStatus("успешная авторизация", StatusType.SUCCESS);
             }
             catch (System.Exception ex)
             {

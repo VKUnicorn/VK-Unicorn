@@ -8,6 +8,10 @@ namespace VK_Unicorn
         public SettingsForm()
         {
             InitializeComponent();
+
+            // Отключаем ненужные up\down элементы
+            ApplicationIdUpDown.Controls[0].Enabled = false;
+            CityIdNumericUpDown.Controls[0].Enabled = false;
         }
 
         void SettingsForm_Shown(object sender, EventArgs e)
@@ -19,7 +23,7 @@ namespace VK_Unicorn
             // Загружаем настройки
             Database.Instance.ForSettings((settings) =>
             {
-                ApplicationIdTextBox.Text = settings.ApplicationId != null ? settings.ApplicationId : "";
+                ApplicationIdUpDown.Value = settings.ApplicationId;
                 LoginTextBox.Text = settings.Login != null ? settings.Login : "";
                 PasswordTextBox.Text = settings.Password != null ? settings.Password : "";
                 CityIdNumericUpDown.Value = settings.CityId;
@@ -58,7 +62,7 @@ namespace VK_Unicorn
             // Сохраняем настройки в базу
             Database.Instance.SaveSettings(new Database.Settings
             {
-                ApplicationId = ApplicationIdTextBox.Text,
+                ApplicationId = Decimal.ToInt64(ApplicationIdUpDown.Value),
                 Login = LoginTextBox.Text,
                 Password = PasswordTextBox.Text,
                 CityId = Decimal.ToInt32(CityIdNumericUpDown.Value),
