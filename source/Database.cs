@@ -81,8 +81,11 @@ namespace VK_Unicorn
             [PrimaryKey, Unique]
             public long Id { get; set; }
 
-            // Имя группы
+            // Название группы
             public string Name { get; set; }
+
+            // Короткий адрес группы. Сохраняем его для открытия ссылок
+            public string ScreenName { get; set; }
 
             // Статус закрытости группы
             public bool IsClosed { get; set; }
@@ -123,7 +126,7 @@ namespace VK_Unicorn
         public class PostActivity
         {
             // Id профиля, который что-то написал
-            public long Id { get; set; }
+            public long ProfileId { get; set; }
 
             // Id группы в которой был пост
             public long GroupId { get; set; }
@@ -142,7 +145,7 @@ namespace VK_Unicorn
         public class CommentActivity
         {
             // Id профиля, который что-то написал
-            public long Id { get; set; }
+            public long ProfileId { get; set; }
 
             // Id группы в которой был пост
             public long GroupId { get; set; }
@@ -190,6 +193,22 @@ namespace VK_Unicorn
             // Счётчик комментариев. Если он изменится в большую сторону, то будем
             // сканировать пост повторно
             public int CommentsCount { get; set; }
+        }
+
+        // В этой таблице будем хранить изображения. Профили банятся, фотки удаляются,
+        // а у нас будут сохранены. Занимают они всё равно немного, да и можно будет
+        // почистить базу потом
+        public class Image
+        {
+            // Id изображения
+            [PrimaryKey, AutoIncrement]
+            public long Id { get; set; }
+
+            // MIME-тип https://ru.wikipedia.org/wiki/Список_MIME-типов
+            public string MimeType { get; set; }
+
+            // Само изображение в виде последовательности байтов
+            public byte[] Bytes { get; set; }
         }
 
         // Маркер для служебного использования. Менять не нужно
@@ -285,6 +304,7 @@ namespace VK_Unicorn
                 db.CreateTable<CommentActivity>();
                 db.CreateTable<ScannedProfiles>();
                 db.CreateTable<ScannedPosts>();
+                db.CreateTable<Image>();
             });
         }
 
@@ -354,29 +374,18 @@ namespace VK_Unicorn
             }
 
             database = new SQLiteConnection(Constants.DATABASE_FILENAME);
-            database.BusyTimeout = TimeSpan.FromSeconds(5d);
+            database.BusyTimeout = TimeSpan.FromSeconds(10d);
             return database;
         }
 
-        public int GetProfilesCount()
+        // Возвращает количество записей в таблице
+        int GetCount<T>() where T : new()
         {
             var result = 0;
 
             ForDatabaseUnlocked((db) =>
             {
-                result = db.Table<Profile>().Count();
-            });
-
-            return result;
-        }
-
-        public int GetGroupsCount()
-        {
-            var result = 0;
-
-            ForDatabaseUnlocked((db) =>
-            {
-                result = db.Table<Group>().Count();
+                result = db.Table<T>().Count();
             });
 
             return result;
@@ -430,7 +439,11 @@ namespace VK_Unicorn
 
         public void ShowStatistics()
         {
-            Utils.Log("Профилей: " + GetProfilesCount() + " Групп: " + GetGroupsCount(), LogLevel.SUCCESS);
+            Utils.Log("Статистика:", LogLevel.SUCCESS);
+            Utils.Log("    Всего полезных профилей: " + GetCount<Profile>(), LogLevel.NOTIFY);
+            Utils.Log("    Количество групп для сканирования: " + GetCount<Group>(), LogLevel.NOTIFY);
+            Utils.Log("    Просканировано профилей: " + GetCount<ScannedProfiles>(), LogLevel.NOTIFY);
+            Utils.Log("    Просканировано постов: " + GetCount<ScannedPosts>(), LogLevel.NOTIFY);
         }
 
         // Получаем ссылку на новую группу, получаем из неё DomainName

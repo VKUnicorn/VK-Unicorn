@@ -98,6 +98,11 @@ namespace VK_Unicorn
 
             return result;
         }
+
+        public static string GetURL(this VkNet.Model.Group self)
+        {
+            return Constants.VK_WEB_PAGE + self.ScreenName;
+        }
     }
 
     public delegate void Callback();

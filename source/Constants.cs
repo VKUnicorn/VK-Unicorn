@@ -5,6 +5,7 @@
         public const string APP_NAME = "VK Unicorn";
         public const string APP_VERSION = "v1.0.0";
         public const string PROJECT_WEB_PAGE = "https://github.com/VKUnicorn/VK-Unicorn";
+        public const string VK_WEB_PAGE = "https://vk.com/";
 
         public const int WEB_PORT = 5051;
         public static string RESULTS_WEB_PAGE = "http://localhost:" + WEB_PORT + "/";

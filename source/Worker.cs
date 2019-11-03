@@ -7,6 +7,7 @@ using VkNet;
 using VkNet.Model;
 using VkNet.Enums.Filters;
 using VkNet.Model.RequestParams;
+using VkNet.Enums.SafetyEnums;
 
 namespace VK_Unicorn
 {
@@ -65,6 +66,8 @@ namespace VK_Unicorn
                             // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
                             () =>
                             {
+                                return;
+
                                 if (!isAuthorized)
                                 {
                                     currentTask = async () => { await AuthorizationTask(settings); };
@@ -118,7 +121,7 @@ namespace VK_Unicorn
                 // Слишком частые запросы это плохо, о лимитах можно почитать тут https://vk.com/dev/api_requests
                 // в разделе "3. Ограничения и рекомендации". В целом рекомендуется обращаться не чаще трёх раз в секунду,
                 // но мы будем сканировать значительно реже, опять же чтобы снизить угрозу бана аккаунта или появления капчи
-                await Task.Delay(TimeSpan.FromSeconds(1.5d));
+                await Task.Delay(TimeSpan.FromSeconds(1d));
             }
         }
 
@@ -187,6 +190,15 @@ namespace VK_Unicorn
 
                         foreach (var groupInfo in groupsInfo)
                         {
+                            // Группа не активна? Удалена, не создана, заблокирована?
+                            if (groupInfo.Deactivated != null)
+                            {
+                                if (groupInfo.Deactivated != Deactivated.Activated)
+                                {
+                                    Utils.Log("Не добавляем группу " + groupInfo.GetURL() + " потому что она удалена", LogLevel.NOTIFY);
+                                }
+                            }
+
                             // Группа не была уже добавлена ранее?
                             if (!Database.Instance.IsGroupAlreadyExists(groupInfo.Id))
                             {
@@ -195,13 +207,14 @@ namespace VK_Unicorn
                                 {
                                     Id = groupInfo.Id,
                                     Name = groupInfo.Name,
+                                    ScreenName = groupInfo.ScreenName,
                                     IsClosed = groupInfo.IsClosed.HasValue ? groupInfo.IsClosed == VkNet.Enums.GroupPublicity.Closed : false,
                                     IsMember = groupInfo.IsMember.HasValue ? groupInfo.IsMember.Value : true,
                                 });
                             }
                             else
                             {
-                                Utils.Log("Не добавляем группу " + groupInfo.Name + " потому что она уже была добавлена", LogLevel.NOTIFY);
+                                Utils.Log("Не добавляем группу " + groupInfo.ScreenName + " " + groupInfo.GetURL() + " потому что она уже была добавлена", LogLevel.NOTIFY);
                             }
                         }
                     }
