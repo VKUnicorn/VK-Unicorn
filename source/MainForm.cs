@@ -28,14 +28,15 @@ namespace VK_Unicorn
             Utils.Log(Text + " успешно загружен", LogLevel.SUCCESS);
 
             // Готовим базу данных
-            Utils.Log("Подготавливаем базу данных к работе", LogLevel.NOTIFY);
+            Utils.Log("Подготавливаем базу данных к работе", LogLevel.GENERAL);
             database = new Database();
 
             // Статистика
             database.ShowStatistics();
 
             // Запускаем веб сервер
-            Utils.Log("Пытаемся запустить веб сервер на порт " + Constants.WEB_PORT + ". Веб сервер нужен для просмотра результатов сканирования в браузере в виде привычной веб страницы", LogLevel.NOTIFY);
+            Utils.Log("Пытаемся запустить веб сервер на порт " + Constants.WEB_PORT, LogLevel.GENERAL);
+            Utils.Log("Веб сервер нужен для просмотра результатов сканирования в браузере в виде привычной веб страницы", LogLevel.NOTIFY);
             try
             {
                 var listener = new WebListener(Constants.WEB_PORT);

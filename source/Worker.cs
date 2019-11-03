@@ -65,8 +65,6 @@ namespace VK_Unicorn
                             // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
                             () =>
                             {
-                                return;
-
                                 if (!isAuthorized)
                                 {
                                     currentTask = async () => { await AuthorizationTask(settings); };
@@ -76,8 +74,6 @@ namespace VK_Unicorn
                             // Проверяем нужно ли получить основную информацию о каких-либо группах, которые добавил пользователь
                             () =>
                             {
-                                return;
-
                                 var groupsToReceiveInfo = Database.Instance.GetGroupsToReceiveInfo();
                                 if (groupsToReceiveInfo.Count > 0)
                                 {
@@ -187,9 +183,26 @@ namespace VK_Unicorn
                     var groupsInfo = await api.Groups.GetByIdAsync(groupIds, null, null);
                     if (groupsInfo != null)
                     {
+                        Utils.Log("Информация о группах успешно получена", LogLevel.SUCCESS);
+
                         foreach (var groupInfo in groupsInfo)
                         {
-
+                            // Группа не была уже добавлена ранее?
+                            if (!Database.Instance.IsGroupAlreadyExists(groupInfo.Id))
+                            {
+                                // Добавляем новую группу
+                                Database.Instance.AddGroupOrReplace(new Database.Group()
+                                {
+                                    Id = groupInfo.Id,
+                                    Name = groupInfo.Name,
+                                    IsClosed = groupInfo.IsClosed.HasValue ? groupInfo.IsClosed == VkNet.Enums.GroupPublicity.Closed : false,
+                                    IsMember = groupInfo.IsMember.HasValue ? groupInfo.IsMember.Value : true,
+                                });
+                            }
+                            else
+                            {
+                                Utils.Log("Не добавляем группу " + groupInfo.Name + " потому что она уже была добавлена", LogLevel.NOTIFY);
+                            }
                         }
                     }
                     else
