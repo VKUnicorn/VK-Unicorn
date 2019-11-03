@@ -2,4 +2,4 @@
 /obj/
 /notes/
 /packages/
-/bin/database.db
+/bin/*.db
