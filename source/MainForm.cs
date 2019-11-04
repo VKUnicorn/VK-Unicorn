@@ -47,6 +47,9 @@ namespace VK_Unicorn
                 Utils.Log("Веб сервер не подключен на порт " + Constants.WEB_PORT + ". Причина: " + ex.Message, LogLevel.ERROR);
             }
 
+            // Подготавливаем веб интерфейс
+            var webInterface = new WebInterface();
+
             // Запускаем основной поток выполнения
             var worker = new Worker();
             worker.RunMainThread();

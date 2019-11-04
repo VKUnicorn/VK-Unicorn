@@ -1,0 +1,159 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>$APP_NAME$ - $APP_VERSION$</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/esm/popper-utils.js">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    <!-- LineIcons -->
+    <link rel="stylesheet" href="https://cdn.lineicons.com/1.0.1/LineIcons.min.css">
+
+    <style type="text/css">
+        .col-sm-2 {
+            display: flex;
+        }
+        .lni-heart {
+            color: Mediumslateblue;
+            opacity: 0.4;
+        }
+        .lni-popup {
+            color: Mediumslateblue;
+            opacity: 0.4;
+        }
+        .lni-comment-reply {
+            color: Mediumslateblue;
+            opacity: 0.4;
+        }
+        .lni-user {
+            color: Mediumslateblue;
+        }
+        .lni-star {
+            margin-top: -2px !important;
+            color: Mediumslateblue;
+            opacity: 0.4;
+        }
+        .bg-success {
+            background-color: #ccffcc !important;
+        }
+        .bg-warning {
+            background-color: #ffffcc !important;
+        }
+        .duration-box {
+            background-color: #575757;
+            color: white;
+            padding-left: 5px;
+            padding-right: 5px;
+            opacity: 0.5;
+            border-radius: 5px;
+        }
+        .card-img-overlay {
+            height: 0;
+        }
+        .card-img-overlay.duration {
+            position: relative;
+            padding: 0 !important;
+            top: -28px !important;
+            left: 2% !important;
+            height: 0;
+        }
+        .opaque-3 {
+            opacity: 0.3;
+        }
+        .card-img-top {
+            margin-right: 100rem;
+            height: 11rem;
+            object-fit: cover;
+        }
+        .card-img-overlay .btn {
+            display: none;
+        }
+        .card:hover .btn {
+            display: block;
+            opacity: 0.6;
+        }
+    </style>
+
+    <script type = 'text/javascript'>
+        $(function () {
+            $('i.lni-heart').popover({
+                container: 'body',
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 200, "hide": 100 },
+                content: 'Пользователь поставил лайк'
+            })
+
+            $('i.lni-popup').popover({
+                container: 'body',
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 200, "hide": 100 },
+                content: 'Пользователь написал пост'
+            })
+
+            $('i.lni-comment-reply').popover({
+                container: 'body',
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 200, "hide": 100 },
+                content: 'Пользователь написал комментарий'
+            })
+
+            $('i.lni-star').popover({
+                container: 'body',
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 200, "hide": 100 },
+                content: 'Добавить или удалить из избранного'
+            })
+
+            $('div.card-img-overlay > a.btn.btn-danger').popover({
+                container: 'body',
+                trigger: 'hover',
+                placement: 'bottom',
+                delay: { "show": 200, "hide": 100 },
+                content: 'Скрыть профиль навсегда'
+            })
+
+            $('div.card-img-overlay > a.btn.btn-success').popover({
+                container: 'body',
+                trigger: 'hover',
+                placement: 'bottom',
+                delay: { "show": 200, "hide": 100 },
+                content: 'Скрыть профиль до появления любой повторной активности'
+            })
+        })
+    </script>
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #604294">
+        <span class="navbar-brand mb-0 mr-1 h6">$APP_NAME$</span><span class="navbar-text pb-1 opaque-3">$APP_VERSION$</span>
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        </ul>
+        <form class="form-inlinemy-2 my-lg-0">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text px-2" id="basic-addon1"><i class="lni-user size-sm"></i></span>
+                </div>
+                <input type="text" class="form-control" placeholder="id профиля" aria-label="Username" aria-describedby="basic-addon1">
+                <button class="btn btn-primary my-2 my-sm-0 rounded-0" type="submit">Найти</button>
+            </div>
+        </form>
+    </nav>
+
+    <main role="main">
+        <div class="container">
+            <div class="row">
+                $CONTENT$
+            </div>
+        </div>
+    </main>
+</body>
+</html>

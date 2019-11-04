@@ -52,36 +52,45 @@ namespace VK_Unicorn
                 if (line.ToUpperInvariant().StartsWith("GET "))
                 {
                     // We got a request: GET /file HTTP/1.1
-                    var file = line.Split(' ')[1].TrimStart('/');
+                    var target = line.Split(' ')[1].TrimStart('/');
 
-                    // Default document is index.html
-                    if (string.IsNullOrWhiteSpace(file))
+                    // Default target is index
+                    if (string.IsNullOrWhiteSpace(target))
                     {
-                        file = "index.html";
+                        target = "index";
                     }
 
-                    // Send header+file
-                    SendFile(file);
+                    Console.WriteLine("Получен запрос " + target);
+
+                    // Send header + response
+                    SendResponse(target);
 
                     return true;
                 }
-
             }
 
             return false;
         }
 
-        async void SendFile(string file)
+        async void SendResponse(string target)
         {
             byte[] data;
-            string responseCode = "";
-            string contentType = "";
+            var responseCode = string.Empty;
+            var contentType = string.Empty;
 
             try
             {
-                data = System.Text.Encoding.ASCII.GetBytes("<html><body><h1>404 File Not Found</h1></body></html>");
-                contentType = "text/html";
-                responseCode = "404 Not found";
+                if (!WebInterface.Instance.HandleRequest(target, out data))
+                {
+                    data = System.Text.Encoding.ASCII.GetBytes("<html><body><h1>404 File Not Found</h1></body></html>");
+                    contentType = "text/html";
+                    responseCode = "404 Not found";
+                }
+                else
+                {
+                    contentType = "text/html";
+                    responseCode = "200 OK";
+                }
             }
             catch (Exception exception)
             {

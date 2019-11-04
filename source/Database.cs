@@ -57,9 +57,6 @@ namespace VK_Unicorn
             // Скрыт ли этот профиль пользователем
             public HiddenStatus IsHidden { get; set; }
 
-            // Id изображения в таблице Image
-            public long ImageId { get; set; }
-
             // URL главной фотографии в максимальном размере
             public string PhotoURL { get; set; }
         }
@@ -107,9 +104,6 @@ namespace VK_Unicorn
 
             // Сколько времени заняло сканирование этого паблика в секундах
             public int ScanTimeInSeconds { get; set; }
-
-            // Id изображения в таблице Image
-            public long ImageId { get; set; }
 
             // URL главной фотографии в максимальном размере
             public string PhotoURL { get; set; }
@@ -207,19 +201,6 @@ namespace VK_Unicorn
             public int CommentsCount { get; set; }
         }
 
-        // В этой таблице будем хранить изображения. Профили банятся, фотки удаляются,
-        // а у нас будут сохранены. Занимают они всё равно немного, да и можно будет
-        // почистить базу потом
-        public class Image
-        {
-            // Id изображения
-            [PrimaryKey, AutoIncrement]
-            public long Id { get; set; }
-
-            // Само изображение в виде последовательности байтов
-            public byte[] Bytes { get; set; }
-        }
-
         // Маркер для служебного использования. Менять не нужно
         const string INTERNAL_DB_MARKER = "db";
 
@@ -308,7 +289,6 @@ namespace VK_Unicorn
                 db.CreateTables<GroupToAdd, Group>();
                 db.CreateTables<LikeActivity, PostActivity, CommentActivity>();
                 db.CreateTables<ScannedProfiles, ScannedPosts>();
-                db.CreateTable<Image>();
             });
         }
 
@@ -440,7 +420,6 @@ namespace VK_Unicorn
             Utils.Log("    Количество групп для сканирования: " + GetCount<Group>(), LogLevel.NOTIFY);
             Utils.Log("    Просканировано профилей: " + GetCount<ScannedProfiles>(), LogLevel.NOTIFY);
             Utils.Log("    Просканировано постов: " + GetCount<ScannedPosts>(), LogLevel.NOTIFY);
-            Utils.Log("    Сохранено изображений: " + GetCount<Image>(), LogLevel.NOTIFY);
         }
 
         /// <summary>
@@ -546,58 +525,6 @@ namespace VK_Unicorn
             });
 
             return result;
-        }
-
-        /// <summary>
-        /// Добавляет изображение для группы
-        /// </summary>
-        public void AddImageForGroup(long groupId, byte[] imageBytes)
-        {
-            ForDatabaseLocked((db) =>
-            {
-                var image = new Image()
-                {
-                    Bytes = imageBytes
-                };
-
-                var rowsModified = db.Insert(image);
-                if (rowsModified > 0)
-                {
-                    var group = db.Table<Group>().Where(_ => _.Id == groupId).SingleOrDefault();
-                    if (group != null)
-                    {
-                        group.ImageId = image.Id;
-
-                        db.InsertOrReplace(group);
-                    }
-                }
-            });
-        }
-
-        /// <summary>
-        /// Добавляет изображение для профиля
-        /// </summary>
-        public void AddImageForProfile(long profileId, byte[] imageBytes)
-        {
-            ForDatabaseLocked((db) =>
-            {
-                var image = new Image()
-                {
-                    Bytes = imageBytes
-                };
-
-                var rowsModified = db.Insert(image);
-                if (rowsModified > 0)
-                {
-                    var profile = db.Table<Profile>().Where(_ => _.Id == profileId).SingleOrDefault();
-                    if (profile != null)
-                    {
-                        profile.ImageId = image.Id;
-
-                        db.InsertOrReplace(profile);
-                    }
-                }
-            });
         }
     }
 }

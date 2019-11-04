@@ -21,24 +21,6 @@ namespace VK_Unicorn
         // Авторизированы ли ВКонтакте. Если нет, то будем пытаться авторизироваться заново
         bool isAuthorized;
 
-        // Класс задачи по получению изображения для группы
-        class ReceiveImageForGroupTaskParams
-        {
-            public long GroupId;
-            public string PhotoURL;
-        }
-
-        // Класс задачи по получению изображения для профиля
-        class ReceiveImageForProfileTaskParams
-        {
-            public long ProfileId;
-            public string PhotoURL;
-        }
-
-        // Текущие незначительные задачи. Получение картинок для группы или профиля
-        Queue<ReceiveImageForGroupTaskParams> receiveImageForGroupTasks = new Queue<ReceiveImageForGroupTaskParams>();
-        Queue<ReceiveImageForProfileTaskParams> receiveImageForProfileTasks = new Queue<ReceiveImageForProfileTaskParams>();
-
         public Worker()
         {
             if (Instance == null)
@@ -81,24 +63,6 @@ namespace VK_Unicorn
                         // Готовим список задач, которые вообще можно делать. Задачи будут проверяться в порядке их объявления
                         var possibleTaskConditions = new List<Callback>()
                         {
-                            // Проверяем нужно ли получить какое-то изображение для группы
-                            () =>
-                            {
-                                if (receiveImageForGroupTasks.Count > 0)
-                                {
-                                    currentTask = async () => { await ReceiveImageForGroupTask(receiveImageForGroupTasks.Dequeue()); };
-                                }
-                            },
-
-                            // Проверяем нужно ли получить какое-то изображение для профиля
-                            () =>
-                            {
-                                if (receiveImageForProfileTasks.Count > 0)
-                                {
-                                    currentTask = async () => { await ReceiveImageForProfileTask(receiveImageForProfileTasks.Dequeue()); };
-                                }
-                            },
-
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
@@ -248,7 +212,7 @@ namespace VK_Unicorn
                                 if (Database.Instance.AddGroupOrReplace(newGroup))
                                 {
                                     // Получаем для неё фотографию
-                                    ReceiveImageForGroup(newGroup.Id, newGroup.PhotoURL);
+                                    //ReceiveImageForGroup(newGroup.Id, newGroup.PhotoURL);
                                 }
                             }
                             else
@@ -273,56 +237,6 @@ namespace VK_Unicorn
             }
         }
 
-        async Task ReceiveImageForGroupTask(ReceiveImageForGroupTaskParams details)
-        {
-            try
-            {
-                MainForm.Instance.SetStatus("получаем изображение для группы", StatusType.GENERAL);
-
-                Utils.Log("Получаем изображение для группы с Id " + details.GroupId, LogLevel.GENERAL);
-
-                var webRequest = WebRequest.Create(details.PhotoURL);
-                webRequest.Method = "GET";
-                var response = await webRequest.GetResponseAsync();
-
-                using (var ms = new MemoryStream())
-                {
-                    response.GetResponseStream().CopyTo(ms);
-
-                    Database.Instance.AddImageForGroup(details.GroupId, ms.ToArray());
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Utils.Log("не удалось загрузить изображение для группы " + details.PhotoURL + ". Причина: " + ex.Message, LogLevel.ERROR);
-            }
-        }
-
-        async Task ReceiveImageForProfileTask(ReceiveImageForProfileTaskParams details)
-        {
-            try
-            {
-                MainForm.Instance.SetStatus("получаем изображение для профиля", StatusType.GENERAL);
-
-                Utils.Log("Получаем изображение для профиля с Id " + details.ProfileId, LogLevel.GENERAL);
-
-                var webRequest = WebRequest.Create(details.PhotoURL);
-                webRequest.Method = "GET";
-                var response = await webRequest.GetResponseAsync();
-
-                using (var ms = new MemoryStream())
-                {
-                    response.GetResponseStream().CopyTo(ms);
-
-                    Database.Instance.AddImageForProfile(details.ProfileId, ms.ToArray());
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Utils.Log("не удалось загрузить изображение для профиля " + details.PhotoURL + ". Причина: " + ex.Message, LogLevel.ERROR);
-            }
-        }
-
         async Task JustWait()
         {
             MainForm.Instance.SetStatus("ожидание" + GetProgressDots(), StatusType.SUCCESS);
@@ -335,24 +249,6 @@ namespace VK_Unicorn
             MainForm.Instance.SetStatus("ожидание после ошибки", StatusType.ERROR);
 
             await Task.Delay(TimeSpan.FromSeconds(20d));
-        }
-
-        void ReceiveImageForGroup(long groupId, string photoURL)
-        {
-            receiveImageForGroupTasks.Enqueue(new ReceiveImageForGroupTaskParams()
-            {
-                GroupId = groupId,
-                PhotoURL = photoURL,
-            });
-        }
-
-        void ReceiveImageForProfile(long profileId, string photoURL)
-        {
-            receiveImageForProfileTasks.Enqueue(new ReceiveImageForProfileTaskParams()
-            {
-                ProfileId = profileId,
-                PhotoURL = photoURL,
-            });
         }
 
         // Счётчик для отображения изменяющегося троеточия в процессе сканирования

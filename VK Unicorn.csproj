@@ -139,6 +139,7 @@
     </Compile>
     <Compile Include="source\Utils.cs" />
     <Compile Include="source\WebClient.cs" />
+    <Compile Include="source\WebInterface.cs" />
     <Compile Include="source\WebListener.cs" />
     <Compile Include="source\Worker.cs" />
     <Compile Include="source\VkLimits.cs" />
@@ -170,6 +171,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="web\profile.template.html" />
+    <EmbeddedResource Include="web\index.html" />
     <EmbeddedResource Include="costura32\e_sqlite3.dll" />
     <EmbeddedResource Include="costura64\e_sqlite3.dll" />
     <Content Include="media\icon.ico" />
