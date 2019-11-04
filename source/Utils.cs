@@ -78,7 +78,7 @@ namespace VK_Unicorn
             logTextBox.ResumeLayout();
         }
 
-        // Gets "1,2,3" from list of "1" "2" 3" if separator is ","
+        // Получаем "1,2,3" из листа "1" "2" 3", если разделитель ","
         public static string GenerateSeparatedString<T>(this List<T> self, string separator)
         {
             var result = "";
@@ -94,6 +94,35 @@ namespace VK_Unicorn
                 }
 
                 ++index;
+            }
+
+            return result;
+        }
+
+        // Возвращает слово в зависимсти от числа
+        // 21 год
+        // 22 года
+        // 27 лет
+        public static string OneFewMany(this int number, string one, string few, string many)
+        {
+            number = Math.Abs(number);
+            var mod100 = number % 100;
+
+            var result = many;
+            if (!(mod100 >= 11 && mod100 <= 19))
+            {
+                switch (number % 10)
+                {
+                    case 1:
+                        result = one;
+                        break;
+
+                    case 2:
+                    case 3:
+                    case 4:
+                        result = few;
+                        break;
+                }
             }
 
             return result;

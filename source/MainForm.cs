@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace VK_Unicorn
@@ -51,6 +50,13 @@ namespace VK_Unicorn
             // Запускаем основной поток выполнения
             var worker = new Worker();
             worker.RunMainThread();
+
+            // Тестовый код
+            /*
+            Database.Instance.RegisterNewGroupToAdd("https://vk.com/best_sex_nsk");
+            Database.Instance.RegisterNewGroupToAdd("https://vk.com/club1");
+            Database.Instance.RegisterNewGroupToAdd("https://vk.com/apiclub");
+            */
         }
 
         void ExitButton_Click(object sender, EventArgs e)

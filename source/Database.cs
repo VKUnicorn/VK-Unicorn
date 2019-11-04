@@ -301,18 +301,13 @@ namespace VK_Unicorn
             ForDatabaseLocked((db) =>
             {
                 // Создаём таблицы для служебного использования
-                db.CreateTable<_System>();
-                db.CreateTable<Settings>();
+                db.CreateTables<_System, Settings>();
 
                 // Создаём все остальные таблицы
                 db.CreateTable<Profile>();
-                db.CreateTable<GroupToAdd>();
-                db.CreateTable<Group>();
-                db.CreateTable<LikeActivity>();
-                db.CreateTable<PostActivity>();
-                db.CreateTable<CommentActivity>();
-                db.CreateTable<ScannedProfiles>();
-                db.CreateTable<ScannedPosts>();
+                db.CreateTables<GroupToAdd, Group>();
+                db.CreateTables<LikeActivity, PostActivity, CommentActivity>();
+                db.CreateTables<ScannedProfiles, ScannedPosts>();
                 db.CreateTable<Image>();
             });
         }
