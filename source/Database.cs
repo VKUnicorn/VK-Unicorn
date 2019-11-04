@@ -56,6 +56,12 @@ namespace VK_Unicorn
 
             // Скрыт ли этот профиль пользователем
             public HiddenStatus IsHidden { get; set; }
+
+            // Id изображения в таблице Image
+            public long ImageId { get; set; }
+
+            // URL главной фотографии в максимальном размере
+            public string PhotoURL { get; set; }
         }
 
         // Таблица с группами о которых ещё предстоит получить информацию и добавить в обычную
@@ -101,6 +107,12 @@ namespace VK_Unicorn
 
             // Сколько времени заняло сканирование этого паблика в секундах
             public int ScanTimeInSeconds { get; set; }
+
+            // Id изображения в таблице Image
+            public long ImageId { get; set; }
+
+            // URL главной фотографии в максимальном размере
+            public string PhotoURL { get; set; }
         }
 
         // Таблица активности когда кто-то лайкает пост
@@ -203,9 +215,6 @@ namespace VK_Unicorn
             // Id изображения
             [PrimaryKey, AutoIncrement]
             public long Id { get; set; }
-
-            // MIME-тип https://ru.wikipedia.org/wiki/Список_MIME-типов
-            public string MimeType { get; set; }
 
             // Само изображение в виде последовательности байтов
             public byte[] Bytes { get; set; }
@@ -312,7 +321,7 @@ namespace VK_Unicorn
         {
             ForDatabaseLocked((db) =>
             {
-                var query = db.Table<_System>().Where(v => v.Id == INTERNAL_DB_MARKER).SingleOrDefault();
+                var query = db.Table<_System>().Where(_ => _.Id == INTERNAL_DB_MARKER).SingleOrDefault();
                 if (query != null)
                 {
                     Utils.Log("Загружена база данных версии " + query.SchemeVersion, LogLevel.GENERAL);
@@ -378,7 +387,9 @@ namespace VK_Unicorn
             return database;
         }
 
-        // Возвращает количество записей в таблице
+        /// <summary>
+        /// Возвращает количество записей в таблице
+        /// </summary>
         int GetCount<T>() where T : new()
         {
             var result = 0;
@@ -409,7 +420,7 @@ namespace VK_Unicorn
         {
             ForDatabaseUnlocked((db) =>
             {
-                var settings = db.Table<Settings>().Where(v => v.Id == INTERNAL_DB_MARKER).SingleOrDefault();
+                var settings = db.Table<Settings>().Where(_ => _.Id == INTERNAL_DB_MARKER).SingleOrDefault();
                 if (settings != null)
                 {
                     callback(settings);
@@ -430,14 +441,17 @@ namespace VK_Unicorn
         public void ShowStatistics()
         {
             Utils.Log("Статистика:", LogLevel.SUCCESS);
-            Utils.Log("    Всего полезных профилей: " + GetCount<Profile>(), LogLevel.NOTIFY);
+            Utils.Log("    Всего найдено полезных профилей: " + GetCount<Profile>(), LogLevel.NOTIFY);
             Utils.Log("    Количество групп для сканирования: " + GetCount<Group>(), LogLevel.NOTIFY);
             Utils.Log("    Просканировано профилей: " + GetCount<ScannedProfiles>(), LogLevel.NOTIFY);
             Utils.Log("    Просканировано постов: " + GetCount<ScannedPosts>(), LogLevel.NOTIFY);
+            Utils.Log("    Сохранено изображений: " + GetCount<Image>(), LogLevel.NOTIFY);
         }
 
-        // Получаем ссылку на новую группу, получаем из неё DomainName
-        // Добавляем группу в таблицу GroupToAdd, если там такой нету
+        /// <summary>
+        /// Получаем ссылку на новую группу, получаем из неё DomainName
+        /// Добавляем группу в таблицу GroupToAdd, если там такой нету
+        /// </summary>
         public void RegisterNewGroupToAdd(string groupWebUrl)
         {
             try
@@ -476,7 +490,9 @@ namespace VK_Unicorn
             }
         }
 
-        // Возвращает список групп для которых необходимо получить основную информацию
+        /// <summary>
+        /// Возвращает список групп для которых необходимо получить основную информацию
+        /// </summary>
         public List<GroupToAdd> GetGroupsToReceiveInfo()
         {
             var result = new List<GroupToAdd>();
@@ -489,7 +505,9 @@ namespace VK_Unicorn
             return result;
         }
 
-        // Удаляет группы из очереди на получение основной информации
+        /// <summary>
+        /// Удаляет группы из очереди на получение основной информации
+        /// </summary>
         public void RemoveGroupsToReceiveInfo(IEnumerable<GroupToAdd> groupsToAdd)
         {
             ForDatabaseLocked((db) =>
@@ -501,8 +519,10 @@ namespace VK_Unicorn
             });
         }
 
-        // Добавляет новую группу или изменяет её, если группа уже существует
-        public void AddGroupOrReplace(Group group)
+        /// <summary>
+        /// Добавляет новую группу или изменяет её, если группа уже существует
+        /// </summary>
+        public bool AddGroupOrReplace(Group group)
         {
             var rowsModified = 0;
             ForDatabaseLocked((db) =>
@@ -514,19 +534,75 @@ namespace VK_Unicorn
             {
                 Utils.Log("Группа " + group.Name + " (" + group.Id + ") была успешно сохранена", LogLevel.SUCCESS);
             }
+
+            return rowsModified > 0;
         }
 
-        // Группа уже добавлена в список?
+        /// <summary>
+        /// Группа уже добавлена в список?
+        /// </summary>
         public bool IsGroupAlreadyExists(long groupId)
         {
             var result = false;
 
             ForDatabaseUnlocked((db) =>
             {
-                result = db.Table<Group>().Where(group => group.Id == groupId).Count() > 0;
+                result = db.Table<Group>().Where(_ => _.Id == groupId).Count() > 0;
             });
 
             return result;
+        }
+
+        /// <summary>
+        /// Добавляет изображение для группы
+        /// </summary>
+        public void AddImageForGroup(long groupId, byte[] imageBytes)
+        {
+            ForDatabaseLocked((db) =>
+            {
+                var image = new Image()
+                {
+                    Bytes = imageBytes
+                };
+
+                var rowsModified = db.Insert(image);
+                if (rowsModified > 0)
+                {
+                    var group = db.Table<Group>().Where(_ => _.Id == groupId).SingleOrDefault();
+                    if (group != null)
+                    {
+                        group.ImageId = image.Id;
+
+                        db.InsertOrReplace(group);
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// Добавляет изображение для профиля
+        /// </summary>
+        public void AddImageForProfile(long profileId, byte[] imageBytes)
+        {
+            ForDatabaseLocked((db) =>
+            {
+                var image = new Image()
+                {
+                    Bytes = imageBytes
+                };
+
+                var rowsModified = db.Insert(image);
+                if (rowsModified > 0)
+                {
+                    var profile = db.Table<Profile>().Where(_ => _.Id == profileId).SingleOrDefault();
+                    if (profile != null)
+                    {
+                        profile.ImageId = image.Id;
+
+                        db.InsertOrReplace(profile);
+                    }
+                }
+            });
         }
     }
 }

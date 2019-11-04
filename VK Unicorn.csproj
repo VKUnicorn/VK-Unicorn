@@ -141,7 +141,7 @@
     <Compile Include="source\WebClient.cs" />
     <Compile Include="source\WebListener.cs" />
     <Compile Include="source\Worker.cs" />
-    <Compile Include="VkLimits.cs" />
+    <Compile Include="source\VkLimits.cs" />
     <EmbeddedResource Include="source\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

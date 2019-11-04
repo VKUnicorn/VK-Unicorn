@@ -32,6 +32,7 @@
             this.CancelAndCloseButton = new System.Windows.Forms.Button();
             this.ApplyButton = new System.Windows.Forms.Button();
             this.ApplicationIdGroupBox = new System.Windows.Forms.GroupBox();
+            this.ApplicationIdUpDown = new System.Windows.Forms.NumericUpDown();
             this.ApplicationIdLabel = new System.Windows.Forms.Label();
             this.CopyApplicationIdPictureBox = new System.Windows.Forms.PictureBox();
             this.CopyApplicationIdLabel = new System.Windows.Forms.Label();
@@ -61,14 +62,13 @@
             this.CityIdLinkLabel = new System.Windows.Forms.LinkLabel();
             this.CityIdLabel = new System.Windows.Forms.Label();
             this.CityIdNumericUpDown = new System.Windows.Forms.NumericUpDown();
-            this.ApplicationIdUpDown = new System.Windows.Forms.NumericUpDown();
             this.ApplicationIdGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ApplicationIdUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.CopyApplicationIdPictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.AddApplicationPictureBox)).BeginInit();
             this.AccountCredentialsGroupBox.SuspendLayout();
             this.SettingsGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CityIdNumericUpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ApplicationIdUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // CancelAndCloseButton
@@ -116,6 +116,19 @@
             this.ApplicationIdGroupBox.TabIndex = 3;
             this.ApplicationIdGroupBox.TabStop = false;
             this.ApplicationIdGroupBox.Text = "ID приложения";
+            // 
+            // ApplicationIdUpDown
+            // 
+            this.ApplicationIdUpDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.ApplicationIdUpDown.Location = new System.Drawing.Point(9, 436);
+            this.ApplicationIdUpDown.Maximum = new decimal(new int[] {
+            -1,
+            2147483647,
+            0,
+            0});
+            this.ApplicationIdUpDown.Name = "ApplicationIdUpDown";
+            this.ApplicationIdUpDown.Size = new System.Drawing.Size(225, 26);
+            this.ApplicationIdUpDown.TabIndex = 8;
             // 
             // ApplicationIdLabel
             // 
@@ -474,19 +487,6 @@
             0,
             0});
             // 
-            // ApplicationIdUpDown
-            // 
-            this.ApplicationIdUpDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.ApplicationIdUpDown.Location = new System.Drawing.Point(9, 436);
-            this.ApplicationIdUpDown.Maximum = new decimal(new int[] {
-            -1,
-            2147483647,
-            0,
-            0});
-            this.ApplicationIdUpDown.Name = "ApplicationIdUpDown";
-            this.ApplicationIdUpDown.Size = new System.Drawing.Size(225, 26);
-            this.ApplicationIdUpDown.TabIndex = 8;
-            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -509,6 +509,7 @@
             this.Shown += new System.EventHandler(this.SettingsForm_Shown);
             this.ApplicationIdGroupBox.ResumeLayout(false);
             this.ApplicationIdGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ApplicationIdUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.CopyApplicationIdPictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.AddApplicationPictureBox)).EndInit();
             this.AccountCredentialsGroupBox.ResumeLayout(false);
@@ -516,7 +517,6 @@
             this.SettingsGroupBox.ResumeLayout(false);
             this.SettingsGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CityIdNumericUpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ApplicationIdUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
