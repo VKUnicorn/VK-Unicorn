@@ -19,6 +19,7 @@
     <!-- LineIcons -->
     <link rel="stylesheet" href="https://cdn.lineicons.com/1.0.1/LineIcons.min.css">
 
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -37,6 +38,11 @@
         <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
         </ul>
 
+        <!-- Настройки групп -->
+        <div class="mt-1 mr-2" id="group-setup">
+            <a class="nav-link m-0 p-0" href="#" onclick="displayGroups()"><i class="lni-cog size-md"></i></a>
+        </div>
+
         <!-- Поиск профиля по id -->
         <form class="form-inlinemy-2 my-lg-0">
             <div class="input-group">
@@ -49,21 +55,27 @@
                 <input type="text" class="form-control" placeholder="id профиля" aria-label="profile-id" aria-describedby="basic-addon1">
 
                 <!-- Кнопка поиска -->
-                <button class="btn btn-primary my-2 my-sm-0 rounded-0" type="submit" style="background-color: #8a61d1; border-color:#8a61d1 ">Найти</button>
+                <button class="btn btn-primary my-2 my-sm-0 rounded-0" type="submit" style="background-color: #8a61d1; border-color:#8a61d1">Найти</button>
             </div>
         </form>
     </nav>
 
-    <!-- Индикатор загрузки -->
-    <div id="loading" style="display: none;">
-        <div class="loading-center">
-            <span><img src="favicon.ico" style="width: 75px; height: 75px"/></span>
+    <div class="container">
+        <!-- Основное рабочее место. Сюда будут загружаться профили и группы -->
+        <div class="row" id="workspace">
         </div>
-        <div id="circle">
-            <div class="buzzer red">
-                <div class="buzzer yellow">
-                    <div class="buzzer green">
-                        <div class="buzzer purple">
+
+        <!-- Индикатор загрузки -->
+        <div id="loading" style="display: none;">
+            <div class="loading-center">
+                <span><img src="favicon.ico" style="width: 75px; height: 75px"/></span>
+            </div>
+            <div id="circle">
+                <div class="buzzer red">
+                    <div class="buzzer yellow">
+                        <div class="buzzer green">
+                            <div class="buzzer purple">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -71,14 +83,9 @@
         </div>
     </div>
 
-    <!-- Основное рабочее место. Сюда будут загружаться профили и группы -->
-    <div class="container">
-        <div class="row" id="workspace">
-        </div>
-    </div>
-
     <!-- Основные скрипты -->
-    <script src="hullabaloo.min.js"></script>
     <script src="main.js"></script>
+    <script src="groups.js"></script>
+    <script src="hullabaloo.min.js"></script>
 </body>
 </html>

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Text;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Reflection;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace VK_Unicorn
 {
@@ -20,72 +17,63 @@ namespace VK_Unicorn
             }
         }
 
-        Dictionary<string, string> embeddedFilesCache = new Dictionary<string, string>();
-        string GetEmbeddedFileByName(string fileName)
-        {
-            // Ещё нету в кэше?
-            if (!embeddedFilesCache.ContainsKey(fileName))
-            {
-                using (var stream = Utils.GetAssemblyStreamByName(fileName))
-                using (var reader = new StreamReader(stream))
-                {
-                    // Добавляем в кэш
-                    embeddedFilesCache.Add(fileName, reader.ReadToEnd());
-                }
-            }
-
-            return embeddedFilesCache[fileName];
-        }
-
-        public byte[] GetEmbeddedFileByNameAsBytes(string fileName)
-        {
-            using (var stream = Utils.GetAssemblyStreamByName(fileName))
-            {
-                if (stream == null)
-                {
-                    return null;
-                }
-
-                var ba = new byte[stream.Length];
-                stream.Read(ba, 0, ba.Length);
-                return ba;
-            }
-        }
-
         public bool HandleGetRequest(string request, out byte[] data, out string responseContentType, Dictionary<string, string> parametersDictionary)
         {
-            responseContentType = "text/html";
+            responseContentType = Utils.GetMIMETypeByFilename(request);
 
             // Обрабатываем известные запросы на получение файлов и API
-            switch (request)
-            {
-                case "style.css":
-                    data = System.Text.Encoding.UTF8.GetBytes(GetEmbeddedFileByName(request));
-                    responseContentType = "text/css";
-                    return true;
-
-                case "main.js":
-                case "hullabaloo.min.js":
-                    data = System.Text.Encoding.UTF8.GetBytes(GetEmbeddedFileByName(request));
-                    return true;
-
-                case "favicon.ico":
-                    data = GetEmbeddedFileByNameAsBytes("icon.ico");
-                    responseContentType = "image/vnd.microsoft.icon";
-                    return true;
-            }
-
-            // Неизвестный запрос?
             if (request != string.Empty)
             {
+                // Простая проверка на то запросили файл или что-то другое
+                if (request.Contains('.'))
+                {
+                    // Пытаемся выслать файл, если он есть
+                    data = Utils.GetEmbeddedFileByName(request);
+                    if (data != null)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    // Запросили API
+                    switch (request)
+                    {
+                        case "groups":
+                            var resultObjects = new List<Dictionary<string, object>>();
+                            Database.Instance.ForEachGroup((group) =>
+                            {
+                                resultObjects.Add(new Dictionary<string, object>()
+                                {
+                                    { "data", group },
+                                    { "Efficiency", group.GetEfficiency() },
+                                    { "URL", group.GetURL() },
+                                });
+                            });
+
+                            // Сортируем группы по эффективости. Сначала идут группы с которых
+                            // было получено больше всего профилей
+                            resultObjects.Sort((left, right) =>
+                            {
+                                return ((int)right["Efficiency"]).CompareTo((int)left["Efficiency"]);
+                            });
+
+                            // Отправляем JSON ответ
+                            data = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(resultObjects));
+                            return true;
+                    }
+                }
+
+                // Неизвестный запрос?
                 data = null;
                 return false;
             }
 
+            // Отгружаем index.html во всех остальных случаях
             var result = string.Empty;
 
             // Загружаем шаблон ответа
-            result = GetEmbeddedFileByName("index.html");
+            result = Encoding.UTF8.GetString(Utils.GetEmbeddedFileByName("index.html"));
 
             // Заменяем константы
             result = result
@@ -93,46 +81,8 @@ namespace VK_Unicorn
                 .Replace("$APP_VERSION$", Constants.APP_VERSION)
             ;
 
-            /*
-            var groupsContent = string.Empty;
-
-            // Список пар: эффективность группы и заполненный шаблон группы.
-            // используется потом для отображения групп в порядке эффективности
-            var groupsList = new List<KeyValuePair<int, string>>();
-            Database.Instance.ForEachGroup((group) =>
-            {
-                // Заполняем шаблон группы для отображения
-                var groupTemplate = GetEmbeddedFileByName("group.template.html");
-
-                var groupResultsCount = group.GetResultsCount();
-                groupsList.Add(
-                    new KeyValuePair<int, string>(groupResultsCount, groupTemplate
-                        .Replace("$GROUP_ID$", group.Id.ToString())
-                        .Replace("$GROUP_NAME$", group.Name)
-                        .Replace("$GROUP_PHOTO_URL$", group.PhotoURL)
-                        .Replace("$GROUP_RESULTS$", groupResultsCount.ToString())
-                        .Replace("$GROUP_URL$", group.GetURL())
-                    )
-                );
-            });
-
-            // Сортируем группы по эффективости. Сначала идут группы с которых
-            // было получено больше всего профилей
-            groupsList.Sort((left, right) =>
-            {
-                return right.Key.CompareTo(left.Key);
-            });
-
-            foreach (var groupPair in groupsList)
-            {
-                groupsContent += groupPair.Value;
-            }
-
-            result = result.Replace("$CONTENT$", groupsContent);
-            */
-
             // Отправляем результат в UTF8 кодировке
-            data = System.Text.Encoding.UTF8.GetBytes(result);
+            data = Encoding.UTF8.GetBytes(result);
             return true;
         }
     }

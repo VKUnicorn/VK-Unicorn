@@ -171,6 +171,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="web\groups.js" />
     <EmbeddedResource Include="web\hullabaloo.min.js" />
     <EmbeddedResource Include="web\main.js" />
     <EmbeddedResource Include="web\style.css" />

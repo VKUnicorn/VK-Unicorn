@@ -114,7 +114,7 @@ namespace VK_Unicorn
             /// <summary>
             /// Сколько анкет было найдено с этой группы
             /// </summary>
-            public int GetResultsCount()
+            public int GetEfficiency()
             {
                 var result = 0;
 

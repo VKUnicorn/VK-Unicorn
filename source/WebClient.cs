@@ -119,7 +119,7 @@ namespace VK_Unicorn
         async void HandleRequest(string request, RequestType requestType, Dictionary<string, string> parametersDictionary)
         {
             byte[] data = System.Text.Encoding.UTF8.GetBytes(string.Empty);
-            var responseCode = string.Empty;
+            var responseCode = "200 OK";
             var responseContentType = "text/html";
 
             try
@@ -134,16 +134,10 @@ namespace VK_Unicorn
                             responseContentType = "text/html";
                             responseCode = "404 Not found";
                         }
-                        else
-                        {
-                            // Запрос обработан, возвращаем результат что всё хорошо
-                            responseCode = "200 OK";
-                        }
                         break;
 
                     case RequestType.POST:
-                        // Запрос обработан, возвращаем результат что всё хорошо
-                        responseCode = "200 OK";
+                        responseCode = "400 Bad Request";
                         break;
                 }
             }

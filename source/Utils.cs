@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Drawing;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using System.Linq;
+using System.Drawing;
+using System.Reflection;
+using System.Collections.Generic;
 
 namespace VK_Unicorn
 {
@@ -81,7 +80,9 @@ namespace VK_Unicorn
             logTextBox.ResumeLayout();
         }
 
-        // Получаем "1,2,3" из листа "1" "2" 3", если разделитель ","
+        /// <summary>
+        /// Получаем "1,2,3" из листа "1" "2" 3", если разделитель ","
+        /// </summary>
         public static string GenerateSeparatedString<T>(this List<T> self, string separator)
         {
             var result = "";
@@ -102,10 +103,12 @@ namespace VK_Unicorn
             return result;
         }
 
-        // Возвращает слово в зависимсти от числа
-        // 21 год
-        // 22 года
-        // 27 лет
+        /// <summary>
+        /// Возвращает слово в зависимости от числа
+        /// 21 год
+        /// 22 года
+        /// 27 лет
+        /// </summary>
         public static string OneFewMany(this int number, string one, string few, string many)
         {
             number = Math.Abs(number);
@@ -136,12 +139,56 @@ namespace VK_Unicorn
             return Constants.VK_WEB_PAGE + self.ScreenName;
         }
 
-        public static Stream GetAssemblyStreamByName(string fileName)
+        public static string GetMIMETypeByFilename(string fileName)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith(fileName));
+            var lowercased = fileName.ToLowerInvariant();
 
-            return assembly.GetManifestResourceStream(resourceName);
+            if (fileName.EndsWith(".css"))
+            {
+                return "text/css";
+            }
+            else if (fileName.EndsWith(".ico"))
+            {
+                return "image/vnd.microsoft.icon";
+            }
+
+            return "text/html";
+        }
+
+        static Dictionary<string, byte[]> embeddedFilesCache = new Dictionary<string, byte[]>();
+        public static byte[] GetEmbeddedFileByName(string fileName)
+        {
+            // Ещё нету в кэше?
+            if (!embeddedFilesCache.ContainsKey(fileName))
+            {
+                byte[] result = null;
+
+                try
+                {
+                    var assembly = Assembly.GetExecutingAssembly();
+                    var resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith(fileName));
+                    using (var stream = assembly.GetManifestResourceStream(resourceName))
+                    {
+                        if (stream == null)
+                        {
+                            return null;
+                        }
+
+                        result = new byte[stream.Length];
+                        stream.Read(result, 0, result.Length);
+                    }
+                }
+                catch (System.Exception)
+                {
+                    // Файл не найден или какая-то ошибка
+                    result = null;
+                }
+
+                // Добавляем в кэш
+                embeddedFilesCache.Add(fileName, result);
+            }
+
+            return embeddedFilesCache[fileName];
         }
     }
 
