@@ -120,38 +120,36 @@ namespace VK_Unicorn
         {
             byte[] data = System.Text.Encoding.UTF8.GetBytes(string.Empty);
             var responseCode = string.Empty;
-            var contentType = string.Empty;
+            var responseContentType = "text/html";
 
             try
             {
                 switch (requestType)
                 {
                     case RequestType.GET:
-                        if (!WebInterface.Instance.HandleGetRequest(request, out data, parametersDictionary))
+                        if (!WebInterface.Instance.HandleGetRequest(request, out data, out responseContentType, parametersDictionary))
                         {
                             // Запрос не обработан, возвращаем ошибку что такой ресурс не найден
                             data = System.Text.Encoding.ASCII.GetBytes("<html><body><h1>404 File Not Found</h1></body></html>");
-                            contentType = "text/html";
+                            responseContentType = "text/html";
                             responseCode = "404 Not found";
                         }
                         else
                         {
                             // Запрос обработан, возвращаем результат что всё хорошо
-                            contentType = "text/html";
                             responseCode = "200 OK";
                         }
                         break;
 
                     case RequestType.POST:
                         // Запрос обработан, возвращаем результат что всё хорошо
-                        contentType = "text/html";
                         responseCode = "200 OK";
                         break;
                 }
             }
             catch (Exception exception)
             {
-                data = System.Text.Encoding.ASCII.GetBytes("<html><body><h1>500 Internal server error</h1><pre>" + exception.ToString() + "</pre></body></html>");
+                data = System.Text.Encoding.UTF8.GetBytes("<html><body><h1>500 Internal server error</h1><pre>" + exception.ToString() + "</pre></body></html>");
                 responseCode = "500 Internal server error";
             }
 
@@ -161,7 +159,7 @@ namespace VK_Unicorn
                                        + "Content-Type: {3}\r\n"
                                        + "Keep-Alive: Close\r\n"
                                        + "\r\n",
-                                       responseCode, Constants.SERVER_NAME, data.Length, contentType);
+                                       responseCode, Constants.SERVER_NAME, data.Length, responseContentType);
 
             var headerBytes = System.Text.Encoding.ASCII.GetBytes(header);
             await networkStream.WriteAsync(headerBytes, 0, headerBytes.Length);

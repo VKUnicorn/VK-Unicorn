@@ -12,12 +12,6 @@ namespace VK_Unicorn
     {
         public static WebInterface Instance { get; private set; }
 
-        enum ContentType
-        {
-            PROFILES,
-            GROUPS,
-        }
-
         public WebInterface()
         {
             if (Instance == null)
@@ -32,34 +26,60 @@ namespace VK_Unicorn
             // Ещё нету в кэше?
             if (!embeddedFilesCache.ContainsKey(fileName))
             {
-                var assembly = Assembly.GetExecutingAssembly();
-                var resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith(fileName));
-
-                using (var stream = assembly.GetManifestResourceStream(resourceName))
+                using (var stream = Utils.GetAssemblyStreamByName(fileName))
                 using (var reader = new StreamReader(stream))
                 {
-                    var result = reader.ReadToEnd();
-
                     // Добавляем в кэш
-                    embeddedFilesCache.Add(fileName, result);
+                    embeddedFilesCache.Add(fileName, reader.ReadToEnd());
                 }
             }
 
             return embeddedFilesCache[fileName];
         }
 
-        public bool HandleGetRequest(string request, out byte[] data, Dictionary<string, string> parametersDictionary)
+        public byte[] GetEmbeddedFileByNameAsBytes(string fileName)
         {
+            using (var stream = Utils.GetAssemblyStreamByName(fileName))
+            {
+                if (stream == null)
+                {
+                    return null;
+                }
+
+                var ba = new byte[stream.Length];
+                stream.Read(ba, 0, ba.Length);
+                return ba;
+            }
+        }
+
+        public bool HandleGetRequest(string request, out byte[] data, out string responseContentType, Dictionary<string, string> parametersDictionary)
+        {
+            responseContentType = "text/html";
+
+            // Обрабатываем известные запросы на получение файлов и API
             switch (request)
             {
-                case "groups":
-                case "profiles":
-                    // Ничего не делаем, обработка будет дальше
-                    break;
+                case "style.css":
+                    data = System.Text.Encoding.UTF8.GetBytes(GetEmbeddedFileByName(request));
+                    responseContentType = "text/css";
+                    return true;
 
-                default:
-                    data = null;
-                    return false;
+                case "main.js":
+                case "hullabaloo.min.js":
+                    data = System.Text.Encoding.UTF8.GetBytes(GetEmbeddedFileByName(request));
+                    return true;
+
+                case "favicon.ico":
+                    data = GetEmbeddedFileByNameAsBytes("icon.ico");
+                    responseContentType = "image/vnd.microsoft.icon";
+                    return true;
+            }
+
+            // Неизвестный запрос?
+            if (request != string.Empty)
+            {
+                data = null;
+                return false;
             }
 
             var result = string.Empty;
@@ -67,74 +87,49 @@ namespace VK_Unicorn
             // Загружаем шаблон ответа
             result = GetEmbeddedFileByName("index.html");
 
-            // Определяем что хотел увидеть пользователь
-            var contentType = ContentType.PROFILES;
-            if (request == "groups")
-            {
-                contentType = ContentType.GROUPS;
-            }
-
-            // Пользователь хочет увидеть профили, но у него их нету и нету групп?
-            // Тогда отправляем саразу в раздел групп, для настройки
-            if (contentType == ContentType.PROFILES)
-            {
-                if (Database.Instance.IsNeedToSetupGroups())
-                {
-                    contentType = ContentType.GROUPS;
-                }
-            }
-
             // Заменяем константы
             result = result
                 .Replace("$APP_NAME$", Constants.APP_NAME)
                 .Replace("$APP_VERSION$", Constants.APP_VERSION)
-                .Replace("$FORCE_ANIMATIONS_CSS$", GetEmbeddedFileByName("force-animations.css"))
             ;
 
-            switch (contentType)
+            /*
+            var groupsContent = string.Empty;
+
+            // Список пар: эффективность группы и заполненный шаблон группы.
+            // используется потом для отображения групп в порядке эффективности
+            var groupsList = new List<KeyValuePair<int, string>>();
+            Database.Instance.ForEachGroup((group) =>
             {
-                case ContentType.PROFILES:
+                // Заполняем шаблон группы для отображения
+                var groupTemplate = GetEmbeddedFileByName("group.template.html");
 
-                    break;
+                var groupResultsCount = group.GetResultsCount();
+                groupsList.Add(
+                    new KeyValuePair<int, string>(groupResultsCount, groupTemplate
+                        .Replace("$GROUP_ID$", group.Id.ToString())
+                        .Replace("$GROUP_NAME$", group.Name)
+                        .Replace("$GROUP_PHOTO_URL$", group.PhotoURL)
+                        .Replace("$GROUP_RESULTS$", groupResultsCount.ToString())
+                        .Replace("$GROUP_URL$", group.GetURL())
+                    )
+                );
+            });
 
-                case ContentType.GROUPS:
-                    var groupsContent = string.Empty;
+            // Сортируем группы по эффективости. Сначала идут группы с которых
+            // было получено больше всего профилей
+            groupsList.Sort((left, right) =>
+            {
+                return right.Key.CompareTo(left.Key);
+            });
 
-                    // Список пар: эффективность группы и заполненный шаблон группы.
-                    // используется потом для отображения групп в порядке эффективности
-                    var groupsList = new List<KeyValuePair<int, string>>();
-                    Database.Instance.ForEachGroup((group) =>
-                    {
-                        // Заполняем шаблон группы для отображения
-                        var groupTemplate = GetEmbeddedFileByName("group.template.html");
-
-                        var groupResultsCount = group.GetResultsCount();
-                        groupsList.Add(
-                            new KeyValuePair<int, string>(groupResultsCount, groupTemplate
-                                .Replace("$GROUP_ID$", group.Id.ToString())
-                                .Replace("$GROUP_NAME$", group.Name)
-                                .Replace("$GROUP_PHOTO_URL$", group.PhotoURL)
-                                .Replace("$GROUP_RESULTS$", groupResultsCount.ToString())
-                                .Replace("$GROUP_URL$", group.GetURL())
-                            )
-                        );
-                    });
-
-                    // Сортируем группы по эффективости. Сначала идут группы с которых
-                    // было получено больше всего профилей
-                    groupsList.Sort((left, right) =>
-                    {
-                        return right.Key.CompareTo(left.Key);
-                    });
-
-                    foreach (var groupPair in groupsList)
-                    {
-                        groupsContent += groupPair.Value;
-                    }
-
-                    result = result.Replace("$CONTENT$", groupsContent);
-                    break;
+            foreach (var groupPair in groupsList)
+            {
+                groupsContent += groupPair.Value;
             }
+
+            result = result.Replace("$CONTENT$", groupsContent);
+            */
 
             // Отправляем результат в UTF8 кодировке
             data = System.Text.Encoding.UTF8.GetBytes(result);

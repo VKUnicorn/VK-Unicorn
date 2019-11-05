@@ -48,7 +48,7 @@
     </AllowedReferenceRelatedFileExtensions>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>media\icon.ico</ApplicationIcon>
+    <ApplicationIcon>web\favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Costura, Version=3.3.3.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
@@ -171,14 +171,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="web\force-animations.css" />
-    <EmbeddedResource Include="web\group.template.html" />
-    <EmbeddedResource Include="web\profile.template.html" />
+    <EmbeddedResource Include="web\hullabaloo.min.js" />
+    <EmbeddedResource Include="web\main.js" />
+    <EmbeddedResource Include="web\style.css" />
     <EmbeddedResource Include="web\index.html" />
     <EmbeddedResource Include="costura32\e_sqlite3.dll" />
     <EmbeddedResource Include="costura64\e_sqlite3.dll" />
-    <Content Include="media\icon.ico" />
-    <None Include="media\app-id.png" />
+    <EmbeddedResource Include="web\favicon.ico" />
+    <Content Include="media\app-id.png" />
     <None Include="media\app-settings.png" />
   </ItemGroup>
   <ItemGroup>

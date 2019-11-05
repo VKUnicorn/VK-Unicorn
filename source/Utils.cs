@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Drawing;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Linq;
 
 namespace VK_Unicorn
 {
@@ -131,6 +134,14 @@ namespace VK_Unicorn
         public static string GetURL(this VkNet.Model.Group self)
         {
             return Constants.VK_WEB_PAGE + self.ScreenName;
+        }
+
+        public static Stream GetAssemblyStreamByName(string fileName)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith(fileName));
+
+            return assembly.GetManifestResourceStream(resourceName);
         }
     }
 
