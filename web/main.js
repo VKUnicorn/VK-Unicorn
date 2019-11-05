@@ -52,9 +52,8 @@ function main() {
 
     // Создаём и настраиваем плагин уведомлений
     $.hulla = new hullabaloo();
-    $.hulla.options.delay = 2000;
-    $.hulla.options.width = 250;
-    $.hulla.options.offset.from = "bottom";
+    $.hulla.options.width = 270;
+    $.hulla.options.offset.amount = 70;
     $.hulla.options.allow_dismiss = false;
     $.hulla.options.alertClass = "settings-form-font";
 
@@ -67,5 +66,14 @@ function main() {
         content: 'Открыть список групп'
     });
 
-    start_loading();
+    $('#head-logo').popover({
+        container: 'body',
+        trigger: 'hover',
+        placement: 'right',
+        delay: { "show": 400, "hide": 100 },
+        content: 'Привет!'
+    });
+
+    // Загружаем профили
+    loadProfiles();
 }

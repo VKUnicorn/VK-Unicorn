@@ -99,7 +99,6 @@
     opacity: 0.3;
 }
 .card-img-top {
-    margin-right: 100rem;
     object-fit: cover;
 }
 .col-sm-2 .card-img-top {
@@ -115,6 +114,13 @@
     display: block;
     opacity: 0.6;
 }
+
+/*
+.card-img-top {
+    margin-right: 100rem;
+    object-fit: cover;
+}
+*/
 
 /*
  * Force Bootstrap v4 transitions

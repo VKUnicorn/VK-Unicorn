@@ -62,6 +62,14 @@ namespace VK_Unicorn
 
             // URL главной фотографии в максимальном размере
             public string PhotoURL { get; set; }
+
+            /// <summary>
+            /// Возвращает ссылку на профиль
+            /// </summary>
+            public string GetURL()
+            {
+                return Constants.VK_WEB_PAGE + "id" + Id;
+            }
         }
 
         // Таблица с группами о которых ещё предстоит получить информацию и добавить в обычную
@@ -539,6 +547,20 @@ namespace VK_Unicorn
         }
 
         /// <summary>
+        /// Удаляет группу
+        /// </summary>
+        public bool DeleteGroup(int id)
+        {
+            var rowsModified = 0;
+            ForDatabaseLocked((db) =>
+            {
+                rowsModified = db.Delete<Group>(id);
+            });
+
+            return rowsModified > 0;
+        }
+
+        /// <summary>
         /// Группа уже добавлена в список?
         /// </summary>
         public bool IsGroupAlreadyExists(long groupId)
@@ -581,6 +603,20 @@ namespace VK_Unicorn
                 foreach (var group in db.Table<Group>())
                 {
                     callback(group);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Вызывает callback для каждого профиля
+        /// </summary>
+        public void ForEachProfile(Callback<Profile> callback)
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                foreach (var profile in db.Table<Profile>())
+                {
+                    callback(profile);
                 }
             });
         }

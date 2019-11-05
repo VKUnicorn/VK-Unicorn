@@ -35,22 +35,9 @@ namespace VK_Unicorn
                 {
                     // Удаление группы
                     case "delete_group":
-                        Database.Instance.ForEachGroup((group) =>
-                        {
-                            resultObjects.Add(new Dictionary<string, object>()
-                            {
-                                { "data", group },
-                                { "Efficiency", group.GetEfficiency() },
-                                { "URL", group.GetURL() },
-                            });
-                        });
+                        var isDeleted = Database.Instance.DeleteGroup(int.Parse(parametersDictionary["id"]));
 
                         handled = true;
-                        break;
-
-                    // Удаление группы
-                    case "":
-
                         break;
                 }
 
@@ -122,9 +109,18 @@ namespace VK_Unicorn
                             handled = true;
                             break;
 
-                        // Удаление группы
-                        case "":
+                        // Получение списка профилей
+                        case "profiles":
+                            Database.Instance.ForEachProfile((profile) =>
+                            {
+                                resultObjects.Add(new Dictionary<string, object>()
+                                {
+                                    { "data", profile },
+                                    { "URL", profile.GetURL() },
+                                });
+                            });
 
+                            handled = true;
                             break;
                     }
 

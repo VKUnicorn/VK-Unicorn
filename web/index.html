@@ -1,9 +1,9 @@
-<!doctype html>
-<html lang="en">
+<html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="favicon.ico" rel="icon" type="image/x-icon"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
     <title>$APP_NAME$ - $APP_VERSION$</title>
 
     <!-- CSS -->
@@ -27,7 +27,7 @@
     <!-- Шапка -->
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #604294">
         <!-- Иконка программы -->
-        <div class="mt-1">
+        <div class="mt-1" id="head-logo">
             <img src="favicon.ico" style="width: 32px; height: 32px"/>
         </div>
 
@@ -39,8 +39,8 @@
         </ul>
 
         <!-- Настройки групп -->
-        <div class="mt-1 mr-2" id="group-setup">
-            <a class="nav-link m-0 p-0" href="#" onclick="displayGroups()" id="display-groups"><i class="lni-cog size-md"></i></a>
+        <div class="mr-2" id="group-setup">
+            <a class="nav-link m-0 p-0" href="#" onclick="loadGroups()" id="display-groups"><i class="lni-cog size-md"></i></a>
         </div>
 
         <!-- Поиск профиля по id -->
@@ -86,6 +86,7 @@
     <!-- Основные скрипты -->
     <script src="main.js"></script>
     <script src="groups.js"></script>
+    <script src="profiles.js"></script>
     <script src="hullabaloo.min.js"></script>
 </body>
 </html>

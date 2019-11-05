@@ -1,4 +1,4 @@
-function displayGroups() {
+function loadGroups() {
     clear_workspace();
     start_loading();
 
@@ -53,7 +53,7 @@ function displayGroups() {
                     callback: function (result) {
                         if (result) {
                             // Отправляем запрос на удаление
-                            $.post("delete-group",
+                            $.post("delete_group",
                             {
                                 id: group.Id
                             },
