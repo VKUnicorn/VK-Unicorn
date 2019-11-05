@@ -5,11 +5,11 @@
     <title>$APP_NAME$ - $APP_VERSION$</title>
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/esm/popper-utils.js">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/esm/popper-utils.min.js">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
 
     <!-- LineIcons -->
     <link rel="stylesheet" href="https://cdn.lineicons.com/1.0.1/LineIcons.min.css">
@@ -44,7 +44,7 @@
         .bg-warning {
             background-color: #ffffcc !important;
         }
-        .duration-box {
+        .small-info-box {
             background-color: #575757;
             color: white;
             padding-left: 5px;
@@ -55,7 +55,7 @@
         .card-img-overlay {
             height: 0;
         }
-        .card-img-overlay.duration {
+        .card-img-overlay.small-info {
             position: relative;
             padding: 0 !important;
             top: -28px !important;
@@ -67,8 +67,13 @@
         }
         .card-img-top {
             margin-right: 100rem;
-            height: 11rem;
             object-fit: cover;
+        }
+        .col-sm-2 .card-img-top {
+            height: 11rem;
+        }
+        .col-sm-3 .card-img-top {
+            height: 16rem;
         }
         .card-img-overlay .btn {
             display: none;
@@ -113,12 +118,20 @@
                 content: 'Добавить или удалить из избранного'
             })
 
+            $('span.small-info-box').popover({
+                container: 'body',
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 200, "hide": 100 },
+                content: 'Сколько профилей было найдено из этой группы'
+            })
+
             $('div.card-img-overlay > a.btn.btn-danger').popover({
                 container: 'body',
                 trigger: 'hover',
                 placement: 'bottom',
                 delay: { "show": 200, "hide": 100 },
-                content: 'Скрыть профиль навсегда'
+                content: 'Удалить навсегда'
             })
 
             $('div.card-img-overlay > a.btn.btn-success').popover({
@@ -142,7 +155,7 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text px-2" id="basic-addon1"><i class="lni-user size-sm"></i></span>
                 </div>
-                <input type="text" class="form-control" placeholder="id профиля" aria-label="Username" aria-describedby="basic-addon1">
+                <input type="text" class="form-control" placeholder="id профиля" aria-label="profile-id" aria-describedby="basic-addon1">
                 <button class="btn btn-primary my-2 my-sm-0 rounded-0" type="submit">Найти</button>
             </div>
         </form>

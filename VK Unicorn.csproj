@@ -171,6 +171,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="web\group.template.html" />
     <EmbeddedResource Include="web\profile.template.html" />
     <EmbeddedResource Include="web\index.html" />
     <EmbeddedResource Include="costura32\e_sqlite3.dll" />

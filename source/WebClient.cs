@@ -51,19 +51,13 @@ namespace VK_Unicorn
 
                 if (line.ToUpperInvariant().StartsWith("GET "))
                 {
-                    // We got a request: GET /file HTTP/1.1
-                    var target = line.Split(' ')[1].TrimStart('/');
+                    // Пришёл запрос вида: GET /file HTTP/1.1
+                    var request = line.Split(' ')[1].TrimStart('/');
 
-                    // Default target is index
-                    if (string.IsNullOrWhiteSpace(target))
-                    {
-                        target = "index";
-                    }
+                    Console.WriteLine("Получен запрос " + request);
 
-                    Console.WriteLine("Получен запрос " + target);
-
-                    // Send header + response
-                    SendResponse(target);
+                    // Отправляем заголовок и ответ
+                    SendResponse(request);
 
                     return true;
                 }
@@ -72,7 +66,7 @@ namespace VK_Unicorn
             return false;
         }
 
-        async void SendResponse(string target)
+        async void SendResponse(string request)
         {
             byte[] data;
             var responseCode = string.Empty;
@@ -80,7 +74,7 @@ namespace VK_Unicorn
 
             try
             {
-                if (!WebInterface.Instance.HandleRequest(target, out data))
+                if (!WebInterface.Instance.HandleRequest(request, out data))
                 {
                     data = System.Text.Encoding.ASCII.GetBytes("<html><body><h1>404 File Not Found</h1></body></html>");
                     contentType = "text/html";

@@ -54,6 +54,9 @@ namespace VK_Unicorn
             // Когда этот профиль был добавлен в базу данных
             public DateTime WhenAdded { get; set; }
 
+            // С какой группы был добавлен профиль
+            public long FromGroupId { get; set; }
+
             // Скрыт ли этот профиль пользователем
             public HiddenStatus IsHidden { get; set; }
 
@@ -107,6 +110,29 @@ namespace VK_Unicorn
 
             // URL главной фотографии в максимальном размере
             public string PhotoURL { get; set; }
+
+            /// <summary>
+            /// Сколько анкет было найдено с этой группы
+            /// </summary>
+            public int GetResultsCount()
+            {
+                var result = 0;
+
+                Instance.ForDatabaseUnlocked((db) =>
+                {
+                    result = db.Table<Profile>().Where(_ => _.FromGroupId == Id).Count();
+                });
+
+                return result;
+            }
+
+            /// <summary>
+            /// Возвращает ссылку на группу
+            /// </summary>
+            public string GetURL()
+            {
+                return Constants.VK_WEB_PAGE + ScreenName;
+            }
         }
 
         // Таблица активности когда кто-то лайкает пост
@@ -525,6 +551,38 @@ namespace VK_Unicorn
             });
 
             return result;
+        }
+
+        /// <summary>
+        /// Пустое количество групп и профилей?
+        /// </summary>
+        public bool IsNeedToSetupGroups()
+        {
+            if (GetCount<Group>() > 0)
+            {
+                return false;
+            }
+
+            if (GetCount<Profile>() > 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Вызывает callback для каждой группы
+        /// </summary>
+        public void ForEachGroup(Callback<Group> callback)
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                foreach (var group in db.Table<Group>())
+                {
+                    callback(group);
+                }
+            });
         }
     }
 }
