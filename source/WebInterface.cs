@@ -17,6 +17,62 @@ namespace VK_Unicorn
             }
         }
 
+        public bool HandlePostRequest(string request, out byte[] data, out string responseContentType, out string responseCode, Dictionary<string, string> parametersDictionary)
+        {
+            data = Encoding.UTF8.GetBytes(string.Empty);
+            responseContentType = "text/html";
+            responseCode = "200 OK";
+
+            // Обработан ли запрос на API?
+            var handled = false;
+            // Результат для JSON ответа
+            var resultObjects = new List<Dictionary<string, object>>();
+
+            try
+            {
+                // Запросили API
+                switch (request)
+                {
+                    // Удаление группы
+                    case "delete_group":
+                        Database.Instance.ForEachGroup((group) =>
+                        {
+                            resultObjects.Add(new Dictionary<string, object>()
+                            {
+                                { "data", group },
+                                { "Efficiency", group.GetEfficiency() },
+                                { "URL", group.GetURL() },
+                            });
+                        });
+
+                        handled = true;
+                        break;
+
+                    // Удаление группы
+                    case "":
+
+                        break;
+                }
+
+                // Запрос обработан?
+                if (handled)
+                {
+                    // Отправляем JSON ответ
+                    data = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(resultObjects));
+                    responseCode = "200 OK";
+                    return true;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                data = Encoding.UTF8.GetBytes(ex.ToString());
+                responseCode = "500 Internal server error";
+                return true;
+            }
+
+            return false;
+        }
+
         public bool HandleGetRequest(string request, out byte[] data, out string responseContentType, Dictionary<string, string> parametersDictionary)
         {
             responseContentType = Utils.GetMIMETypeByFilename(request);
@@ -36,11 +92,16 @@ namespace VK_Unicorn
                 }
                 else
                 {
+                    // Обработан ли запрос на API?
+                    var handled = false;
+                    // Результат для JSON ответа
+                    var resultObjects = new List<Dictionary<string, object>>();
+
                     // Запросили API
                     switch (request)
                     {
+                        // Получение списка групп
                         case "groups":
-                            var resultObjects = new List<Dictionary<string, object>>();
                             Database.Instance.ForEachGroup((group) =>
                             {
                                 resultObjects.Add(new Dictionary<string, object>()
@@ -58,9 +119,21 @@ namespace VK_Unicorn
                                 return ((int)right["Efficiency"]).CompareTo((int)left["Efficiency"]);
                             });
 
-                            // Отправляем JSON ответ
-                            data = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(resultObjects));
-                            return true;
+                            handled = true;
+                            break;
+
+                        // Удаление группы
+                        case "":
+
+                            break;
+                    }
+
+                    // Запрос обработан?
+                    if (handled)
+                    {
+                        // Отправляем JSON ответ
+                        data = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(resultObjects));
+                        return true;
                     }
                 }
 

@@ -56,7 +56,7 @@ namespace VK_Unicorn
                     break;
                 }
 
-                Console.WriteLine("Получен запрос " + firstLine);
+                Utils.Log("Получен запрос " + firstLine, LogLevel.NOTIFY);
 
                 var parametersDictionary = new Dictionary<string, string>();
 
@@ -77,12 +77,15 @@ namespace VK_Unicorn
                             continue;
                         }
 
-                        Console.WriteLine("Параметр " + param);
-
                         var splittedParam = param.Split('=');
                         if (splittedParam.Length > 1)
                         {
-                            parametersDictionary.Add(splittedParam[0], splittedParam[1]);
+                            var paramKey = splittedParam[0];
+                            var paramValue = splittedParam[1];
+
+                            Utils.Log("    параметр " + paramKey + " = " + paramValue, LogLevel.NOTIFY);
+
+                            parametersDictionary.Add(paramKey, paramValue);
                         }
                     }
                     else
@@ -119,8 +122,8 @@ namespace VK_Unicorn
         async void HandleRequest(string request, RequestType requestType, Dictionary<string, string> parametersDictionary)
         {
             byte[] data = System.Text.Encoding.UTF8.GetBytes(string.Empty);
-            var responseCode = "200 OK";
             var responseContentType = "text/html";
+            var responseCode = "200 OK";
 
             try
             {
@@ -137,13 +140,16 @@ namespace VK_Unicorn
                         break;
 
                     case RequestType.POST:
-                        responseCode = "400 Bad Request";
+                        if (!WebInterface.Instance.HandlePostRequest(request, out data, out responseContentType, out responseCode, parametersDictionary))
+                        {
+                            responseCode = "400 Bad Request";
+                        }
                         break;
                 }
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                data = System.Text.Encoding.UTF8.GetBytes("<html><body><h1>500 Internal server error</h1><pre>" + exception.ToString() + "</pre></body></html>");
+                data = System.Text.Encoding.UTF8.GetBytes("<html><body><h1>500 Internal server error</h1><pre>" + ex.ToString() + "</pre></body></html>");
                 responseCode = "500 Internal server error";
             }
 

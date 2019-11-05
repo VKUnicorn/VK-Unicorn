@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace VK_Unicorn
@@ -123,8 +124,11 @@ namespace VK_Unicorn
                     break;
             }
 
-            StatusLabel.Text = "Статус: " + status;
-            StatusLabel.ForeColor = color;
+            Invoke((MethodInvoker)delegate
+            {
+                StatusLabel.Text = "Статус: " + status;
+                StatusLabel.ForeColor = color;
+            });
         }
     }
 }

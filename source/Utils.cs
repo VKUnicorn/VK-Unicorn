@@ -3,6 +3,7 @@ using System.Linq;
 using System.Drawing;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace VK_Unicorn
 {
@@ -56,28 +57,31 @@ namespace VK_Unicorn
         {
             text = "[" + DateTime.Now.ToLongTimeString() + "] " + text;
 
-            var logTextBox = MainForm.Instance.GetLogTextBox();
-
-            logTextBox.SuspendLayout();
-
-            var previousSelectionColor = logTextBox.SelectionColor;
-            if (color != null)
+            MainForm.Instance.Invoke((MethodInvoker)delegate
             {
-                logTextBox.SelectionColor = color.Value;
-            }
+                var logTextBox = MainForm.Instance.GetLogTextBox();
 
-            if (!string.IsNullOrWhiteSpace(logTextBox.Text))
-            {
-                logTextBox.AppendText($"{Environment.NewLine}{text}");
-            }
-            else
-            {
-                logTextBox.AppendText(text);
-            }
+                logTextBox.SuspendLayout();
 
-            logTextBox.ScrollToCaret();
-            logTextBox.SelectionColor = previousSelectionColor;
-            logTextBox.ResumeLayout();
+                var previousSelectionColor = logTextBox.SelectionColor;
+                if (color != null)
+                {
+                    logTextBox.SelectionColor = color.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(logTextBox.Text))
+                {
+                    logTextBox.AppendText($"{Environment.NewLine}{text}");
+                }
+                else
+                {
+                    logTextBox.AppendText(text);
+                }
+
+                logTextBox.ScrollToCaret();
+                logTextBox.SelectionColor = previousSelectionColor;
+                logTextBox.ResumeLayout();
+            });
         }
 
         /// <summary>

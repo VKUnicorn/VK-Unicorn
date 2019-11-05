@@ -48,6 +48,7 @@ function main() {
     };
 
     bootbox.addLocale('russian', locale);
+    bootbox.setLocale('russian');
 
     // Создаём и настраиваем плагин уведомлений
     $.hulla = new hullabaloo();
@@ -56,6 +57,15 @@ function main() {
     $.hulla.options.offset.from = "bottom";
     $.hulla.options.allow_dismiss = false;
     $.hulla.options.alertClass = "settings-form-font";
+
+    // Тултипы на основные элементы интерфейса
+    $('#display-groups').popover({
+        container: 'body',
+        trigger: 'hover',
+        placement: 'bottom',
+        delay: { "show": 200, "hide": 100 },
+        content: 'Открыть список групп'
+    });
 
     start_loading();
 }
