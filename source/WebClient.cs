@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Collections.Generic;
 
 namespace VK_Unicorn
 {
@@ -9,6 +10,12 @@ namespace VK_Unicorn
         MemoryStream memoryStream = new MemoryStream();
         readonly NetworkStream networkStream;
         readonly StreamReader streamReader;
+
+        enum RequestType
+        {
+            GET,
+            POST,
+        }
 
         public WebClient(Socket socket)
         {
@@ -43,21 +50,64 @@ namespace VK_Unicorn
             while (true)
             {
                 memoryStream.Seek(0, SeekOrigin.Begin);
-                var line = streamReader.ReadLine();
-                if (line == null)
+                var firstLine = streamReader.ReadLine();
+                if (firstLine == null)
                 {
                     break;
                 }
 
-                if (line.ToUpperInvariant().StartsWith("GET "))
+                Console.WriteLine("Получен запрос " + firstLine);
+
+                var parametersDictionary = new Dictionary<string, string>();
+
+                // Читаем параметры запросы
+                var needToSkip = true; // Пропускаем все запросы до первого пустого
+                while (true)
+                {
+                    var param = streamReader.ReadLine();
+                    if (param == null)
+                    {
+                        break;
+                    }
+
+                    if (param != string.Empty)
+                    {
+                        if (needToSkip)
+                        {
+                            continue;
+                        }
+
+                        Console.WriteLine("Параметр " + param);
+
+                        var splittedParam = param.Split('=');
+                        if (splittedParam.Length > 1)
+                        {
+                            parametersDictionary.Add(splittedParam[0], splittedParam[1]);
+                        }
+                    }
+                    else
+                    {
+                        needToSkip = false;
+                    }
+                }
+
+                if (firstLine.ToUpperInvariant().StartsWith("GET "))
                 {
                     // Пришёл запрос вида: GET /file HTTP/1.1
-                    var request = line.Split(' ')[1].TrimStart('/');
-
-                    Console.WriteLine("Получен запрос " + request);
+                    var request = firstLine.Split(' ')[1].TrimStart('/');
 
                     // Отправляем заголовок и ответ
-                    SendResponse(request);
+                    HandleRequest(request, RequestType.GET, parametersDictionary);
+
+                    return true;
+                }
+                else if (firstLine.ToUpperInvariant().StartsWith("POST "))
+                {
+                    // Пришёл запрос вида: POST /file HTTP/1.1
+                    var request = firstLine.Split(' ')[1].TrimStart('/');
+
+                    // Отправляем заголовок и ответ
+                    HandleRequest(request, RequestType.POST, parametersDictionary);
 
                     return true;
                 }
@@ -66,24 +116,37 @@ namespace VK_Unicorn
             return false;
         }
 
-        async void SendResponse(string request)
+        async void HandleRequest(string request, RequestType requestType, Dictionary<string, string> parametersDictionary)
         {
-            byte[] data;
+            byte[] data = System.Text.Encoding.UTF8.GetBytes(string.Empty);
             var responseCode = string.Empty;
             var contentType = string.Empty;
 
             try
             {
-                if (!WebInterface.Instance.HandleRequest(request, out data))
+                switch (requestType)
                 {
-                    data = System.Text.Encoding.ASCII.GetBytes("<html><body><h1>404 File Not Found</h1></body></html>");
-                    contentType = "text/html";
-                    responseCode = "404 Not found";
-                }
-                else
-                {
-                    contentType = "text/html";
-                    responseCode = "200 OK";
+                    case RequestType.GET:
+                        if (!WebInterface.Instance.HandleGetRequest(request, out data, parametersDictionary))
+                        {
+                            // Запрос не обработан, возвращаем ошибку что такой ресурс не найден
+                            data = System.Text.Encoding.ASCII.GetBytes("<html><body><h1>404 File Not Found</h1></body></html>");
+                            contentType = "text/html";
+                            responseCode = "404 Not found";
+                        }
+                        else
+                        {
+                            // Запрос обработан, возвращаем результат что всё хорошо
+                            contentType = "text/html";
+                            responseCode = "200 OK";
+                        }
+                        break;
+
+                    case RequestType.POST:
+                        // Запрос обработан, возвращаем результат что всё хорошо
+                        contentType = "text/html";
+                        responseCode = "200 OK";
+                        break;
                 }
             }
             catch (Exception exception)

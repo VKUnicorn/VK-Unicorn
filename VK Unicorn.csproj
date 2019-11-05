@@ -171,6 +171,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="web\force-animations.css" />
     <EmbeddedResource Include="web\group.template.html" />
     <EmbeddedResource Include="web\profile.template.html" />
     <EmbeddedResource Include="web\index.html" />

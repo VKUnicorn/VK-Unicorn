@@ -48,8 +48,20 @@ namespace VK_Unicorn
             return embeddedFilesCache[fileName];
         }
 
-        public bool HandleRequest(string request, out byte[] data)
+        public bool HandleGetRequest(string request, out byte[] data, Dictionary<string, string> parametersDictionary)
         {
+            switch (request)
+            {
+                case "groups":
+                case "profiles":
+                    // Ничего не делаем, обработка будет дальше
+                    break;
+
+                default:
+                    data = null;
+                    return false;
+            }
+
             var result = string.Empty;
 
             // Загружаем шаблон ответа
@@ -76,6 +88,7 @@ namespace VK_Unicorn
             result = result
                 .Replace("$APP_NAME$", Constants.APP_NAME)
                 .Replace("$APP_VERSION$", Constants.APP_VERSION)
+                .Replace("$FORCE_ANIMATIONS_CSS$", GetEmbeddedFileByName("force-animations.css"))
             ;
 
             switch (contentType)
@@ -98,6 +111,7 @@ namespace VK_Unicorn
                         var groupResultsCount = group.GetResultsCount();
                         groupsList.Add(
                             new KeyValuePair<int, string>(groupResultsCount, groupTemplate
+                                .Replace("$GROUP_ID$", group.Id.ToString())
                                 .Replace("$GROUP_NAME$", group.Name)
                                 .Replace("$GROUP_PHOTO_URL$", group.PhotoURL)
                                 .Replace("$GROUP_RESULTS$", groupResultsCount.ToString())
@@ -120,10 +134,6 @@ namespace VK_Unicorn
 
                     result = result.Replace("$CONTENT$", groupsContent);
                     break;
-
-                default:
-                    data = null;
-                    return false;
             }
 
             // Отправляем результат в UTF8 кодировке
