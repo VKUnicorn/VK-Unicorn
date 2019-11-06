@@ -38,16 +38,16 @@ function isoTimeToLocalDeltaAsString(arg) {
         return 'никогда'
     }
 
-    var delta = parseInt((new Date().getTime() - isoTime) / 60);
+    var delta = parseInt((new Date().getTime() - isoTime) / 1000 / 60);
     if (delta < 60) {
-        return parseInt(delta) +' м.';
+        return delta + ' ' + one_few_many(delta, 'минута', 'минуты', 'минут');
     }
 
     delta = parseInt(delta / 60)
     if (delta < 24) {
-        return parseInt(delta) +' ч.';
+        return delta + ' ' + one_few_many(delta, 'час', 'часа', 'часов');
     }
 
     delta = parseInt(delta / 24);
-    return delta + ' д.'
+    return delta + ' ' + one_few_many(delta, 'день', 'дня', 'дней');
 }

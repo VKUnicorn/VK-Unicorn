@@ -105,7 +105,7 @@ function loadGroups() {
         // Показываем кнопку добавления новой группы если всё нормально загрузилось
         $('#add-group-button').show();
 
-        // Не добавлено ни одной группы? Показываем окно добавления групп
+        // Не загружено ни одной группы? Показываем окно добавления групп
         if (recordsCount == 0) {
             showAddGroupDialog();
         }
@@ -130,7 +130,6 @@ function showAddGroupDialog() {
         placeholder: "https://vk.com/club123456\nhttps://vk.com/public123456\nhttps://vk.com/apiclub\napiclub",
         backdrop: true,
         callback: function (groupNames) {
-            console.log(groupNames);
             if (groupNames) {
                 // Отправляем запрос на добавление новой группы
                 $.post("add_group",

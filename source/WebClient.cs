@@ -56,8 +56,6 @@ namespace VK_Unicorn
                     break;
                 }
 
-                Utils.Log("Получен запрос " + firstLine, LogLevel.NOTIFY);
-
                 var parametersDictionary = new Dictionary<string, string>();
 
                 // Читаем параметры запросы
@@ -96,6 +94,8 @@ namespace VK_Unicorn
 
                 if (firstLine.ToUpperInvariant().StartsWith("GET "))
                 {
+                    // GET запросы в лог не добавляем
+
                     // Пришёл запрос вида: GET /file HTTP/1.1
                     var request = firstLine.Split(' ')[1].TrimStart('/');
 
@@ -106,6 +106,8 @@ namespace VK_Unicorn
                 }
                 else if (firstLine.ToUpperInvariant().StartsWith("POST "))
                 {
+                    Utils.Log("Получен запрос " + firstLine, LogLevel.NOTIFY);
+
                     // Пришёл запрос вида: POST /file HTTP/1.1
                     var request = firstLine.Split(' ')[1].TrimStart('/');
 
