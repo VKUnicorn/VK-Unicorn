@@ -51,6 +51,9 @@ namespace VK_Unicorn
             // Id города откуда был добавлен профиль
             public long CityId { get; set; }
 
+            // URL главной фотографии в максимальном размере
+            public string PhotoURL { get; set; }
+
             // Когда этот профиль был добавлен в базу данных
             public DateTime WhenAdded { get; set; }
 
@@ -59,9 +62,6 @@ namespace VK_Unicorn
 
             // Скрыт ли этот профиль пользователем
             public HiddenStatus IsHidden { get; set; }
-
-            // URL главной фотографии в максимальном размере
-            public string PhotoURL { get; set; }
 
             /// <summary>
             /// Возвращает ссылку на профиль
@@ -107,14 +107,20 @@ namespace VK_Unicorn
             // Статус членства в группе. Актуально только для закрытых групп
             public bool IsMember { get; set; }
 
+            // URL главной фотографии в максимальном размере
+            public string PhotoURL { get; set; }
+
             // Как давно было найдено чего-нибудь полезное в этой группе
             public DateTime LastActivity { get; set; }
 
             // Как давно был последний успешный скан группы
             public DateTime LastScanned { get; set; }
 
-            // URL главной фотографии в максимальном размере
-            public string PhotoURL { get; set; }
+            // Дата когда будет разрешено в следующий раз взаимодейстовать с группой
+            // например мы отправили заявку в группу и будем пытаться сканировать её только
+            // через минут пять. А так же нету смысла сканировать группу прям сразу же после
+            // того как просканировали её, можно подождать минут 30
+            public DateTime InteractTimeout { get; set; }
 
             /// <summary>
             /// Сколько анкет было найдено с этой группы
@@ -137,6 +143,32 @@ namespace VK_Unicorn
             public string GetURL()
             {
                 return Constants.VK_WEB_PAGE + ScreenName;
+            }
+
+            /// <summary>
+            /// Прошло ли время после которого разрешено взаимодействовать с группой
+            /// </summary>
+            public bool CanInteract()
+            {
+                return DateTime.Now > InteractTimeout;
+            }
+
+            /// <summary>
+            /// Закрытая группа в которую ещё не вступили
+            /// </summary>
+            public bool IsWantToJoin()
+            {
+                return IsClosed && !IsMember;
+            }
+
+            /// <summary>
+            /// Устанавливаем таймаут на дальнейшее взаимодействие с группой
+            /// </summary>
+            public void SetInteractTimeout(TimeSpan timeSpan)
+            {
+                InteractTimeout = DateTime.Now.Add(timeSpan);
+
+                Instance.AddGroupOrReplace(this);
             }
         }
 
@@ -535,23 +567,18 @@ namespace VK_Unicorn
                 rowsModified = db.InsertOrReplace(group);
             });
 
-            if (rowsModified > 0)
-            {
-                Utils.Log("Группа " + group.Name + " (" + group.Id + ") была успешно сохранена", LogLevel.SUCCESS);
-            }
-
             return rowsModified > 0;
         }
 
         /// <summary>
         /// Удаляет группу
         /// </summary>
-        public bool DeleteGroup(int id)
+        public bool DeleteGroup(long groupId)
         {
             var rowsModified = 0;
             ForDatabaseLocked((db) =>
             {
-                rowsModified = db.Delete<Group>(id);
+                rowsModified = db.Delete<Group>(groupId);
             });
 
             return rowsModified > 0;
@@ -605,6 +632,58 @@ namespace VK_Unicorn
         }
 
         /// <summary>
+        /// Вызывает callback для каждой группы с которой можно взаимодействовать
+        /// </summary>
+        public void ForEachInteractableGroup(Callback<Group> callback)
+        {
+            ForEachGroup((group) =>
+            {
+            	if (group.CanInteract())
+                {
+                    callback(group);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Вызывает callback на группу, с которой можно взамодействовать и с которой дольше всего не взаимодействовали
+        /// </summary>
+        public void ForBestGroupToInteract(Callback<Group> callback)
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                var allGroups = db.Table<Group>().ToList();
+                allGroups.RemoveAll(_ => !_.CanInteract());
+                var targetGroup = allGroups.OrderBy(_ => _.LastScanned).FirstOrDefault();
+
+                if (targetGroup != null)
+                {
+                    callback(targetGroup);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Вызывает callback на закрытую группу, в которой ещё нету членства, с которой можно взамодействовать
+        /// и с которой дольше всего не взаимодействовали
+        /// </summary>
+        public void ForBestInteractableClosedAndNotMemberGroup(Callback<Group> callback)
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                var allGroups = db.Table<Group>().ToList();
+                allGroups.RemoveAll(_ => !_.CanInteract());
+                allGroups.RemoveAll(_ => !_.IsWantToJoin());
+                var targetGroup = allGroups.OrderBy(_ => _.LastScanned).FirstOrDefault();
+
+                if (targetGroup != null)
+                {
+                    callback(targetGroup);
+                }
+            });
+        }
+
+        /// <summary>
         /// Вызывает callback для каждого профиля
         /// </summary>
         public void ForEachProfile(Callback<Profile> callback)
@@ -615,6 +694,17 @@ namespace VK_Unicorn
                 {
                     callback(profile);
                 }
+            });
+        }
+
+        /// <summary>
+        /// Уменьшает размер базы на диске, если были удалены какие-то поля или таблицы
+        /// </summary>
+        void Vacuum()
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                db.Execute("vacuum");
             });
         }
     }

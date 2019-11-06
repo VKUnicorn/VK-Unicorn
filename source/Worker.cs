@@ -8,6 +8,7 @@ using VkNet.Model.RequestParams;
 using VkNet.Enums.SafetyEnums;
 using System.Net;
 using System.IO;
+using System.Linq;
 
 namespace VK_Unicorn
 {
@@ -66,7 +67,7 @@ namespace VK_Unicorn
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                currentTask = async () => { await JustWait(); };
+                                //currentTask = async () => { await JustWait(); };
                             },
 
                             // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
@@ -87,6 +88,15 @@ namespace VK_Unicorn
                                 {
                                     currentTask = async () => { await GetGroupsInfoTask(groupsToReceiveInfo); };
                                 }
+                            },
+
+                            // Ищем группы в которые можно подать заявки. Если такие есть, то подаём заявку
+                            () =>
+                            {
+                                Database.Instance.ForBestInteractableClosedAndNotMemberGroup((group) =>
+                                {
+                                    currentTask = async () => { await JoinClosedGroupTask(group); };
+                                });
                             },
 
                             // Нечего больше делать, просто ждём. Другие задачи могут появиться позже
@@ -229,6 +239,72 @@ namespace VK_Unicorn
             catch (System.Exception ex)
             {
                 Utils.Log("не удалось получить информацию о группах. Причина: " + ex.Message, LogLevel.ERROR);
+                await WaitAlotAfterError();
+            }
+        }
+
+        async Task JoinClosedGroupTask(Database.Group group)
+        {
+            try
+            {
+                MainForm.Instance.SetStatus("присоединяемся к группе", StatusType.GENERAL);
+
+                Utils.Log("Определяем, нужно ли присоединиться к группе " + group.Name, LogLevel.GENERAL);
+
+                // Получаем информацию о группе. Может мы уже присоединились к ней?
+                var groupsInfo = await api.Groups.GetByIdAsync(null, group.ScreenName, null);
+                if (groupsInfo != null)
+                {
+                    var groupInfo = groupsInfo.FirstOrDefault();
+
+                    if (groupInfo != null)
+                    {
+                        // Обновляем данные о закрытости и членстве в группе
+                        group.IsClosed = groupInfo.IsClosed.HasValue ? groupInfo.IsClosed == VkNet.Enums.GroupPublicity.Closed : group.IsClosed;
+                        group.IsMember = groupInfo.IsMember.HasValue ? groupInfo.IsMember.Value : group.IsMember;
+
+                        // Всё ещё закрытая группа и не вступили?
+                        if (group.IsWantToJoin())
+                        {
+                            switch (groupInfo.MemberStatus)
+                            {
+                                case VkNet.Enums.MemberStatus.SendRequest:
+                                case VkNet.Enums.MemberStatus.Invited:
+                                    // За прошлые пять минут заявку всё ещё не приняли. Похоже заявки
+                                    // принимает человек, а не бот, поэтому ждём значительно дольше
+                                    // прежде чем проверять эту группу снова
+                                    group.SetInteractTimeout(TimeSpan.FromHours(1));
+
+                                    Utils.Log("Заявка на вступление в " + group.Name + " была уже отправлена, но ещё не принята. Ждём значительно дольше", LogLevel.WARNING);
+                                    break;
+
+                                case VkNet.Enums.MemberStatus.Rejected:
+                                    // Заявку на вступление отклонили? Удаляем группу из списка для оработки
+                                    Utils.Log("Заявка на вступление в группу " + group.Name + " " + group.GetURL() + " была отклонена. Удаляем группу", LogLevel.WARNING);
+
+                                    Database.Instance.DeleteGroup(group.Id);
+                                    break;
+
+                                default:
+                                    Utils.Log("Отправляем заявку на вступление в " + group.Name, LogLevel.GENERAL);
+                                    // Добавляем таймаут в пять минут для взаимодействия с группой
+                                    // обычно за это время бот автоматически принимает заявку на вступление
+                                    group.SetInteractTimeout(TimeSpan.FromMinutes(5));
+
+                                    // Отправляем заявку на вступление
+                                    var result = await api.Groups.JoinAsync(group.Id);
+                                    break;
+                            }
+                        }
+
+                        // Обновляем группу в базе данных
+                        Database.Instance.AddGroupOrReplace(group);
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Utils.Log("не удалось отправить заявку на вступление в группу " + group.Name + ". Причина: " + ex.Message, LogLevel.ERROR);
                 await WaitAlotAfterError();
             }
         }
