@@ -28,7 +28,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #604294">
         <!-- Иконка программы -->
         <div class="mt-1" id="head-logo">
-            <a class="nav-link m-0 p-0" href=# onclick="loadProfiles()"><img src="favicon.ico" style="width: 32px; height: 32px"/></a>
+            <a class="nav-link m-0 p-0" onclick="loadProfiles()"><img src="favicon.ico" style="width: 32px; height: 32px"/></a>
         </div>
 
         <!-- Название программы и версия -->
@@ -40,7 +40,7 @@
 
         <!-- Настройки групп -->
         <div class="mr-2" id="group-setup">
-            <a class="nav-link m-0 p-0" href=# onclick="loadGroups()" id="display-groups"><i class="lni-cog size-md"></i></a>
+            <a class="nav-link m-0 p-0" onclick="loadGroups()" id="display-groups"><i class="lni-cog size-md"></i></a>
         </div>
 
         <!-- Поиск профиля по id -->
@@ -55,7 +55,7 @@
                 <input type="text" class="form-control" placeholder="id профиля" aria-label="profile-id" aria-describedby="basic-addon1">
 
                 <!-- Кнопка поиска -->
-                <button class="btn btn-primary my-2 my-sm-0 rounded-0" type="submit" style="background-color: #8a61d1; border-color:#8a61d1">Найти</button>
+                <button class="btn btn-primary my-2 my-sm-0 rounded-0" style="background-color: #8a61d1; border-color:#8a61d1">Найти</button>
             </div>
         </form>
     </nav>
@@ -66,7 +66,7 @@
         </div>
 
         <!-- Индикатор загрузки -->
-        <div id="loading" style="display: none;">
+        <div id="loading">
             <div class="centered">
                 <span><img src="favicon.ico" style="width: 75px; height: 75px"/></span>
             </div>
@@ -84,11 +84,12 @@
     </div>
 
     <!-- Кнопка добавления новой группы -->
-    <a href=# class="nav-link add-group-button" id="add-group-button" onclick="showAddGroupDialog()">
+    <a class="nav-link add-group-button" id="add-group-button" onclick="showAddGroupDialog()">
         <i class="lni-plus size-lg centered pb-1"></i>
     </a>
 
     <!-- Основные скрипты -->
+    <script src="utils.js"></script>
     <script src="main.js"></script>
     <script src="groups.js"></script>
     <script src="profiles.js"></script>

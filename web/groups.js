@@ -8,8 +8,10 @@ function loadGroups() {
             let group = groupExtraInfo.data;
 
             let lockElement = '';
+            let lockHintElement = '';
             if (group.IsClosed) {
                 lockElement = '<i class="lni-' + (group.IsMember ? 'un' : '') + 'lock mr-1"></i>';
+                lockHintElement = '<br /><font color=' + (group.IsMember ? '#9ddd88' : '#ff6666') + '>Группа закрыта и вы ' + (group.IsMember ? '' : 'не ') + 'являетесь её участником</font>';
             }
 
             // Заполняем карточку группы
@@ -17,7 +19,7 @@ function loadGroups() {
                 <div class="col-sm-3 px-1 py-1">
                     <div class="card">
                         <div class="card-img-overlay px-1 py-1">
-                            <a href=# class="btn btn-danger float-right px-2 py-2 delete-group-button"><i class="lni-close"></i></a>
+                            <a class="btn btn-danger float-right px-2 py-2 delete-group-button"><i class="lni-close" style="color: white"></i></a>
                         </div>
                         <a href="${groupExtraInfo.URL}" target="_blank">
                             <img class="card-img-top" src="${group.PhotoURL}">
@@ -29,7 +31,7 @@ function loadGroups() {
                             <p class="card-text my-0 text-truncate" id="group-name">${group.Name}</p>
                         </div>
                         <div class="card-footer pt-0 px-2" style="padding-bottom: 1px">
-                            <div class="float-left" id="last-activity"><small class="text-muted">${lockElement}<i class="lni-pulse mr-1"></i>${isoTimeToLocalDeltaAsString(group.LastActivity)}</small></div>
+                            <div class="float-left" id="last-activity" data-html="true"><small class="text-muted">${lockElement}<i class="lni-pulse mr-1"></i>${isoTimeToLocalDeltaAsString(group.LastActivity)}</small></div>
                             <div class="float-right" id="last-scanned"><small class="text-muted"><i class="lni-reload" style="padding-right: 2px"></i>${isoTimeToLocalDeltaAsString(group.LastScanned)}</small></div>
                         </div>
                     </div>
@@ -55,7 +57,7 @@ function loadGroups() {
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 400, "hide": 100 },
-                content: 'Как давно было найдено что-нибудь полезное в этой группе'
+                content: 'Как давно было найдено что-нибудь полезное в этой группе' + lockHintElement
             });
 
             groupCard.find('#last-scanned').popover({
@@ -101,7 +103,12 @@ function loadGroups() {
         $.hulla.send(one_few_many(recordsCount, "Загружена", "Загружено", "Загружено") + " " + recordsCount + " " + one_few_many(recordsCount, "группа", "группы", "групп"), "success");
 
         // Показываем кнопку добавления новой группы если всё нормально загрузилось
-        $('#add-group-button').show()
+        $('#add-group-button').show();
+
+        // Не добавлено ни одной группы? Показываем окно добавления групп
+        if (recordsCount == 0) {
+            showAddGroupDialog();
+        }
     }).fail(function(result) {
         finish_loading();
 
@@ -120,7 +127,7 @@ function showAddGroupDialog() {
         title: "Добавить группу",
         message: "Введите адрес группы или её короткое имя. Можно в виде списка из нескольких групп:",
         inputType: 'textarea',
-        placeholder: "https://vk.com/club123456\nhttps://vk.com/public123456",
+        placeholder: "https://vk.com/club123456\nhttps://vk.com/public123456\nhttps://vk.com/apiclub\napiclub",
         backdrop: true,
         callback: function (groupNames) {
             console.log(groupNames);
