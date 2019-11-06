@@ -67,7 +67,7 @@ namespace VK_Unicorn
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                //currentTask = async () => { await JustWait(); };
+                                currentTask = async () => { await JustWait(); };
                             },
 
                             // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
@@ -104,7 +104,7 @@ namespace VK_Unicorn
                             {
                                 Database.Instance.ForBestGroupToInteract((group) =>
                                 {
-                                    //currentTask = async () => { await ScanGroupTask(group); };
+                                    currentTask = async () => { await ScanGroupTask(group); };
                                 });
                             },
 

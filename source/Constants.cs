@@ -1,4 +1,6 @@
-﻿namespace VK_Unicorn
+﻿using System;
+
+namespace VK_Unicorn
 {
     public class Constants
     {
@@ -21,9 +23,12 @@
         // 1 - женский
         public const int TARGET_SEX_ID = 1;
 
-        // Профили с возрастом ниже этого значения будут видны, но будут явно помечены как потенциально опасные по причине
+        // Профили с возрастом ниже этого значения показываются, но будут явно помечены как потенциально опасные по причине
         // УК РФ Статья 240.1. Получение сексуальных услуг несовершеннолетнего
         // http://www.consultant.ru/document/cons_doc_LAW_10699/dde581e459215d45b7512d19d96d3d5040893d4c/
         public const int MINIMUM_AGE = 18;
+
+        // Максимальная глубина сканирования записей по времени
+        public TimeSpan MAX_SCANNING_DEPTH_IN_TIME = TimeSpan.FromDays(90);
     }
 }
