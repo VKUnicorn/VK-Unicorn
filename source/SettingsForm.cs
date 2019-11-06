@@ -21,7 +21,7 @@ namespace VK_Unicorn
             SearchByCityRadioButton.Checked = true;
 
             // Загружаем настройки
-            Database.Instance.ForSettings((settings) =>
+            Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
             {
                 ApplicationIdUpDown.Value = settings.ApplicationId;
                 LoginTextBox.Text = settings.Login != null ? settings.Login : "";
@@ -35,7 +35,7 @@ namespace VK_Unicorn
                         SearchSmartRadioButton.Checked = true;
                         break;
 
-                    case Database.SearchMethod.ALL_FEMALES:
+                    case Database.SearchMethod.ALL_OF_TARGET_SEX:
                         SearchAllRadioButton.Checked = true;
                         break;
 
@@ -56,12 +56,13 @@ namespace VK_Unicorn
             }
             if (SearchAllRadioButton.Checked)
             {
-                searchMethod = Database.SearchMethod.ALL_FEMALES;
+                searchMethod = Database.SearchMethod.ALL_OF_TARGET_SEX;
             }
 
             // Сохраняем настройки в базу
-            Database.Instance.SaveSettings(new Database.Settings
+            Database.Instance.InsertOrReplace(new Database.Settings
             {
+                Id = Database.INTERNAL_DB_MARKER,
                 ApplicationId = Decimal.ToInt64(ApplicationIdUpDown.Value),
                 Login = LoginTextBox.Text,
                 Password = PasswordTextBox.Text,

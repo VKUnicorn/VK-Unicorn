@@ -11,7 +11,7 @@ function loadGroups() {
             let lockHintElement = '';
             if (group.IsClosed) {
                 lockElement = '<i class="lni-' + (group.IsMember ? 'un' : '') + 'lock mr-1"></i>';
-                lockHintElement = '<br /><font color=' + (group.IsMember ? '#9ddd88' : '#ff6666') + '>Группа закрыта и вы ' + (group.IsMember ? '' : 'не ') + 'являетесь её участником</font>';
+                lockHintElement = '<br /><font color=' + (group.IsMember ? 'green' : 'red') + '>Группа закрыта и вы ' + (group.IsMember ? '' : 'не ') + 'являетесь её участником</font>';
             }
 
             // Заполняем карточку группы

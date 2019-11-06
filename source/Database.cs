@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace VK_Unicorn
 {
@@ -18,8 +17,6 @@ namespace VK_Unicorn
             NOT_HIDDEN,
             // Профиль скрыт пока не появится ещё какая-то активность
             HIDDEN_UNTIL_ACTIVITY,
-            // Профиль скрыт навсегда. Будет удалён при чистке базы
-            HIDDEN_PERMANENTLY,
         }
 
         public enum SearchMethod
@@ -28,8 +25,8 @@ namespace VK_Unicorn
             BY_CITY,
             // Все профили из закрытых групп, остальные по городу
             SMART,
-            // Все профили женского пола. Огромное количество спама и ботов
-            ALL_FEMALES,
+            // Все профили c полом Constants.TARGET_SEX_ID. Огромное количество спама и ботов
+            ALL_OF_TARGET_SEX,
         }
 
         // Основная таблица с интересными нам профилями
@@ -168,7 +165,7 @@ namespace VK_Unicorn
             {
                 InteractTimeout = DateTime.Now.Add(timeSpan);
 
-                Instance.AddGroupOrReplace(this);
+                Instance.InsertOrReplace(this);
             }
         }
 
@@ -265,7 +262,7 @@ namespace VK_Unicorn
         }
 
         // Маркер для служебного использования. Менять не нужно
-        const string INTERNAL_DB_MARKER = "db";
+        public const string INTERNAL_DB_MARKER = "db";
 
         // Таблица настроек приложения
         public class Settings
@@ -431,7 +428,6 @@ namespace VK_Unicorn
         int GetCount<T>() where T : new()
         {
             var result = 0;
-
             ForDatabaseUnlocked((db) =>
             {
                 result = db.Table<T>().Count();
@@ -440,11 +436,120 @@ namespace VK_Unicorn
             return result;
         }
 
+        /// <summary>
+        /// Добавляет новую запись в таблицу или изменяет её, если запись уже существует
+        /// </summary>
+        public bool InsertOrReplace<T>(T target) where T : new()
+        {
+            var rowsModified = 0;
+            ForDatabaseLocked((db) =>
+            {
+                rowsModified = db.InsertOrReplace(target);
+            });
+
+            return rowsModified > 0;
+        }
+
+        /// <summary>
+        /// Удаляет запись
+        /// </summary>
+        public bool Delete(object objectToDelete)
+        {
+            var rowsModified = 0;
+            ForDatabaseLocked((db) =>
+            {
+                rowsModified = db.Delete(objectToDelete);
+            });
+
+            return rowsModified > 0;
+        }
+
+        /// <summary>
+        /// Удаляет запись типа T по PrimaryKey
+        /// </summary>
+        public bool Delete<T>(object primaryKey)
+        {
+            var rowsModified = 0;
+            ForDatabaseLocked((db) =>
+            {
+                rowsModified = db.Delete<T>(primaryKey);
+            });
+
+            return rowsModified > 0;
+        }
+
+        /// <summary>
+        /// Запись уже существует?
+        /// </summary>
+        public bool IsAlreadyExists<T>(object primaryKey) where T : new()
+        {
+            var result = false;
+            ForDatabaseUnlocked((db) =>
+            {
+                result = db.Find<T>(primaryKey) != null;
+            });
+
+            return result;
+        }
+
+        /// <summary>
+        /// Вызывает callback на запись, если она существует
+        /// </summary>
+        public void For<T>(object primaryKey, Callback<T> callback) where T : new()
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                var record = db.Find<T>(primaryKey);
+                if (record != null)
+                {
+                    callback(record);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Вызывает callback для каждой записи
+        /// </summary>
+        public void ForEach<T>(Callback<T> callback) where T : new()
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                foreach (var record in db.Table<T>())
+                {
+                    callback(record);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Берёт несколько записей из таблицы и возвращает список этих записей
+        /// </summary>
+        public List<T> Take<T>(int amount) where T : new()
+        {
+            var result = new List<T>();
+            ForDatabaseUnlocked((db) =>
+            {
+                result = db.Table<T>().Take(amount).ToList();
+            });
+
+            return result;
+        }
+
+        /// <summary>
+        /// Уменьшает размер базы на диске, если были удалены какие-то поля или таблицы
+        /// </summary>
+        void Vacuum()
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                db.Execute("vacuum");
+            });
+        }
+
         public bool IsSettingsValid()
         {
             var result = false;
-
-            ForSettings((settings) =>
+            For<Settings>(INTERNAL_DB_MARKER, (settings) =>
             {
                 result = settings.ApplicationId > 0
                       && !string.IsNullOrEmpty(settings.Login)
@@ -452,28 +557,6 @@ namespace VK_Unicorn
             });
 
             return result;
-        }
-
-        public void ForSettings(Callback<Settings> callback)
-        {
-            ForDatabaseUnlocked((db) =>
-            {
-                var settings = db.Table<Settings>().Where(_ => _.Id == INTERNAL_DB_MARKER).SingleOrDefault();
-                if (settings != null)
-                {
-                    callback(settings);
-                }
-            });
-        }
-
-        public void SaveSettings(Settings settings)
-        {
-            ForDatabaseUnlocked((db) =>
-            {
-                settings.Id = INTERNAL_DB_MARKER;
-
-                db.InsertOrReplace(settings);
-            });
         }
 
         public void ShowStatistics()
@@ -486,157 +569,11 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Получаем ссылку на новую группу, получаем из неё DomainName
-        /// Добавляем группу в таблицу GroupToAdd, если там такой нету
-        /// </summary>
-        public void RegisterNewGroupToAdd(string groupWebUrl)
-        {
-            // Удаляем все символы перед доменным именем
-            var domainName = Regex.Replace(groupWebUrl, @".+\/", "");
-
-            // Это группа начинающаяся с public?
-            if (Regex.Match(domainName.ToLowerInvariant(), @"public\d+$").Success)
-            {
-                // Заменяем слово piblic на club т.к. API ВКонтакта больше не принимает public
-                domainName = domainName.ToLowerInvariant().Replace("public", "club");
-            }
-
-            if (!string.IsNullOrEmpty(domainName))
-            {
-                var rowsModified = 0;
-                ForDatabaseLocked((db) =>
-                {
-                    rowsModified = db.Insert(new GroupToAdd()
-                    {
-                        DomainName = domainName,
-                    });
-                });
-
-                if (rowsModified > 0)
-                {
-                    Utils.Log("Группа " + domainName + " успешно добавлена в очередь на начальное сканирование", LogLevel.SUCCESS);
-                }
-                else
-                {
-                    throw new Exception("скорее всего группа уже добавлена в очередь на начальное сканирование");
-                }
-            }
-            else
-            {
-                throw new Exception("не удалось получить имя группы из ссылки");
-            }
-        }
-
-        /// <summary>
-        /// Возвращает список групп для которых необходимо получить основную информацию
-        /// </summary>
-        public List<GroupToAdd> GetGroupsToReceiveInfo()
-        {
-            var result = new List<GroupToAdd>();
-
-            ForDatabaseUnlocked((db) =>
-            {
-                result = db.Table<GroupToAdd>().Take(VkLimits.GROUPS_GETBYID_GROUP_IDS).ToList();
-            });
-
-            return result;
-        }
-
-        /// <summary>
-        /// Удаляет группы из очереди на получение основной информации
-        /// </summary>
-        public void RemoveGroupsToReceiveInfo(IEnumerable<GroupToAdd> groupsToAdd)
-        {
-            ForDatabaseLocked((db) =>
-            {
-                foreach (var groupToAdd in groupsToAdd)
-                {
-                    db.Delete<GroupToAdd>(groupToAdd.DomainName);
-                }
-            });
-        }
-
-        /// <summary>
-        /// Добавляет новую группу или изменяет её, если группа уже существует
-        /// </summary>
-        public bool AddGroupOrReplace(Group group)
-        {
-            var rowsModified = 0;
-            ForDatabaseLocked((db) =>
-            {
-                rowsModified = db.InsertOrReplace(group);
-            });
-
-            return rowsModified > 0;
-        }
-
-        /// <summary>
-        /// Удаляет группу
-        /// </summary>
-        public bool DeleteGroup(long groupId)
-        {
-            var rowsModified = 0;
-            ForDatabaseLocked((db) =>
-            {
-                rowsModified = db.Delete<Group>(groupId);
-            });
-
-            return rowsModified > 0;
-        }
-
-        /// <summary>
-        /// Группа уже добавлена в список?
-        /// </summary>
-        public bool IsGroupAlreadyExists(long groupId)
-        {
-            var result = false;
-
-            ForDatabaseUnlocked((db) =>
-            {
-                result = db.Table<Group>().Where(_ => _.Id == groupId).Count() > 0;
-            });
-
-            return result;
-        }
-
-        /// <summary>
-        /// Пустое количество групп и профилей?
-        /// </summary>
-        public bool IsNeedToSetupGroups()
-        {
-            if (GetCount<Group>() > 0)
-            {
-                return false;
-            }
-
-            if (GetCount<Profile>() > 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Вызывает callback для каждой группы
-        /// </summary>
-        public void ForEachGroup(Callback<Group> callback)
-        {
-            ForDatabaseUnlocked((db) =>
-            {
-                foreach (var group in db.Table<Group>())
-                {
-                    callback(group);
-                }
-            });
-        }
-
-        /// <summary>
         /// Вызывает callback для каждой группы с которой можно взаимодействовать
         /// </summary>
         public void ForEachInteractableGroup(Callback<Group> callback)
         {
-            ForEachGroup((group) =>
+            ForEach<Group>((group) =>
             {
             	if (group.CanInteract())
                 {
@@ -667,7 +604,7 @@ namespace VK_Unicorn
         /// Вызывает callback на закрытую группу, в которой ещё нету членства, с которой можно взамодействовать
         /// и с которой дольше всего не взаимодействовали
         /// </summary>
-        public void ForBestInteractableClosedAndNotMemberGroup(Callback<Group> callback)
+        public void ForBestInteractableWantToJoinGroup(Callback<Group> callback)
         {
             ForDatabaseUnlocked((db) =>
             {
@@ -679,31 +616,6 @@ namespace VK_Unicorn
                 {
                     callback(targetGroup);
                 }
-            });
-        }
-
-        /// <summary>
-        /// Вызывает callback для каждого профиля
-        /// </summary>
-        public void ForEachProfile(Callback<Profile> callback)
-        {
-            ForDatabaseUnlocked((db) =>
-            {
-                foreach (var profile in db.Table<Profile>())
-                {
-                    callback(profile);
-                }
-            });
-        }
-
-        /// <summary>
-        /// Уменьшает размер базы на диске, если были удалены какие-то поля или таблицы
-        /// </summary>
-        void Vacuum()
-        {
-            ForDatabaseUnlocked((db) =>
-            {
-                db.Execute("vacuum");
             });
         }
     }

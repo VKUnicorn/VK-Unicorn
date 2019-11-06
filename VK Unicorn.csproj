@@ -121,6 +121,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="source\Timeouts.cs" />
     <Compile Include="source\Constants.cs" />
     <Compile Include="source\Database.cs" />
     <Compile Include="source\MainForm.cs">

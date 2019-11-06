@@ -9,6 +9,7 @@ using VkNet.Enums.SafetyEnums;
 using System.Net;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace VK_Unicorn
 {
@@ -59,7 +60,7 @@ namespace VK_Unicorn
                 // Если программа успешно настроена, то кэшируем эти настройки и используем их для выполнения текущей задачи
                 if (Database.Instance.IsSettingsValid())
                 {
-                    Database.Instance.ForSettings((settings) =>
+                    Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
                     {
                         // Готовим список задач, которые вообще можно делать. Задачи будут проверяться в порядке их объявления
                         var possibleTaskConditions = new List<Callback>()
@@ -67,7 +68,7 @@ namespace VK_Unicorn
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                currentTask = async () => { await JustWait(); };
+                                //currentTask = async () => { await JustWait(); };
                             },
 
                             // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
@@ -83,7 +84,7 @@ namespace VK_Unicorn
                             // Проверяем нужно ли получить основную информацию о каких-либо группах, которые добавил пользователь
                             () =>
                             {
-                                var groupsToReceiveInfo = Database.Instance.GetGroupsToReceiveInfo();
+                                var groupsToReceiveInfo = Database.Instance.Take<Database.GroupToAdd>(VkLimits.GROUPS_GETBYID_GROUP_IDS);
                                 if (groupsToReceiveInfo.Count > 0)
                                 {
                                     currentTask = async () => { await GetGroupsInfoTask(groupsToReceiveInfo); };
@@ -93,7 +94,7 @@ namespace VK_Unicorn
                             // Ищем группы в которые можно подать заявки. Если такие есть, то подаём заявку
                             () =>
                             {
-                                Database.Instance.ForBestInteractableClosedAndNotMemberGroup((group) =>
+                                Database.Instance.ForBestInteractableWantToJoinGroup((group) =>
                                 {
                                     currentTask = async () => { await JoinClosedGroupTask(group); };
                                 });
@@ -145,7 +146,7 @@ namespace VK_Unicorn
                 // Слишком частые запросы это плохо, о лимитах можно почитать тут https://vk.com/dev/api_requests
                 // в разделе "3. Ограничения и рекомендации". В целом рекомендуется обращаться не чаще трёх раз в секунду,
                 // но мы будем сканировать значительно реже, опять же чтобы снизить угрозу бана аккаунта или появления капчи
-                await Task.Delay(TimeSpan.FromSeconds(1d));
+                await Task.Delay(TimeSpan.FromSeconds(3d));
             }
         }
 
@@ -214,7 +215,7 @@ namespace VK_Unicorn
                             }
 
                             // Группа не была уже добавлена ранее?
-                            if (!Database.Instance.IsGroupAlreadyExists(groupInfo.Id))
+                            if (!Database.Instance.IsAlreadyExists<Database.Group>(groupInfo.Id))
                             {
                                 // Готовим новую группу
                                 var newGroup = new Database.Group()
@@ -228,7 +229,7 @@ namespace VK_Unicorn
                                 };
 
                                 // Добавляем группу в базу данных
-                                Database.Instance.AddGroupOrReplace(newGroup);
+                                Database.Instance.InsertOrReplace(newGroup);
                             }
                             else
                             {
@@ -242,7 +243,10 @@ namespace VK_Unicorn
                     }
 
                     // Мы получили информацию о всех нужных группах, удаляем их из очереди на обработку
-                    Database.Instance.RemoveGroupsToReceiveInfo(groupsToReceiveInfo);
+                    foreach (var group in groupsToReceiveInfo)
+                    {
+                        Database.Instance.Delete(group);
+                    }
                 }
             }
             catch (System.Exception ex)
@@ -271,7 +275,7 @@ namespace VK_Unicorn
                     var groupInfoAsResponse = ((VkNet.Utils.VkResponseArray)response).FirstOrDefault();
                     if (groupInfoAsResponse != null)
                     {
-                        var groupInfo = (Group)groupInfoAsResponse;
+                        var groupInfo = (VkNet.Model.Group)groupInfoAsResponse;
                         if (groupInfo != null)
                         {
                             Utils.Log("    статус участия в группе: " + groupInfo.MemberStatus, LogLevel.NOTIFY);
@@ -289,7 +293,7 @@ namespace VK_Unicorn
                                         // За прошлые пять минут заявку всё ещё не приняли. Похоже заявки
                                         // принимает человек, а не бот, поэтому ждём значительно дольше
                                         // прежде чем проверять эту группу снова
-                                        group.SetInteractTimeout(TimeSpan.FromHours(1));
+                                        group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_NOT_ACCEPTED);
 
                                         Utils.Log("Заявка на вступление в " + group.Name + " была уже отправлена, но ещё не принята. Ждём значительно дольше", LogLevel.WARNING);
                                         break;
@@ -298,14 +302,14 @@ namespace VK_Unicorn
                                         // Заявку на вступление отклонили? Удаляем группу из списка для оработки
                                         Utils.Log("Заявка на вступление в группу " + group.Name + " " + group.GetURL() + " была отклонена. Удаляем группу", LogLevel.WARNING);
 
-                                        Database.Instance.DeleteGroup(group.Id);
+                                        Database.Instance.Delete(group);
                                         break;
 
                                     default:
                                         Utils.Log("Отправляем заявку на вступление в " + group.Name, LogLevel.GENERAL);
                                         // Добавляем таймаут в пять минут для взаимодействия с группой
                                         // обычно за это время бот автоматически принимает заявку на вступление
-                                        group.SetInteractTimeout(TimeSpan.FromMinutes(5));
+                                        group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_SENT);
 
                                         // Отправляем заявку на вступление
                                         var result = await api.Groups.JoinAsync(group.Id);
@@ -318,7 +322,7 @@ namespace VK_Unicorn
                             }
 
                             // Обновляем группу в базе данных
-                            Database.Instance.AddGroupOrReplace(group);
+                            Database.Instance.InsertOrReplace(group);
                         }
                     }
                 }
@@ -371,6 +375,44 @@ namespace VK_Unicorn
             }
 
             return new string('.', dotsCounter++);
+        }
+
+        /// <summary>
+        /// Получаем ссылку на новую группу, получаем из неё DomainName
+        /// Добавляем группу в таблицу GroupToAdd
+        /// </summary>
+        public void RegisterNewGroupToAdd(string groupWebUrl)
+        {
+            // Удаляем все символы перед доменным именем
+            var domainName = Regex.Replace(groupWebUrl, @".+\/", "").Trim();
+
+            // Это группа начинающаяся с public?
+            if (Regex.Match(domainName.ToLowerInvariant(), @"public\d+$").Success)
+            {
+                // Заменяем слово piblic на club т.к. API ВКонтакта больше не принимает public
+                domainName = domainName.ToLowerInvariant().Replace("public", "club");
+            }
+
+            if (!string.IsNullOrEmpty(domainName))
+            {
+                var result = Database.Instance.InsertOrReplace(new Database.GroupToAdd()
+                {
+                    DomainName = domainName,
+                });
+
+                if (result)
+                {
+                    Utils.Log("Группа " + domainName + " успешно добавлена в очередь на начальное сканирование", LogLevel.SUCCESS);
+                }
+                else
+                {
+                    throw new Exception("скорее всего группа уже добавлена в очередь на начальное сканирование");
+                }
+            }
+            else
+            {
+                throw new Exception("не удалось получить имя группы из ссылки");
+            }
         }
     }
 }
