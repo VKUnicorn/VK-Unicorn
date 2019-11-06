@@ -646,7 +646,7 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Вызывает callback на группу, с которой можно взамодействовать и с которой дольше всего не взаимодействовали
+        /// Вызывает callback на группу, к которой мы присоеденились, с которой можно взамодействовать и с которой дольше всего не взаимодействовали
         /// </summary>
         public void ForBestGroupToInteract(Callback<Group> callback)
         {
@@ -654,8 +654,8 @@ namespace VK_Unicorn
             {
                 var allGroups = db.Table<Group>().ToList();
                 allGroups.RemoveAll(_ => !_.CanInteract());
+                allGroups.RemoveAll(_ => _.IsWantToJoin());
                 var targetGroup = allGroups.OrderBy(_ => _.LastScanned).FirstOrDefault();
-
                 if (targetGroup != null)
                 {
                     callback(targetGroup);
@@ -675,7 +675,6 @@ namespace VK_Unicorn
                 allGroups.RemoveAll(_ => !_.CanInteract());
                 allGroups.RemoveAll(_ => !_.IsWantToJoin());
                 var targetGroup = allGroups.OrderBy(_ => _.LastScanned).FirstOrDefault();
-
                 if (targetGroup != null)
                 {
                     callback(targetGroup);
