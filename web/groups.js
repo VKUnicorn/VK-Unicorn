@@ -7,6 +7,11 @@ function loadGroups() {
         for (let groupExtraInfo of result) {
             let group = groupExtraInfo.data;
 
+            let lockElement = '';
+            if (group.IsClosed) {
+                lockElement = '<i class="lni-' + (group.IsMember ? 'un' : '') + 'lock mr-1"></i>';
+            }
+
             // Заполняем карточку группы
             let groupCard = $(`
                 <div class="col-sm-3 px-1 py-1">
@@ -23,6 +28,10 @@ function loadGroups() {
                         <div class="card-body py-0 px-2">
                             <p class="card-text my-0 text-truncate" id="group-name">${group.Name}</p>
                         </div>
+                        <div class="card-footer pt-0 px-2" style="padding-bottom: 1px">
+                            <div class="float-left" id="last-activity"><small class="text-muted">${lockElement}<i class="lni-pulse mr-1"></i>${isoTimeToLocalDeltaAsString(group.LastActivity)}</small></div>
+                            <div class="float-right" id="last-scanned"><small class="text-muted"><i class="lni-reload" style="padding-right: 2px"></i>${isoTimeToLocalDeltaAsString(group.LastScanned)}</small></div>
+                        </div>
                     </div>
                 </div>
             `).appendTo($('#workspace'));
@@ -31,15 +40,29 @@ function loadGroups() {
             groupCard.find('.delete-group-button').popover({
                 trigger: 'hover',
                 placement: 'bottom',
-                delay: { "show": 200, "hide": 100 },
+                delay: { "show": 400, "hide": 100 },
                 content: 'Удалить группу навсегда'
             });
 
             groupCard.find('span.small-info-box').popover({
                 trigger: 'hover',
                 placement: 'top',
-                delay: { "show": 200, "hide": 100 },
+                delay: { "show": 400, "hide": 100 },
                 content: 'Сколько профилей было найдено из этой группы'
+            });
+
+            groupCard.find('#last-activity').popover({
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 400, "hide": 100 },
+                content: 'Как давно было найдено что-нибудь полезное в этой группе'
+            });
+
+            groupCard.find('#last-scanned').popover({
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 400, "hide": 100 },
+                content: 'Как давно было последнее сканирование группы'
             });
 
             // Оработчики событий
@@ -95,25 +118,27 @@ function loadGroups() {
 function showAddGroupDialog() {
     bootbox.prompt({
         title: "Добавить группу",
-        message: "Введите адрес группы или её короткое имя",
-        placeholder: "https://vk.com/club123456",
+        message: "Введите адрес группы или её короткое имя. Можно в виде списка из нескольких групп:",
+        inputType: 'textarea',
+        placeholder: "https://vk.com/club123456\nhttps://vk.com/public123456",
         backdrop: true,
-        callback: function (groupName) {
-            if (groupName) {
+        callback: function (groupNames) {
+            console.log(groupNames);
+            if (groupNames) {
                 // Отправляем запрос на добавление новой группы
                 $.post("add_group",
                 {
-                    url: groupName
+                    url: groupNames
                 },
                 function(data, status) {
                     if (status) {
-                        $.hulla.send("Группа \"" + groupName + "\" добавлена<br>Она появится в списке после начальной обработки", "success");
+                        $.hulla.send("Группа \"" + groupNames + "\" добавлена<br>Она появится в списке после начальной обработки", "success");
                     }
                     else {
-                        $.hulla.send("Не удалось добавить группу \"" + groupName + "\"", "danger");
+                        $.hulla.send("Не удалось добавить группу \"" + groupNames + "\"", "danger");
                     }
                 }).fail(function(result) {
-                    $.hulla.send("Не удалось добавить группу \"" + groupName + "\"", "danger");
+                    $.hulla.send("Не удалось добавить группу \"" + groupNames + "\"", "danger");
                 });
             }
         }

@@ -135,6 +135,10 @@
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(96, 66, 148, 0.4);
 }
 
+.bootbox-input-textarea {
+    min-height: 200px;
+}
+
 /*
 .card-img-top {
     margin-right: 100rem;

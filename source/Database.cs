@@ -113,9 +113,6 @@ namespace VK_Unicorn
             // Как давно был последний успешный скан группы
             public DateTime LastScanned { get; set; }
 
-            // Сколько времени заняло сканирование этого паблика в секундах
-            public int ScanTimeInSeconds { get; set; }
-
             // URL главной фотографии в максимальном размере
             public string PhotoURL { get; set; }
 

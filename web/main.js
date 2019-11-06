@@ -43,6 +43,31 @@ function finish_loading() {
     $('#loading').fadeOut()
 }
 
+function isoTimeToLocalDeltaAsString(arg) {
+    if (arg === undefined) {
+        return 'никогда'
+    }
+
+    var isoTime = Date.parse(arg);
+    if (isoTime < 0)
+    {
+        return 'никогда'
+    }
+
+    var delta = parseInt((new Date().getTime() - isoTime) / 60);
+    if (delta < 60) {
+        return parseInt(delta) +' м.';
+    }
+
+    delta = parseInt(delta / 60)
+    if (delta < 24) {
+        return parseInt(delta) +' ч.';
+    }
+
+    delta = parseInt(delta / 24);
+    return delta + ' д.'
+}
+
 function main() {
     // Добавляем поддержку русского языка в bootbox
     var locale = {

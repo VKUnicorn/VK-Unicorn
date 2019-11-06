@@ -3,6 +3,7 @@ using System.Text;
 using System.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System;
 
 namespace VK_Unicorn
 {
@@ -43,7 +44,17 @@ namespace VK_Unicorn
 
                     // Добавление группы
                     case "add_group":
-                        Database.Instance.RegisterNewGroupToAdd(WebUtility.UrlDecode(parametersDictionary["url"]));
+                        // Разделяем строку на список строк
+                        var groupsToAdd = WebUtility.UrlDecode(parametersDictionary["url"]).Split(
+                            new[] { "\r\n", "\r", "\n" },
+                            StringSplitOptions.None
+                        );
+
+                        // Добавляем каждую группу
+                        foreach (var group in groupsToAdd)
+                        {
+                            Database.Instance.RegisterNewGroupToAdd(group);
+                        }
 
                         handled = true;
                         break;
