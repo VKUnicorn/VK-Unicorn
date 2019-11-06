@@ -28,7 +28,11 @@ function one_few_many(number, one, few, many)
 }
 
 function clear_workspace() {
+    // Очищаем все элементы из основного рабочего контейнера
     $('#workspace').empty()
+
+    // Скрываем кнопку добавления новой группы
+    $('#add-group-button').hide()
 }
 
 function start_loading() {
@@ -43,7 +47,7 @@ function main() {
     // Добавляем поддержку русского языка в bootbox
     var locale = {
         OK: 'Ок',
-        CONFIRM: 'Да',
+        CONFIRM: 'Продолжить',
         CANCEL: 'Отмена'
     };
 
@@ -59,21 +63,27 @@ function main() {
 
     // Тултипы на основные элементы интерфейса
     $('#display-groups').popover({
-        container: 'body',
         trigger: 'hover',
         placement: 'bottom',
         delay: { "show": 200, "hide": 100 },
-        content: 'Открыть список групп'
+        content: 'Настроить группы'
     });
 
     $('#head-logo').popover({
-        container: 'body',
         trigger: 'hover',
         placement: 'right',
-        delay: { "show": 400, "hide": 100 },
+        delay: { "show": 600, "hide": 100 },
         content: 'Привет!'
     });
 
-    // Загружаем профили
+    $('#add-group-button').popover({
+        container: '#add-group-button',
+        trigger: 'hover',
+        placement: 'top',
+        delay: { "show": 200, "hide": 100 },
+        content: 'Добавить группу'
+    });
+
+    // Загружаем профили как действие по умолчанию
     loadProfiles();
 }

@@ -66,7 +66,7 @@ namespace VK_Unicorn
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                currentTask = async () => { await JustWait(); };
+                                //currentTask = async () => { await JustWait(); };
                             },
 
                             // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
@@ -209,11 +209,7 @@ namespace VK_Unicorn
                                 };
 
                                 // Добавляем группу в базу данных
-                                if (Database.Instance.AddGroupOrReplace(newGroup))
-                                {
-                                    // Получаем для неё фотографию
-                                    //ReceiveImageForGroup(newGroup.Id, newGroup.PhotoURL);
-                                }
+                                Database.Instance.AddGroupOrReplace(newGroup);
                             }
                             else
                             {

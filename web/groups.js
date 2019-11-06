@@ -29,7 +29,6 @@ function loadGroups() {
 
             // Тултипы
             groupCard.find('.delete-group-button').popover({
-                container: 'body',
                 trigger: 'hover',
                 placement: 'bottom',
                 delay: { "show": 200, "hide": 100 },
@@ -37,7 +36,6 @@ function loadGroups() {
             });
 
             groupCard.find('span.small-info-box').popover({
-                container: 'body',
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 200, "hide": 100 },
@@ -76,17 +74,48 @@ function loadGroups() {
 
         finish_loading();
 
-        var recordsCount = result.length;
+        let recordsCount = result.length;
         $.hulla.send(one_few_many(recordsCount, "Загружена", "Загружено", "Загружено") + " " + recordsCount + " " + one_few_many(recordsCount, "группа", "группы", "групп"), "success");
+
+        // Показываем кнопку добавления новой группы если всё нормально загрузилось
+        $('#add-group-button').show()
     }).fail(function(result) {
         finish_loading();
 
-        var responseJSON = result['responseJSON'];
+        let responseJSON = result['responseJSON'];
         if (responseJSON === undefined) {
-            $.hulla.send("Ошибка при загрузке списка групп. Главный модуль программы не запущен или в нём произошла внутренняя ошибка", "danger");
+            $.hulla.send("Ошибка при загрузке списка групп.<br>Главный модуль программы не запущен или в нём произошла внутренняя ошибка", "danger");
         }
         else {
             $.hulla.send(responseJSON.error, "danger");
         }
     })
+}
+
+function showAddGroupDialog() {
+    bootbox.prompt({
+        title: "Добавить группу",
+        message: "Введите адрес группы или её короткое имя",
+        placeholder: "https://vk.com/club123456",
+        backdrop: true,
+        callback: function (groupName) {
+            if (groupName) {
+                // Отправляем запрос на добавление новой группы
+                $.post("add_group",
+                {
+                    url: groupName
+                },
+                function(data, status) {
+                    if (status) {
+                        $.hulla.send("Группа \"" + groupName + "\" добавлена<br>Она появится в списке после начальной обработки", "success");
+                    }
+                    else {
+                        $.hulla.send("Не удалось добавить группу \"" + groupName + "\"", "danger");
+                    }
+                }).fail(function(result) {
+                    $.hulla.send("Не удалось добавить группу \"" + groupName + "\"", "danger");
+                });
+            }
+        }
+    });
 }

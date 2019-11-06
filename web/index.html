@@ -28,7 +28,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #604294">
         <!-- Иконка программы -->
         <div class="mt-1" id="head-logo">
-            <img src="favicon.ico" style="width: 32px; height: 32px"/>
+            <a class="nav-link m-0 p-0" href=# onclick="loadProfiles()"><img src="favicon.ico" style="width: 32px; height: 32px"/></a>
         </div>
 
         <!-- Название программы и версия -->
@@ -40,7 +40,7 @@
 
         <!-- Настройки групп -->
         <div class="mr-2" id="group-setup">
-            <a class="nav-link m-0 p-0" href="#" onclick="loadGroups()" id="display-groups"><i class="lni-cog size-md"></i></a>
+            <a class="nav-link m-0 p-0" href=# onclick="loadGroups()" id="display-groups"><i class="lni-cog size-md"></i></a>
         </div>
 
         <!-- Поиск профиля по id -->
@@ -67,14 +67,14 @@
 
         <!-- Индикатор загрузки -->
         <div id="loading" style="display: none;">
-            <div class="loading-center">
+            <div class="centered">
                 <span><img src="favicon.ico" style="width: 75px; height: 75px"/></span>
             </div>
             <div id="circle">
-                <div class="buzzer red">
-                    <div class="buzzer yellow">
-                        <div class="buzzer green">
-                            <div class="buzzer purple">
+                <div class="spinner red">
+                    <div class="spinner yellow">
+                        <div class="spinner green">
+                            <div class="spinner purple">
                             </div>
                         </div>
                     </div>
@@ -82,6 +82,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Кнопка добавления новой группы -->
+    <a href=# class="nav-link add-group-button" id="add-group-button" onclick="showAddGroupDialog()">
+        <i class="lni-plus size-lg centered pb-1"></i>
+    </a>
 
     <!-- Основные скрипты -->
     <script src="main.js"></script>

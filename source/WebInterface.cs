@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using System.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -39,6 +40,13 @@ namespace VK_Unicorn
 
                         handled = true;
                         break;
+
+                    // Добавление группы
+                    case "add_group":
+                        Database.Instance.RegisterNewGroupToAdd(WebUtility.UrlDecode(parametersDictionary["url"]));
+
+                        handled = true;
+                        break;
                 }
 
                 // Запрос обработан?
@@ -52,7 +60,7 @@ namespace VK_Unicorn
             }
             catch (System.Exception ex)
             {
-                data = Encoding.UTF8.GetBytes(ex.ToString());
+                data = Encoding.UTF8.GetBytes(ex.Message);
                 responseCode = "500 Internal server error";
                 return true;
             }

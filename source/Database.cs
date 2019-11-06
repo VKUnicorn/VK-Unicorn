@@ -462,39 +462,39 @@ namespace VK_Unicorn
         /// </summary>
         public void RegisterNewGroupToAdd(string groupWebUrl)
         {
-            try
+            // Удаляем все символы перед доменным именем
+            var domainName = Regex.Replace(groupWebUrl, @".+\/", "");
+
+            // Это группа начинающаяся с public?
+            if (Regex.Match(domainName.ToLowerInvariant(), @"public\d+$").Success)
             {
-                // Удаляем все символы перед доменным именем
-                var domainName = Regex.Replace(groupWebUrl, @".+\/", "");
+                // Заменяем слово piblic на club т.к. API ВКонтакта больше не принимает public
+                domainName = domainName.ToLowerInvariant().Replace("public", "club");
+            }
 
-                if (!string.IsNullOrEmpty(domainName))
+            if (!string.IsNullOrEmpty(domainName))
+            {
+                var rowsModified = 0;
+                ForDatabaseLocked((db) =>
                 {
-                    var rowsModified = 0;
-                    ForDatabaseLocked((db) =>
+                    rowsModified = db.Insert(new GroupToAdd()
                     {
-                        rowsModified = db.Insert(new GroupToAdd()
-                        {
-                            DomainName = domainName,
-                        });
+                        DomainName = domainName,
                     });
+                });
 
-                    if (rowsModified > 0)
-                    {
-                        Utils.Log("Группа " + domainName + " успешно добавлена в очередь на начальное сканирование", LogLevel.SUCCESS);
-                    }
-                    else
-                    {
-                        throw new Exception("скорее всего группа уже добавлена в эту очередь ранее");
-                    }
+                if (rowsModified > 0)
+                {
+                    Utils.Log("Группа " + domainName + " успешно добавлена в очередь на начальное сканирование", LogLevel.SUCCESS);
                 }
                 else
                 {
-                    throw new Exception("не удалось получить имя группы из ссылки");
+                    throw new Exception("скорее всего группа уже добавлена в очередь на начальное сканирование");
                 }
             }
-            catch (System.Exception ex)
+            else
             {
-                Utils.Log("не удалось добавить группу " + groupWebUrl + " в очередь на начальное сканирование. Причина: " + ex.Message, LogLevel.ERROR);
+                throw new Exception("не удалось получить имя группы из ссылки");
             }
         }
 
