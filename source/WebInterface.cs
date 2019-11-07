@@ -121,12 +121,13 @@ namespace VK_Unicorn
                                 });
                             });
 
-                            // Сортируем группы по эффективости. Сначала идут группы с которых
-                            // было получено больше всего профилей
-                            resultObjects.Sort((left, right) =>
-                            {
-                                return ((int)right["Efficiency"]).CompareTo((int)left["Efficiency"]);
-                            });
+                            // Сортируем группы статусу закрытости, а потом по эффективости.
+                            // Сначала идут группы с которых было получено больше всего профилей
+                            resultObjects = resultObjects
+                                .OrderByDescending(_ => (_["data"] as Database.Group).IsClosed)
+                                .ThenByDescending(_ => (int)_["Efficiency"])
+                                .ToList()
+                            ;
 
                             handled = true;
                             break;

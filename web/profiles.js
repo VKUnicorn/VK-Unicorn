@@ -3,7 +3,7 @@ function loadProfiles() {
     start_loading();
 
     $.getJSON('profiles', {
-    }, function (result) {
+    }, function(result) {
         for (let profileExtraInfo of result) {
             let profile = profileExtraInfo.data;
 

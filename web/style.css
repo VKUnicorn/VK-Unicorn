@@ -77,6 +77,9 @@
 .bg-warning {
     background-color: #ffffcc !important;
 }
+.bg-error {
+    background-color: rgba(255, 230, 230, 0.6) !important;
+}
 .small-info-box {
     background-color: #575757;
     color: white;
@@ -94,9 +97,6 @@
     top: -28px !important;
     left: 2% !important;
     height: 0;
-}
-.opaque-3 {
-    opacity: 0.3;
 }
 .card-img-top {
     object-fit: cover;
@@ -137,6 +137,34 @@
 
 .bootbox-input-textarea {
     min-height: 200px;
+}
+
+.opaque-1 {
+    opacity: 0.1;
+}
+.opaque-2 {
+    opacity: 0.2;
+}
+.opaque-3 {
+    opacity: 0.3;
+}
+.opaque-4 {
+    opacity: 0.4;
+}
+.opaque-5 {
+    opacity: 0.5;
+}
+.opaque-6 {
+    opacity: 0.6;
+}
+.opaque-7 {
+    opacity: 0.7;
+}
+.opaque-8 {
+    opacity: 0.8;
+}
+.opaque-9 {
+    opacity: 0.9;
 }
 
 /*

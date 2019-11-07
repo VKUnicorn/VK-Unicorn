@@ -71,7 +71,7 @@ namespace VK_Unicorn
 
         // Таблица с группами о которых ещё предстоит получить информацию и добавить в обычную
         // таблицу с группами, если там ещё нету такой же
-        public class GroupToAdd
+        public class GroupToReceiveInfo
         {
             // Введённый пользователем id группы. Идентификатор или короткое имя сообщества
             // Например пользователь ввёл адрес https://vk.com/public1 или https://vk.com/club1
@@ -125,7 +125,6 @@ namespace VK_Unicorn
             public int GetEfficiency()
             {
                 var result = 0;
-
                 Instance.ForDatabaseUnlocked((db) =>
                 {
                     result = db.Table<Profile>().Where(_ => _.FromGroupId == Id).Count();
@@ -346,7 +345,7 @@ namespace VK_Unicorn
 
                 // Создаём все остальные таблицы
                 db.CreateTable<Profile>();
-                db.CreateTables<GroupToAdd, Group>();
+                db.CreateTables<GroupToReceiveInfo, Group>();
                 db.CreateTables<LikeActivity, PostActivity, CommentActivity>();
                 db.CreateTables<ScannedProfiles, ScannedPosts>();
             });
@@ -362,7 +361,6 @@ namespace VK_Unicorn
                     Utils.Log("Загружена база данных версии " + query.SchemeVersion, LogLevel.GENERAL);
 
                     var needToUpdate = query.SchemeVersion < SCHEME_VERSION;
-
                     if (needToUpdate)
                     {
                         Utils.Log("Обновляем таблицы", LogLevel.GENERAL);
@@ -590,8 +588,9 @@ namespace VK_Unicorn
             ForDatabaseUnlocked((db) =>
             {
                 var allGroups = db.Table<Group>().ToList();
-                allGroups.RemoveAll(_ => !_.CanInteract());
-                allGroups.RemoveAll(_ => _.IsWantToJoin());
+                allGroups.RemoveAll(_ =>
+                    !_.CanInteract() || _.IsWantToJoin()
+                );
                 var targetGroup = allGroups.OrderBy(_ => _.LastScanned).FirstOrDefault();
                 if (targetGroup != null)
                 {
@@ -604,14 +603,15 @@ namespace VK_Unicorn
         /// Вызывает callback на закрытую группу, в которой ещё нету членства, с которой можно взамодействовать
         /// и с которой дольше всего не взаимодействовали
         /// </summary>
-        public void ForBestInteractableWantToJoinGroup(Callback<Group> callback)
+        public void ForFirstInteractableWantToJoinGroup(Callback<Group> callback)
         {
             ForDatabaseUnlocked((db) =>
             {
                 var allGroups = db.Table<Group>().ToList();
-                allGroups.RemoveAll(_ => !_.CanInteract());
-                allGroups.RemoveAll(_ => !_.IsWantToJoin());
-                var targetGroup = allGroups.OrderBy(_ => _.LastScanned).FirstOrDefault();
+                allGroups.RemoveAll(_ =>
+                    !_.CanInteract() || !_.IsWantToJoin()
+                );
+                var targetGroup = allGroups.FirstOrDefault();
                 if (targetGroup != null)
                 {
                     callback(targetGroup);

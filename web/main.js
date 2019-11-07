@@ -36,7 +36,7 @@ function main() {
     $('#display-groups').popover({
         trigger: 'hover',
         placement: 'left',
-        delay: { "show": 400, "hide": 100 },
+        delay: { "show": 450, "hide": 100 },
         content: 'Настроить группы'
     });
 
@@ -51,7 +51,7 @@ function main() {
         container: '#add-group-button',
         trigger: 'hover',
         placement: 'top',
-        delay: { "show": 400, "hide": 100 },
+        delay: { "show": 450, "hide": 100 },
         content: 'Добавить группу'
     });
 

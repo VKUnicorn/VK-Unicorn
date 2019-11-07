@@ -65,10 +65,19 @@ namespace VK_Unicorn
                         // Готовим список задач, которые вообще можно делать. Задачи будут проверяться в порядке их объявления
                         var possibleTaskConditions = new List<Callback>()
                         {
+                            // Ищём группу которую можно просканировать и сканируем её, если есть
+                            () =>
+                            {
+                                Database.Instance.ForBestGroupToInteract((group) =>
+                                {
+                                    currentTask = async () => { await ScanGroupTask(group); };
+                                });
+                            },
+
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                //currentTask = async () => { await JustWait(); };
+                                currentTask = async () => { await JustWait(); };
                             },
 
                             // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
@@ -84,7 +93,7 @@ namespace VK_Unicorn
                             // Проверяем нужно ли получить основную информацию о каких-либо группах, которые добавил пользователь
                             () =>
                             {
-                                var groupsToReceiveInfo = Database.Instance.Take<Database.GroupToAdd>(VkLimits.GROUPS_GETBYID_GROUP_IDS);
+                                var groupsToReceiveInfo = Database.Instance.Take<Database.GroupToReceiveInfo>(VkLimits.GROUPS_GETBYID_GROUP_IDS);
                                 if (groupsToReceiveInfo.Count > 0)
                                 {
                                     currentTask = async () => { await GetGroupsInfoTask(groupsToReceiveInfo); };
@@ -94,18 +103,9 @@ namespace VK_Unicorn
                             // Ищем группы в которые можно подать заявки. Если такие есть, то подаём заявку
                             () =>
                             {
-                                Database.Instance.ForBestInteractableWantToJoinGroup((group) =>
+                                Database.Instance.ForFirstInteractableWantToJoinGroup((group) =>
                                 {
                                     currentTask = async () => { await JoinClosedGroupTask(group); };
-                                });
-                            },
-
-                            // Ищём группу которую можно просканировать и сканируем её, если есть
-                            () =>
-                            {
-                                Database.Instance.ForBestGroupToInteract((group) =>
-                                {
-                                    currentTask = async () => { await ScanGroupTask(group); };
                                 });
                             },
 
@@ -182,7 +182,7 @@ namespace VK_Unicorn
             }
         }
 
-        async Task GetGroupsInfoTask(IEnumerable<Database.GroupToAdd> groupsToReceiveInfo)
+        async Task GetGroupsInfoTask(IEnumerable<Database.GroupToReceiveInfo> groupsToReceiveInfo)
         {
             try
             {
@@ -342,7 +342,9 @@ namespace VK_Unicorn
 
                 Utils.Log("Сканируем группу " + group.Name, LogLevel.GENERAL);
 
-
+                //if ()
+                {
+                }
             }
             catch (System.Exception ex)
             {
@@ -393,25 +395,32 @@ namespace VK_Unicorn
                 domainName = domainName.ToLowerInvariant().Replace("public", "club");
             }
 
-            if (!string.IsNullOrEmpty(domainName))
+            try
             {
-                var result = Database.Instance.InsertOrReplace(new Database.GroupToAdd()
+                if (!string.IsNullOrEmpty(domainName))
                 {
-                    DomainName = domainName,
-                });
+                    var result = Database.Instance.InsertOrReplace(new Database.GroupToReceiveInfo()
+                    {
+                        DomainName = domainName,
+                    });
 
-                if (result)
-                {
-                    Utils.Log("Группа " + domainName + " успешно добавлена в очередь на начальное сканирование", LogLevel.SUCCESS);
+                    if (result)
+                    {
+                        Utils.Log("Группа " + domainName + " успешно добавлена в очередь на начальное сканирование", LogLevel.SUCCESS);
+                    }
+                    else
+                    {
+                        throw new Exception("скорее всего группа уже добавлена в очередь на начальное сканирование");
+                    }
                 }
                 else
                 {
-                    throw new Exception("скорее всего группа уже добавлена в очередь на начальное сканирование");
+                    throw new Exception("не удалось получить имя группы из ссылки");
                 }
             }
-            else
+            catch (System.Exception ex)
             {
-                throw new Exception("не удалось получить имя группы из ссылки");
+                Utils.Log("не удалось добавить группу " + groupWebUrl + " на сканирование. Причина: " + ex.Message, LogLevel.ERROR);
             }
         }
     }

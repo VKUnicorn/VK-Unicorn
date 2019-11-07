@@ -3,21 +3,44 @@ function loadGroups() {
     start_loading();
 
     $.getJSON('groups', {
-    }, function (result) {
+    }, function(result) {
+        // Добавляем отдельные категории для групп
+        function addGroupCategory(isClosed) {
+            $(`
+                <div class="row-fluid mx-1" id="groups-header-closed-${isClosed}">
+                    <div class="alert alert-secondary bg-light pt-1 pl-3 pb-0 mt-2 mb-0" role="alert">
+                        <h5 class="mb-1">${isClosed ? 'Закрытые' : 'Открытые'} группы<span class="badge badge-success opaque-5 ml-1" id="badge-groups-closed-${isClosed}"></span></h5>
+                    </div>
+                </div>
+                <div class="row mx-0" id="groups-closed-${isClosed}">
+                </div>
+            `).appendTo($('#workspace'));
+        };
+
+        let closedGroupsCount = 0;
+        addGroupCategory(true);
+        let openGroupsCount = 0;
+        addGroupCategory(false);
+
+        // Добавляем загруженные группы в сооветствующие категории
         for (let groupExtraInfo of result) {
             let group = groupExtraInfo.data;
 
             let lockElement = '';
             let lockHintElement = '';
+            let warningElement = '';
             if (group.IsClosed) {
                 lockElement = '<i class="lni-' + (group.IsMember ? 'un' : '') + 'lock mr-1"></i>';
                 lockHintElement = '<br /><font color=' + (group.IsMember ? 'green' : 'red') + '>Группа закрыта и вы ' + (group.IsMember ? '' : 'не ') + 'являетесь её участником</font>';
+                if (!group.IsMember) {
+                    warningElement = 'bg-error';
+                }
             }
 
             // Заполняем карточку группы
             let groupCard = $(`
                 <div class="col-sm-3 px-1 py-1">
-                    <div class="card">
+                    <div class="card ${warningElement}">
                         <div class="card-img-overlay px-1 py-1">
                             <a class="btn btn-danger float-right px-2 py-2 delete-group-button"><i class="lni-close" style="color: white"></i></a>
                         </div>
@@ -36,34 +59,34 @@ function loadGroups() {
                         </div>
                     </div>
                 </div>
-            `).appendTo($('#workspace'));
+            `).appendTo($('#groups-closed-' + group.IsClosed));
 
             // Тултипы
             groupCard.find('.delete-group-button').popover({
                 trigger: 'hover',
                 placement: 'bottom',
-                delay: { "show": 400, "hide": 100 },
+                delay: { "show": 450, "hide": 100 },
                 content: 'Удалить группу навсегда'
             });
 
             groupCard.find('span.small-info-box').popover({
                 trigger: 'hover',
                 placement: 'top',
-                delay: { "show": 400, "hide": 100 },
+                delay: { "show": 450, "hide": 100 },
                 content: 'Сколько профилей было найдено из этой группы'
             });
 
             groupCard.find('#last-activity').popover({
                 trigger: 'hover',
                 placement: 'top',
-                delay: { "show": 400, "hide": 100 },
+                delay: { "show": 450, "hide": 100 },
                 content: 'Как давно было найдено что-нибудь полезное в этой группе' + lockHintElement
             });
 
             groupCard.find('#last-scanned').popover({
                 trigger: 'hover',
                 placement: 'top',
-                delay: { "show": 400, "hide": 100 },
+                delay: { "show": 450, "hide": 100 },
                 content: 'Как давно было последнее сканирование группы'
             });
 
@@ -95,6 +118,28 @@ function loadGroups() {
                     }
                 });
             });
+
+            // Увеличиваем счётчики
+            if (group.IsClosed) {
+                ++closedGroupsCount;
+            }
+            else {
+                ++openGroupsCount;
+            }
+        }
+
+        // Удаляем пустые категории и заполняем баджи с количеством групп
+        if (closedGroupsCount > 0) {
+            $('#badge-groups-closed-true').text(closedGroupsCount);
+        } else {
+            $('#groups-header-closed-true').remove();
+            $('#groups-closed-true').remove();
+        }
+        if (openGroupsCount > 0) {
+            $('#badge-groups-closed-false').text(openGroupsCount);
+        } else {
+            $('#groups-header-closed-false').remove();
+            $('#groups-closed-false').remove();
         }
 
         finish_loading();
@@ -112,13 +157,7 @@ function loadGroups() {
     }).fail(function(result) {
         finish_loading();
 
-        let responseJSON = result['responseJSON'];
-        if (responseJSON === undefined) {
-            $.hulla.send("Ошибка при загрузке списка групп.<br>Главный модуль программы не запущен или в нём произошла внутренняя ошибка", "danger");
-        }
-        else {
-            $.hulla.send(responseJSON.error, "danger");
-        }
+        $.hulla.send("Ошибка при загрузке списка групп.<br>Главный модуль программы не запущен или в нём произошла внутренняя ошибка", "danger");
     })
 }
 
@@ -129,7 +168,7 @@ function showAddGroupDialog() {
         inputType: 'textarea',
         placeholder: "https://vk.com/club123456\nhttps://vk.com/public123456\nhttps://vk.com/apiclub\napiclub",
         backdrop: true,
-        callback: function (groupNames) {
+        callback: function(groupNames) {
             if (groupNames) {
                 // Отправляем запрос на добавление новой группы
                 $.post("add_group",
