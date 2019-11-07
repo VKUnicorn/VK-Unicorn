@@ -53,10 +53,13 @@ namespace VK_Unicorn
                         // Добавляем каждую группу
                         foreach (var group in groupsToAdd)
                         {
-                            if (group.Trim() != string.Empty)
+                            // Пропускаем пустые строки
+                            if (group.Trim() == string.Empty)
                             {
-                                Worker.Instance.RegisterNewGroupToAdd(group);
+                                continue;
                             }
+
+                            Worker.Instance.RegisterNewGroupToAdd(group);
                         }
 
                         handled = true;

@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using VkNet;
+using System.Linq;
 using VkNet.Model;
 using VkNet.Enums.Filters;
-using VkNet.Model.RequestParams;
 using VkNet.Enums.SafetyEnums;
-using System.Net;
-using System.IO;
-using System.Linq;
+using VkNet.Model.RequestParams;
 using System.Text.RegularExpressions;
 
 namespace VK_Unicorn
@@ -77,7 +75,7 @@ namespace VK_Unicorn
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                currentTask = async () => { await JustWait(); };
+                                currentTask = async () => { await WaitAndSlack(); };
                             },
 
                             // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
@@ -112,7 +110,7 @@ namespace VK_Unicorn
                             // Нечего больше делать, просто ждём. Другие задачи могут появиться позже
                             () =>
                             {
-                                currentTask = async () => { await JustWait(); };
+                                currentTask = async () => { await WaitAndSlack(); };
                             },
                         };
 
@@ -142,11 +140,8 @@ namespace VK_Unicorn
                     await currentTask();
                 }
 
-                // Ждём некоторое время. Торопиться некуда, лучше сканировать медленно, но зато без угрозы бана аккаунта
-                // Слишком частые запросы это плохо, о лимитах можно почитать тут https://vk.com/dev/api_requests
-                // в разделе "3. Ограничения и рекомендации". В целом рекомендуется обращаться не чаще трёх раз в секунду,
-                // но мы будем сканировать значительно реже, опять же чтобы снизить угрозу бана аккаунта или появления капчи
-                await Task.Delay(TimeSpan.FromSeconds(3d));
+                // Ждём минимальное время
+                await WaitMinimumTimeout();
             }
         }
 
@@ -175,7 +170,7 @@ namespace VK_Unicorn
 
                 MainForm.Instance.SetStatus("успешная авторизация", StatusType.SUCCESS);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Utils.Log("не удалось авторизироваться. Причина: " + ex.Message, LogLevel.ERROR);
                 await WaitAlotAfterError();
@@ -249,7 +244,7 @@ namespace VK_Unicorn
                     }
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Utils.Log("не удалось получить информацию о группах. Причина: " + ex.Message, LogLevel.ERROR);
                 await WaitAlotAfterError();
@@ -327,7 +322,7 @@ namespace VK_Unicorn
                     }
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Utils.Log("не удалось отправить заявку на вступление в группу " + group.Name + ". Причина: " + ex.Message, LogLevel.ERROR);
                 await WaitAlotAfterError();
@@ -340,20 +335,119 @@ namespace VK_Unicorn
             {
                 MainForm.Instance.SetStatus("сканируем группу", StatusType.GENERAL);
 
-                Utils.Log("Сканируем группу " + group.Name, LogLevel.GENERAL);
+                var scanOffset = 0ul;
+                var needToLoadMorePosts = true;
 
-                //if ()
+                while (needToLoadMorePosts)
                 {
+                    needToLoadMorePosts = false;
+
+                    Utils.Log("Сканируем группу " + group.Name + " с позиции " + scanOffset, LogLevel.GENERAL);
+
+                    try
+                    {
+                        // Загружаем сообщения из группы
+                        // Максимум 5000 запросов в сутки https://vk.com/dev/data_limits
+                        // Поэтому нет смысла получать меньше соо, чем позволяет VkLimits.WALL_GET_COUNT
+                        // т.к. каждый запрос ценен и нужно получить как можно больше информации сразу
+                        var postsLimit = 5ul; // VkLimits.WALL_GET_COUNT;
+                        var wallGetObjects = await api.Wall.GetAsync(new WallGetParams()
+                        {
+                            OwnerId = group.GetNegativeId(),
+                            Count = postsLimit,
+                            Offset = scanOffset,
+                        });
+                        await WaitMinimumTimeout();
+
+                        // Начинаем работу с записями
+                        var posts = wallGetObjects.WallPosts;
+
+                        // Нету больше записей. Сканирование группы завершено
+                        if (posts.Count <= 0)
+                        {
+                            break;
+                        }
+
+                        var isLastPostNotSeenBefore = false;
+
+                        // Обходим все записи
+                        foreach (var post in posts)
+                        {
+                            // Нужно ли вообще сканировать запись?
+                            var needToScanPost = true;
+
+                            // Ищем запись в нашей базе
+                            Database.Instance.ForScannedPostInfo(group.Id, post.Id.Value, (scannedPost) =>
+                            {
+                                // Уже видели эту запись когда-то
+                                isLastPostNotSeenBefore = false;
+
+                                // Нужно сканировать запись повторно?
+                                needToScanPost = (post.Comments.Count > scannedPost.CommentsCount) || (post.Likes.Count > scannedPost.LikesCount);
+                            });
+
+                            if (needToScanPost)
+                            {
+                                //
+
+                                // Сканируем лайки
+                                if (post.Likes.Count > 0)
+                                {
+
+                                }
+
+                                // Сканируем комментарии
+                                if (post.Comments.Count > 0)
+                                {
+
+                                }
+
+                                // Сканируем лайки к комментариям
+                            }
+                        }
+
+                        // Было возвращено записей не меньше чем мы запросили?
+                        // Это значит что можно загрузить ещё записи при необходимости
+                        if ((ulong)posts.Count >= postsLimit)
+                        {
+                            // Последняя запись была новая для нас?
+                            if (isLastPostNotSeenBefore)
+                            {
+                                // Последняя запись не слишком старая?
+                                if ((DateTime.Now - posts.Last().Date) > Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                {
+                                    // Увеличиваем отступ с которого будем продолжать сканирование
+                                    scanOffset += postsLimit;
+
+                                    // Нужно загрузить ещё записи
+                                    needToLoadMorePosts = true;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Utils.Log("не удалось получить записи. Причина: " + ex.Message, LogLevel.ERROR);
+                        await WaitAlotAfterError();
+                    }
+
+                    // Для дебага
+                    needToLoadMorePosts = false;
                 }
+
+                // Сканируем профили
+
+                // Помечаем группу как только что просканированную
+                group.MarkAsJustScanned();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Utils.Log("не удалось просканировать группу " + group.Name + ". Причина: " + ex.Message, LogLevel.ERROR);
                 await WaitAlotAfterError();
             }
         }
 
-        async Task JustWait()
+        async Task WaitAndSlack()
         {
             MainForm.Instance.SetStatus("ожидание" + GetProgressDots(), StatusType.SUCCESS);
 
@@ -365,6 +459,15 @@ namespace VK_Unicorn
             MainForm.Instance.SetStatus("ожидание после ошибки", StatusType.ERROR);
 
             await Task.Delay(TimeSpan.FromSeconds(20d));
+        }
+
+        async Task WaitMinimumTimeout()
+        {
+            // Ждём некоторое время. Торопиться некуда, лучше сканировать медленно, но зато без угрозы бана аккаунта
+            // Слишком частые запросы это плохо, о лимитах можно почитать тут https://vk.com/dev/api_requests
+            // в разделе "3. Ограничения и рекомендации". В целом рекомендуется обращаться не чаще трёх раз в секунду,
+            // но мы будем сканировать значительно реже, опять же чтобы снизить угрозу бана аккаунта или появления капчи
+            await Task.Delay(TimeSpan.FromSeconds(1.5d));
         }
 
         // Счётчик для отображения изменяющегося троеточия в процессе сканирования
@@ -418,7 +521,7 @@ namespace VK_Unicorn
                     throw new Exception("не удалось получить имя группы из ссылки");
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Utils.Log("не удалось добавить группу " + groupWebUrl + " на сканирование. Причина: " + ex.Message, LogLevel.ERROR);
             }

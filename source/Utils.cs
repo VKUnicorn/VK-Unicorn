@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Drawing;
 using System.Reflection;
-using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace VK_Unicorn
 {
@@ -182,7 +182,7 @@ namespace VK_Unicorn
                         stream.Read(result, 0, result.Length);
                     }
                 }
-                catch (System.Exception)
+                catch (Exception)
                 {
                     // Файл не найден или какая-то ошибка
                     result = null;

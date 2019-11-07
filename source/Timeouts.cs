@@ -14,5 +14,10 @@ namespace VK_Unicorn
         /// Таймаут после повторной проверки не приняли ли нашу заявку на вступление в группу
         /// </summary>
         public static TimeSpan AFTER_GROUP_JOIN_REQUEST_NOT_ACCEPTED = TimeSpan.FromHours(1);
+
+        /// <summary>
+        /// Таймаут после сканирования группы
+        /// </summary>
+        public static TimeSpan AFTER_GROUP_WAS_SCANNED = TimeSpan.FromMinutes(30);
     }
 }

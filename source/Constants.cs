@@ -10,7 +10,7 @@ namespace VK_Unicorn
         public const string VK_WEB_PAGE = "https://vk.com/";
 
         public const int WEB_PORT = 5051;
-        public static string RESULTS_WEB_PAGE = "http://localhost:" + WEB_PORT + "/";
+        public static readonly string RESULTS_WEB_PAGE = "http://localhost:" + WEB_PORT + "/";
         public const string SERVER_NAME = "VKUnicornWebServer";
 
         public const string DATABASE_FILENAME = "database.db";
@@ -29,6 +29,6 @@ namespace VK_Unicorn
         public const int MINIMUM_AGE = 18;
 
         // Максимальная глубина сканирования записей по времени
-        public TimeSpan MAX_SCANNING_DEPTH_IN_TIME = TimeSpan.FromDays(90);
+        public static readonly TimeSpan MAX_SCANNING_DEPTH_IN_TIME = TimeSpan.FromDays(90);
     }
 }

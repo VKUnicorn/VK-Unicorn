@@ -142,19 +142,19 @@ namespace VK_Unicorn
             }
 
             /// <summary>
+            /// Это закрытая группа в которую ещё не вступили?
+            /// </summary>
+            public bool IsWantToJoin()
+            {
+                return IsClosed && !IsMember;
+            }
+
+            /// <summary>
             /// Прошло ли время после которого разрешено взаимодействовать с группой
             /// </summary>
             public bool CanInteract()
             {
                 return DateTime.Now > InteractTimeout;
-            }
-
-            /// <summary>
-            /// Закрытая группа в которую ещё не вступили
-            /// </summary>
-            public bool IsWantToJoin()
-            {
-                return IsClosed && !IsMember;
             }
 
             /// <summary>
@@ -166,43 +166,69 @@ namespace VK_Unicorn
 
                 Instance.InsertOrReplace(this);
             }
+
+            /// <summary>
+            /// Помечаем группу как только что просканированную
+            /// </summary>
+            public void MarkAsJustScanned()
+            {
+                LastScanned = DateTime.Now;
+
+                Instance.InsertOrReplace(this);
+            }
+
+            /// <summary>
+            /// Сканировали группу хотя бы раз?
+            /// </summary>
+            public bool WasScanned()
+            {
+                return LastActivity.Ticks > 0;
+            }
+
+            /// <summary>
+            /// Возвращает Id со знаком минус. Используется в API запросах
+            /// </summary>
+            public long GetNegativeId()
+            {
+                return -Id;
+            }
         }
 
-        // Таблица активности когда кто-то лайкает пост
+        // Таблица активности когда кто-то лайкает запись
         public class LikeActivity
         {
             // Id профиля, который что-то лайкнул
             public long Id { get; set; }
 
-            // Id группы в которой был пост
+            // Id группы в которой была запись
             public long GroupId { get; set; }
 
-            // Id поста из группы
+            // Id записи из группы
             public long PostId { get; set; }
 
-            // Что было написано в посте, который лайкнули
+            // Что было написано в записи, которую лайкнули
             public string PostContent { get; set; }
 
             // Когда этот профиль был лайкнут
             public DateTime WhenAdded { get; set; }
         }
 
-        // Таблица активности когда кто-то пишет пост
+        // Таблица активности когда кто-то пишет запись
         public class PostActivity
         {
             // Id профиля, который что-то написал
             public long ProfileId { get; set; }
 
-            // Id группы в которой был пост
+            // Id группы в которой была запись
             public long GroupId { get; set; }
 
-            // Id поста из группы
+            // Id записи из группы
             public long PostId { get; set; }
 
-            // Что было написано в посте
+            // Что было написано в записи
             public string PostContent { get; set; }
 
-            // Когда этот пост был добавлен
+            // Когда эта запись была добавлена
             public DateTime WhenAdded { get; set; }
         }
 
@@ -212,13 +238,13 @@ namespace VK_Unicorn
             // Id профиля, который что-то написал
             public long ProfileId { get; set; }
 
-            // Id группы в которой был пост
+            // Id группы в которой была запись
             public long GroupId { get; set; }
 
-            // Id поста из группы
+            // Id записи из группы
             public long PostId { get; set; }
 
-            // Id комментария к посту
+            // Id комментария к записи
             public long CommentId { get; set; }
 
             // Что было написано в комментарии
@@ -233,30 +259,30 @@ namespace VK_Unicorn
         // следовательно будет отправляться значительно меньше запросов на серверы
         // ВКонтакте. После того как профиль попадает в эту таблицу мы больше не
         // будем получать никакую информацию о нём в дальнейшем
-        public class ScannedProfiles
+        public class ScannedProfile
         {
             // Id профиля
             [PrimaryKey, Unique]
             public long Id { get; set; }
         }
 
-        // Таблица с id тех постов, которые мы уже просканировали.
-        // Запоминается так же количество лайков и комментариев к этому посту чтобы
-        // потом повторно сканировать посты где что-то изменилось в большую сторону
-        public class ScannedPosts
+        // Таблица с id тех записей, которые мы уже просканировали.
+        // Запоминается так же количество лайков и комментариев к этой записи чтобы
+        // потом повторно сканировать запись где что-то изменилось в большую сторону
+        public class ScannedPost
         {
-            // Id группы, в которой был написан пост
+            // Id группы, в которой была написана запись
             public long GroupId { get; set; }
 
-            // Id поста в этой группе
+            // Id записи в этой группе
             public long PostId { get; set; }
 
             // Счётчик лайков. Если он изменится в большую сторону, то будем
-            // сканировать пост повторно
+            // сканировать запись повторно
             public int LikesCount { get; set; }
 
             // Счётчик комментариев. Если он изменится в большую сторону, то будем
-            // сканировать пост повторно
+            // сканировать запись повторно
             public int CommentsCount { get; set; }
         }
 
@@ -315,7 +341,7 @@ namespace VK_Unicorn
             {
                 CreateTables();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Utils.Log("Не удалось инициализировать базу данных " + Constants.DATABASE_FILENAME + " для хранения базы данных. Причина: " + ex.Message, LogLevel.ERROR);
                 throw;
@@ -327,7 +353,7 @@ namespace VK_Unicorn
             {
                 UpdateTables();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Utils.Log("Не удалось обновить таблицы в базе данных. Причина: " + ex.Message, LogLevel.ERROR);
                 throw;
@@ -347,7 +373,7 @@ namespace VK_Unicorn
                 db.CreateTable<Profile>();
                 db.CreateTables<GroupToReceiveInfo, Group>();
                 db.CreateTables<LikeActivity, PostActivity, CommentActivity>();
-                db.CreateTables<ScannedProfiles, ScannedPosts>();
+                db.CreateTables<ScannedProfile, ScannedPost>();
             });
         }
 
@@ -391,7 +417,7 @@ namespace VK_Unicorn
                     {
                         callback(db);
                     }
-                    catch (System.Exception ex)
+                    catch (Exception ex)
                     {
                         Utils.Log("во время блокирующего обращения к базе была поймана ошибка: " + ex.Message, LogLevel.ERROR);
                     }
@@ -527,7 +553,9 @@ namespace VK_Unicorn
             var result = new List<T>();
             ForDatabaseUnlocked((db) =>
             {
-                result = db.Table<T>().Take(amount).ToList();
+                result = db.Table<T>()
+                    .Take(amount)
+                    .ToList();
             });
 
             return result;
@@ -562,8 +590,8 @@ namespace VK_Unicorn
             Utils.Log("Статистика:", LogLevel.SUCCESS);
             Utils.Log("    Всего найдено полезных профилей: " + GetCount<Profile>(), LogLevel.NOTIFY);
             Utils.Log("    Количество групп для сканирования: " + GetCount<Group>(), LogLevel.NOTIFY);
-            Utils.Log("    Просканировано профилей: " + GetCount<ScannedProfiles>(), LogLevel.NOTIFY);
-            Utils.Log("    Просканировано постов: " + GetCount<ScannedPosts>(), LogLevel.NOTIFY);
+            Utils.Log("    Просканировано профилей: " + GetCount<ScannedProfile>(), LogLevel.NOTIFY);
+            Utils.Log("    Просканировано записей: " + GetCount<ScannedPost>(), LogLevel.NOTIFY);
         }
 
         /// <summary>
@@ -581,7 +609,8 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Вызывает callback на группу, к которой мы присоеденились, с которой можно взамодействовать и с которой дольше всего не взаимодействовали
+        /// Вызывает callback на группу, к которой мы присоеденились (если закрытая), с которой можно взамодействовать
+        /// и с которой дольше всего не взаимодействовали
         /// </summary>
         public void ForBestGroupToInteract(Callback<Group> callback)
         {
@@ -600,8 +629,7 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Вызывает callback на закрытую группу, в которой ещё нету членства, с которой можно взамодействовать
-        /// и с которой дольше всего не взаимодействовали
+        /// Вызывает callback на закрытую группу, в которой ещё нету членства и с которой можно взамодействовать
         /// </summary>
         public void ForFirstInteractableWantToJoinGroup(Callback<Group> callback)
         {
@@ -615,6 +643,23 @@ namespace VK_Unicorn
                 if (targetGroup != null)
                 {
                     callback(targetGroup);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Вызывает callback на запись из группы, если она уже просканирована
+        /// </summary>
+        public void ForScannedPostInfo(long groupId, long postId, Callback<ScannedPost> callback)
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                var result = db.Table<ScannedPost>()
+                    .Where(_ => (_.GroupId == groupId) && (_.PostId == postId))
+                    .FirstOrDefault();
+                if (result != null)
+                {
+                    callback(result);
                 }
             });
         }
