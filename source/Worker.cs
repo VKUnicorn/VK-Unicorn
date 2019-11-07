@@ -329,11 +329,32 @@ namespace VK_Unicorn
             }
         }
 
+        class ProfileActivity
+        {
+            public enum Type
+            {
+                POST,
+                LIKE,
+                COMMENT,
+                COMMENT_LIKE,
+            }
+
+            public long ProfileId;
+            public Type type;
+
+            public string content;
+
+            public long PostId;
+            public long? CommentId;
+        }
         async Task ScanGroupTask(Database.Group group)
         {
             try
             {
                 MainForm.Instance.SetStatus("сканируем группу", StatusType.GENERAL);
+
+                // Список интересующей нас активности профилей
+                var profileActivities = new List<ProfileActivity>();
 
                 var scanOffset = 0ul;
                 var needToLoadMorePosts = true;
@@ -348,7 +369,7 @@ namespace VK_Unicorn
                     {
                         // Загружаем сообщения из группы
                         // Максимум 5000 запросов в сутки https://vk.com/dev/data_limits
-                        // Поэтому нет смысла получать меньше соо, чем позволяет VkLimits.WALL_GET_COUNT
+                        // поэтому нет смысла получать меньше записей чем лимит VkLimits.WALL_GET_COUNT
                         // т.к. каждый запрос ценен и нужно получить как можно больше информации сразу
                         var postsLimit = 5ul; // VkLimits.WALL_GET_COUNT;
                         var wallGetObjects = await api.Wall.GetAsync(new WallGetParams()
@@ -388,7 +409,14 @@ namespace VK_Unicorn
 
                             if (needToScanPost)
                             {
-                                //
+                                // Добавляем автора записи для дальнейшей обработки
+                                profileActivities.Add(new ProfileActivity()
+                                {
+                                    ProfileId = post.FromId.Value,
+                                    type = ProfileActivity.Type.POST,
+                                    content = post.Text,
+                                    PostId = post.Id.Value,
+                                });
 
                                 // Сканируем лайки
                                 if (post.Likes.Count > 0)
@@ -400,9 +428,8 @@ namespace VK_Unicorn
                                 if (post.Comments.Count > 0)
                                 {
 
+                                    // Сканируем лайки к комментариям
                                 }
-
-                                // Сканируем лайки к комментариям
                             }
                         }
 
@@ -435,10 +462,13 @@ namespace VK_Unicorn
                     needToLoadMorePosts = false;
                 }
 
-                // Сканируем профили
+                // Обрабатываем интересующие нас записи, лайки, комментарии и т.п.
 
                 // Помечаем группу как только что просканированную
                 group.MarkAsJustScanned();
+
+                // Устанавливаем время ожидания перед следующим сканированием
+                group.SetInteractTimeout(Timeouts.AFTER_GROUP_WAS_SCANNED);
             }
             catch (Exception ex)
             {

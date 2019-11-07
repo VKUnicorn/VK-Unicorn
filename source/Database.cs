@@ -178,14 +178,6 @@ namespace VK_Unicorn
             }
 
             /// <summary>
-            /// Сканировали группу хотя бы раз?
-            /// </summary>
-            public bool WasScanned()
-            {
-                return LastActivity.Ticks > 0;
-            }
-
-            /// <summary>
             /// Возвращает Id со знаком минус. Используется в API запросах
             /// </summary>
             public long GetNegativeId()
