@@ -163,8 +163,8 @@ namespace VK_Unicorn
             // URL главной фотографии в максимальном размере
             public string PhotoURL { get; set; }
 
-            // Когда этот пользователь был добавлен в базу данных
-            public DateTime WhenAdded { get; set; }
+            // Когда была последняя активность этого пользователя
+            public DateTime LastActivity { get; set; }
 
             // С какого сообщества был добавлен пользователь
             public long FromGroupId { get; set; }
@@ -211,7 +211,7 @@ namespace VK_Unicorn
             public string Content { get; set; }
 
             // Когда была произведена эта активость
-            public DateTime WhenAdded { get; set; }
+            public DateTime WhenHappened { get; set; }
         }
 
         // Таблица с id тех пользователей, которых мы уже просканировали.
@@ -231,6 +231,10 @@ namespace VK_Unicorn
         // потом повторно сканировать запись где что-то изменилось в большую сторону
         public class ScannedPost
         {
+            // Id записи и сообщества вместе
+            [PrimaryKey, Unique]
+            public string Id { get; set; }
+
             // Id сообщества, в котором была написана запись
             public long GroupId { get; set; }
 
@@ -244,6 +248,11 @@ namespace VK_Unicorn
             // Счётчик комментариев. Если он изменится в большую сторону, то будем
             // сканировать запись повторно
             public int CommentsCount { get; set; }
+
+            public static string MakeId(long groupId, long postId)
+            {
+                return groupId + "_" + postId;
+            }
         }
 
         // Маркер для служебного использования. Менять не нужно
@@ -254,11 +263,17 @@ namespace VK_Unicorn
         {
             public enum SearchMethodType
             {
-                // Только те пользователи, у которых указан твой город
+                /// <summary>
+                /// Только те пользователи, у которых указан твой город
+                /// </summary>
                 BY_CITY,
-                // Все пользователи из закрытых сообществ, остальные по городу
+                /// <summary>
+                /// Все пользователи из закрытых сообществ, остальные по городу
+                /// </summary>
                 SMART,
-                // Все пользователи c полом Constants.TARGET_SEX_ID. Огромное количество спама и ботов
+                /// <summary>
+                /// Все пользователи c полом Constants.TARGET_SEX_ID. Огромное количество спама и ботов
+                /// </summary>
                 ALL_OF_TARGET_SEX,
             }
 
@@ -326,6 +341,17 @@ namespace VK_Unicorn
             catch (Exception ex)
             {
                 Utils.Log("Не удалось обновить таблицы в базе данных. Причина: " + ex.Message, LogLevel.ERROR);
+                throw;
+            }
+
+            try
+            {
+                // Уменьшаем размер базы на диске
+                Vacuum();
+            }
+            catch (Exception ex)
+            {
+                Utils.Log("Не удалось уменьшить размер базы на диске. Причина: " + ex.Message, LogLevel.ERROR);
                 throw;
             }
 
@@ -624,16 +650,7 @@ namespace VK_Unicorn
         /// </summary>
         public void ForScannedPostInfo(long groupId, long postId, Callback<ScannedPost> callback)
         {
-            ForDatabaseUnlocked((db) =>
-            {
-                var result = db.Table<ScannedPost>()
-                    .Where(_ => (_.GroupId == groupId) && (_.PostId == postId))
-                    .FirstOrDefault();
-                if (result != null)
-                {
-                    callback(result);
-                }
-            });
+            For(ScannedPost.MakeId(groupId, postId), callback);
         }
 
         /// <summary>

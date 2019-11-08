@@ -4,6 +4,7 @@ using System.Text;
 using System.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace VK_Unicorn
 {
@@ -141,12 +142,31 @@ namespace VK_Unicorn
                         case "users":
                             Database.Instance.ForEach<Database.User>((user) =>
                             {
+                                // Заменяем ссылку на фото, если нужно
+                                // Это связано с тем, что многие скрипты для uBlock/ADblock блокируют
+                                // загрузку изображений ВКонтакта с другого домена, в итоге изображение блокируется
+                                // и дизайн сайта страдает от неправильно отображаемых элементов интерфейса
+                                if (user.PhotoURL.StartsWith(Constants.VK_WEB_PAGE))
+                                {
+                                    // Удаляем начальный адрес до имени файла
+                                    user.PhotoURL = Regex.Replace(user.PhotoURL, @".+\/", "");
+
+                                    // Удаляем параметры запроса. Например ?ava=1 и т.п.
+                                    user.PhotoURL = Regex.Replace(user.PhotoURL, @"\?.+$", "");
+                                }
+
                                 resultObjects.Add(new Dictionary<string, object>()
                                 {
                                     { "data", user },
                                     { "URL", user.GetURL() },
                                 });
                             });
+
+                            // Сортируем пользователей по их последней активноси
+                            resultObjects = resultObjects
+                                .OrderByDescending(_ => (_["data"] as Database.User).LastActivity)
+                                .ToList()
+                            ;
 
                             handled = true;
                             break;

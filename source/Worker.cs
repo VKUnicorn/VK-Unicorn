@@ -365,7 +365,7 @@ namespace VK_Unicorn
                         // Максимум 5000 запросов в сутки https://vk.com/dev/data_limits
                         // каждый запрос ценен и нужно получить как можно больше информации сразу,
                         // поэтому нет смысла получать меньше записей чем VkLimits.WALL_GET_COUNT
-                        var postsLimit = 5ul; // VkLimits.WALL_GET_COUNT;
+                        var postsLimit = VkLimits.WALL_GET_COUNT;
                         var wallGetObjects = await api.Wall.GetAsync(new WallGetParams()
                         {
                             OwnerId = group.GetNegativeId(),
@@ -423,7 +423,7 @@ namespace VK_Unicorn
                                             Content = post.Text,
                                             PostId = post.Id.GetValueOrDefault(),
                                             GroupId = group.Id,
-                                            WhenAdded = post.Date.GetValueOrDefault(),
+                                            WhenHappened = post.Date.GetValueOrDefault(),
                                         });
                                     }
                                 }
@@ -440,6 +440,16 @@ namespace VK_Unicorn
 
                                     // Сканируем лайки к комментариям
                                 }
+
+                                // Пост нужно было просканировать. Сохраняем новую информацию о нём или обновляем старую
+                                Database.Instance.InsertOrReplace(new Database.ScannedPost()
+                                {
+                                    Id = Database.ScannedPost.MakeId(group.Id, post.Id.GetValueOrDefault()),
+                                    GroupId = group.Id,
+                                    PostId = post.Id.GetValueOrDefault(),
+                                    LikesCount = post.Likes.Count,
+                                    CommentsCount = post.Comments.Count,
+                                });
                             }
                         }
 
@@ -550,7 +560,7 @@ namespace VK_Unicorn
                     Utils.Log("    userId: " + Constants.VK_WEB_PAGE + "id" + userActivityToProcess.UserId, LogLevel.NOTIFY);
                     Utils.Log("    postId: " + userActivityToProcess.PostId, LogLevel.NOTIFY);
                     Utils.Log("    content: " + userActivityToProcess.Content, LogLevel.NOTIFY);
-                    Utils.Log("    whenAdded: " + userActivityToProcess.WhenAdded, LogLevel.NOTIFY);
+                    Utils.Log("    whenHappened: " + userActivityToProcess.WhenHappened, LogLevel.NOTIFY);
 
                     // Нужно ли будет сохранить данные о активности?
                     var needToSaveActivity = false;
@@ -575,12 +585,18 @@ namespace VK_Unicorn
                                 }
                             }
 
+                            // Локальная функуия на удаление всей активности этого пользователя
+                            Callback DeleteAllActivitiesToProcessFromThisUser = () =>
+                            {
+                                userActivitiesToProcess.RemoveAll(_ => _.UserId == userActivityToProcess.UserId);
+                            };
+
                             // Проверяем пол пользователя
                             if (userInfo.Sex != Constants.TARGET_SEX_ID)
                             {
                                 // Неправильный пол. Удаляем всю активность этого пользователя из
                                 // очереди на проверку и завершаем сканирование активности
-                                userActivitiesToProcess.RemoveAll(_ => _.UserId == userActivityToProcess.UserId);
+                                DeleteAllActivitiesToProcessFromThisUser();
                                 return;
                             }
 
@@ -588,15 +604,9 @@ namespace VK_Unicorn
                             switch (settings.SearchMethod)
                             {
                                 case Database.Settings.SearchMethodType.BY_CITY:
-                                    if (userInfo.City.Id.HasValue)
+                                    if (userInfo.City.Id.GetValueOrDefault() != settings.CityId)
                                     {
-                                        if (userInfo.City.Id.Value != settings.CityId)
-                                        {
-                                            return;
-                                        }
-                                    }
-                                    else
-                                    {
+                                        DeleteAllActivitiesToProcessFromThisUser();
                                         return;
                                     }
                                     break;
@@ -604,19 +614,22 @@ namespace VK_Unicorn
                                 case Database.Settings.SearchMethodType.SMART:
                                     if (!group.IsClosed)
                                     {
-                                        if (userInfo.City.Id.HasValue)
+                                        if (userInfo.City.Id.GetValueOrDefault() != settings.CityId)
                                         {
-                                            if (userInfo.City.Id.Value != settings.CityId)
-                                            {
-                                                return;
-                                            }
-                                        }
-                                        else
-                                        {
+                                            DeleteAllActivitiesToProcessFromThisUser();
                                             return;
                                         }
                                     }
                                     break;
+                            }
+
+                            // Это анкета бота? Эвристический анализ
+                            if (false)
+                            {
+                                // Похоже что это бот. Удаляем всю активность этого пользователя из
+                                // очереди на проверку и завершаем сканирование активности
+                                DeleteAllActivitiesToProcessFromThisUser();
+                                return;
                             }
 
                             // Определяем дату рождения
@@ -637,7 +650,7 @@ namespace VK_Unicorn
                             }
                             catch (Exception)
                             {
-                                // Не удалось преобразовать дату рождения
+                                // Не удалось преобразовать дату рождения, игнорируем ошибку
                             }
 
                             // Определяем Id города
@@ -666,9 +679,12 @@ namespace VK_Unicorn
                                 Status = userInfo.Status,
                                 MobilePhone = mobilePhone,
                                 PhotoURL = userInfo.PhotoMaxOrig.ToString(),
-                                WhenAdded = DateTime.Now,
+                                LastActivity = userActivityToProcess.WhenHappened,
                                 FromGroupId = group.Id,
                             });
+
+                            // Нужно так же сохранить это активность пользователя
+                            needToSaveActivity = true;
                         });
                     }
 
@@ -680,6 +696,10 @@ namespace VK_Unicorn
                         {
                             // Сохраняем эту активность как новую активность пользователя
                             Database.Instance.InsertOrReplace(userActivityToProcess);
+
+                            // TODO:
+                            // Показываем пользователя снова, если он был скрыт нами и обновляем у него
+                            // дату последней активности
                         }
                     }
 

@@ -143,6 +143,7 @@ namespace VK_Unicorn
             return Constants.VK_WEB_PAGE + self.ScreenName;
         }
 
+        // https://ru.wikipedia.org/wiki/Список_MIME-типов
         public static string GetMIMETypeByFilename(string fileName)
         {
             var lowercased = fileName.ToLowerInvariant();
@@ -154,6 +155,14 @@ namespace VK_Unicorn
             else if (fileName.EndsWith(".ico"))
             {
                 return "image/vnd.microsoft.icon";
+            }
+            else if (fileName.EndsWith(".png"))
+            {
+                return "image/png";
+            }
+            else if (fileName.EndsWith(".jpg"))
+            {
+                return "image/jpeg";
             }
 
             return "text/html";

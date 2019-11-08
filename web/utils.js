@@ -27,12 +27,23 @@ function oneFewMany(number, one, few, many)
     return result;
 }
 
-function isoTimeToLocalDeltaAsString(arg) {
-    if (arg === undefined) {
+function isoTimeToAgeAsString(isoTime) {
+    var today = new Date();
+    var birthDate = new Date(Date.parse(isoTime));
+    var age = today.getFullYear() - birthDate.getFullYear();
+    var m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age + ' ' + oneFewMany(age, 'год', 'года', 'лет');
+}
+
+function isoTimeToLocalDeltaAsString(isoTime) {
+    if (isoTime === undefined) {
         return 'никогда';
     }
 
-    var isoTime = Date.parse(arg);
+    var isoTime = Date.parse(isoTime);
     if (isoTime < 0)
     {
         return 'никогда';

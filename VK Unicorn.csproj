@@ -173,6 +173,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="media\camera_400.png" />
+    <EmbeddedResource Include="media\deactivated_400.png" />
     <EmbeddedResource Include="web\utils.js" />
     <EmbeddedResource Include="web\users.js" />
     <EmbeddedResource Include="web\groups.js" />
