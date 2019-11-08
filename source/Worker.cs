@@ -468,9 +468,6 @@ namespace VK_Unicorn
 
                                     // Нужно загрузить ещё записи
                                     needToLoadMorePosts = true;
-
-                                    // DEBUG Для отладки
-                                    Utils.Log("хочу загрузить ещё", LogLevel.GENERAL);
                                 }
                             }
                         }
@@ -513,17 +510,36 @@ namespace VK_Unicorn
                     // Получаем информацию о этих пользователях
                     try
                     {
-                        var fieldsToReceive =
-                              ProfileFields.Sex
-                            | ProfileFields.City
-                            | ProfileFields.PhotoMaxOrig
-                            | ProfileFields.Site
-                            | ProfileFields.BirthDate
-                            | ProfileFields.Status
-                            | ProfileFields.Contacts
-                        ;
-                        usersInfo.AddRange(await api.Users.GetAsync(chunkOfUserIdsToReceiveInfo, fieldsToReceive));
+                        // Отправляем запрос в API ВКонтакте
+                        // Не используем api.Users.GetAsync потому что из-за бага эта функция не может обработать контакты пользователя
+                        var response = await api.CallAsync("users.get", new VkNet.Utils.VkParameters()
+                        {
+                            { "user_ids", chunkOfUserIdsToReceiveInfo.GenerateSeparatedString(",") },
+                            { "fields", "sex,city,photo_max_orig,site,bdate,status,contacts" },
+                        });
                         await WaitMinimumTimeout();
+
+                        // Обрабатываем ответ. Чиним баг с контактами пользователя
+                        if (response != null)
+                        {
+                            var usersAsResponseList = ((VkNet.Utils.VkResponseArray)response).ToList();
+                            if (usersAsResponseList != null)
+                            {
+                                foreach (var userAsResponse in usersAsResponseList)
+                                {
+                                    var user = (User)userAsResponse;
+
+                                    // Заполняем контакты пользователя
+                                    user.Contacts = new Contacts()
+                                    {
+                                        MobilePhone = userAsResponse.ContainsKey("mobile_phone") ? userAsResponse["mobile_phone"] : "",
+                                        HomePhone = userAsResponse.ContainsKey("home_phone") ? userAsResponse["home_phone"] : "",
+                                    };
+
+                                    usersInfo.Add(user);
+                                }
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -575,6 +591,7 @@ namespace VK_Unicorn
                         ForReceivedInfoAboutUser(userActivityToProcess.UserId, (userInfo) =>
                         {
                             // Пользователь забанен?
+                            /*
                             if (userInfo.Deactivated != Deactivated.Activated)
                             {
                                 // Не сохраняем лайки и лайки постов от деактивированных пользователей т.к.
@@ -631,6 +648,7 @@ namespace VK_Unicorn
                                 DeleteAllActivitiesToProcessFromThisUser();
                                 return;
                             }
+                            */
 
                             // Определяем дату рождения
                             var birthDate = new DateTime();
@@ -658,6 +676,7 @@ namespace VK_Unicorn
 
                             // Определяем мобильный телефон
                             var mobilePhone = userInfo.Contacts != null ? userInfo.Contacts.MobilePhone : "";
+                            var homePhone = userInfo.Contacts != null ? userInfo.Contacts.HomePhone : "";
 
                             Utils.Log(" DEBUG userActivityToProcess.UserId " + userActivityToProcess.UserId, LogLevel.NOTIFY);
                             Utils.Log(" DEBUG userInfo.FirstName " + userInfo.FirstName, LogLevel.NOTIFY);
@@ -665,7 +684,8 @@ namespace VK_Unicorn
                             Utils.Log(" DEBUG birthDateSet " + birthDateSet, LogLevel.NOTIFY);
                             Utils.Log(" DEBUG CityId " + cityId, LogLevel.NOTIFY);
                             Utils.Log(" DEBUG userInfo.Status " + userInfo.Status, LogLevel.NOTIFY);
-                            Utils.Log(" DEBUG userInfo.Contacts.MobilePhone " + mobilePhone, LogLevel.NOTIFY);
+                            Utils.Log(" DEBUG userInfo.Contacts.MobilePhone " + mobilePhone + " isnull" + (userInfo.Contacts == null), LogLevel.NOTIFY);
+                            Utils.Log(" DEBUG userInfo.Contacts.HomePhone " + homePhone + " isnull" + (userInfo.Contacts == null), LogLevel.NOTIFY);
                             Utils.Log(" DEBUG userInfo.PhotoMaxOrig.ToString() " + userInfo.PhotoMaxOrig.ToString(), LogLevel.NOTIFY);
 
                             // Всё нормально, все условия и тесты пройдены, сохраняем пользователя
@@ -678,8 +698,10 @@ namespace VK_Unicorn
                                 CityId = cityId,
                                 Status = userInfo.Status,
                                 MobilePhone = mobilePhone,
+                                HomePhone = homePhone,
                                 PhotoURL = userInfo.PhotoMaxOrig.ToString(),
                                 LastActivity = userActivityToProcess.WhenHappened,
+                                WhenAdded = DateTime.Now,
                                 FromGroupId = group.Id,
                             });
 

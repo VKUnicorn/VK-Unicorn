@@ -26,13 +26,20 @@ function loadUsers() {
             let user = userExtraInfo.data;
 
             let isUserNew = true;
-            let age = user.BirthDate == 0 ? '' : isoTimeToAgeAsString(user.BirthDate);
 
-            let ageOverlay = age != '' ? `
-                <div class="card-img-overlay small-info">
-                    <span class="small-info-box">${age}</span>
-                </div>
+            // Подготавливаем блоки с информацией
+            let age = user.BirthDate == 0 ? '' : isoTimeToAgeAsString(user.BirthDate);
+            let ageElement = age != '' ? `
+                <small>
+                    <div class="card-img-overlay small-info">
+                        <span class="small-info-box"><span class="small-info-box-text">${age}</span></span>
+                    </div>
+                </small>
             ` : '';
+            let totalLikes = userExtraInfo.Likes + userExtraInfo.CommentLikes;
+            let likesElement = totalLikes > 0 ? '<span id="likes-counter"><i class="lni-heart mr-1"></i><span class="activity-counter">' + totalLikes + '</span></span>' : '';
+            let postsElement = userExtraInfo.Posts > 0 ? '<span id="posts-counter"><i class="lni-popup mr-1"></i><span class="activity-counter">' + userExtraInfo.Posts + '</span></span>' : '';
+            let commentsElement = userExtraInfo.Comments > 0 ? '<span id="comments-counter"><i class="lni-comment-reply mr-1"></i><span class="activity-counter">' + userExtraInfo.Comments + '</span></span>' : '';
 
             // Заполняем карточку пользователя
             let userCard = $(`
@@ -45,65 +52,58 @@ function loadUsers() {
                         <a href="${userExtraInfo.URL}" target="_blank">
                             <img class="card-img-top" src="${user.PhotoURL}">
                         </a>
-                        ${ageOverlay}
+                        ${ageElement}
                         <div class="card-body py-0 px-2">
                             <p class="card-text my-0 text-truncate">${user.FirstName} ${user.LastName}</p>
                         </div>
                         <div class="card-footer pt-0 px-2" style="padding-bottom: 1px">
                             <div style="padding-top: 2px">
                                 <small class="text-muted">
-                                    <i class="lni-heart mr-1"></i><span class="activity-counter">100</span>
-                                    <i class="lni-popup mr-1"></i><span class="activity-counter">200</span>
-                                    <i class="lni-comment-reply mr-1"></i><span class="activity-counter">300</span>
+                                    ${likesElement}
+                                    ${postsElement}
+                                    ${commentsElement}
                                 </small>
                             </div>
                         </div>
                     </div>
                 </div>
             `).appendTo($('#users-new-' + isUserNew));
-            /*
-            let userCard = $(`
-                <div class="col-sm-3 px-1 py-1">
-                    <div class="card ${warningElement}">
-                        <div class="card-img-overlay px-1 py-1">
-                            <a class="btn btn-danger float-right px-2 py-2 delete-group-button"><i class="lni-close" style="color: white"></i></a>
-                        </div>
-                        <a href="${groupExtraInfo.URL}" target="_blank">
-                            <img class="card-img-top" src="${group.PhotoURL}">
-                        </a>
-                        <div class="card-img-overlay small-info">
-                            <span class="small-info-box group-results">${groupExtraInfo.Efficiency}</span>
-                        </div>
-                        <div class="card-body py-0 px-2">
-                            <p class="card-text my-0 text-truncate" id="group-name">${group.Name}</p>
-                        </div>
-                        <div class="card-footer pt-0 px-2" style="padding-bottom: 1px">
-                            <div class="float-left" id="last-activity" data-html="true"><small class="text-muted">${lockElement}<i class="lni-pulse mr-1"></i>${isoTimeToLocalDeltaAsString(group.LastActivity)}</small></div>
-                            <div class="float-right" id="last-scanned"><small class="text-muted"><i class="lni-reload" style="padding-right: 2px"></i>${isoTimeToLocalDeltaAsString(group.LastScanned)}</small></div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-sm-2 px-1 py-1" id="user-holder" data-user-id="$USER_ID$">
-                    <div class="card $USER_UNDERLAY$">
-                        <div class="card-img-overlay px-1 py-1">
-                            <a href=# class="btn btn-success float-left px-1 py-1"><i class="lni-check-mark-circle size-sm"></i></a>
-                            <a href=# class="btn btn-danger float-right px-2 py-2"><i class="lni-close"></i></a>
-                        </div>
-                        <img class="card-img-top" src="USER_PHOTO_URL$">
-                        <div class="card-img-overlay small-info">
-                            <span class="small-info-box">$USER_AGE$</span>
-                        </div>
-                        <div class="card-body py-0 px-2">
-                            <p class="card-text my-0 text-truncate">$USER_FIRST_NAME$ $USER_LAST_NAME$</p>
-                            <i class="lni-heart size-sm"></i>
-                            <i class="lni-popup size-sm"></i>
-                            <i class="lni-comment-reply size-sm"></i>
-                        </div>
-                    </div>
-                </div>
-            `).appendTo($('#workspace'));
-            */
+            // Тултипы
+            userCard.find('.delete-user-button').popover({
+                trigger: 'hover',
+                placement: 'bottom',
+                delay: { "show": 450, "hide": 100 },
+                content: 'Удалить пользователя навсегда'
+            });
+
+            userCard.find('.hide-user-button').popover({
+                trigger: 'hover',
+                placement: 'bottom',
+                delay: { "show": 450, "hide": 100 },
+                content: 'Временно скрыть пользователя пока не появится любая новая активность'
+            });
+
+            userCard.find('#likes-counter').popover({
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 450, "hide": 100 },
+                content: 'Сколько пользователь поставил лайков'
+            });
+
+            userCard.find('#posts-counter').popover({
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 450, "hide": 100 },
+                content: 'Сколько пользователь написал постов'
+            });
+
+            userCard.find('#comments-counter').popover({
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 450, "hide": 100 },
+                content: 'Сколько пользователь написал комментариев к постам'
+            });
 
             // Увеличиваем счётчики
             if (isUserNew) {

@@ -47,7 +47,7 @@ function loadGroups() {
                         <a href="${groupExtraInfo.URL}" target="_blank">
                             <img class="card-img-top" src="${group.PhotoURL}">
                         </a>
-                        <div class="card-img-overlay small-info">
+                        <div class="card-img-overlay medium-info">
                             <span class="small-info-box group-results">${groupExtraInfo.Efficiency}</span>
                         </div>
                         <div class="card-body py-0 px-2">

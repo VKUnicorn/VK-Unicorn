@@ -1,6 +1,7 @@
 ﻿using SQLite;
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Collections.Generic;
 
 namespace VK_Unicorn
@@ -160,11 +161,17 @@ namespace VK_Unicorn
             // Мобильный телефон
             public string MobilePhone { get; set; }
 
+            // Домашний телефон
+            public string HomePhone { get; set; }
+
             // URL главной фотографии в максимальном размере
             public string PhotoURL { get; set; }
 
             // Когда была последняя активность этого пользователя
             public DateTime LastActivity { get; set; }
+
+            // Когда этот пользователь был добавлен в базу данных
+            public DateTime WhenAdded { get; set; }
 
             // С какого сообщества был добавлен пользователь
             public long FromGroupId { get; set; }
@@ -550,6 +557,23 @@ namespace VK_Unicorn
             {
                 result = db.Table<T>()
                     .Take(amount)
+                    .ToList();
+            });
+
+            return result;
+        }
+
+        /// <summary>
+        /// Возвращает все записи, которые удовлетворяют критерию
+        /// </summary>
+        public List<T> GetAllRecords<T>(Expression<Func<T, bool>> where) where T : new()
+        {
+            var result = new List<T>();
+
+            ForDatabaseUnlocked((db) =>
+            {
+                result = db.Table<T>()
+                    .Where(where)
                     .ToList();
             });
 

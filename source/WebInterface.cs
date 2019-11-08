@@ -149,7 +149,7 @@ namespace VK_Unicorn
                                 }
 
                                 // Заменяем ссылку на фото, если нужно
-                                // Это связано с тем, что многие скрипты для uBlock/ADblock блокируют
+                                // Это связано с тем, что многие скрипты для uBlock/Adblock блокируют
                                 // загрузку изображений ВКонтакта с другого домена, в итоге изображение блокируется
                                 // и дизайн сайта страдает от неправильно отображаемых элементов интерфейса
                                 if (user.PhotoURL.StartsWith(Constants.VK_WEB_PAGE))
@@ -161,10 +161,18 @@ namespace VK_Unicorn
                                     user.PhotoURL = Regex.Replace(user.PhotoURL, @"\?.+$", "");
                                 }
 
+                                // Получаем список активностей пользователя
+                                var userActivites = Database.Instance.GetAllRecords<Database.UserActivity>(_ => _.UserId == user.Id);
+
+                                // Добавляем пользователя в ответ
                                 resultObjects.Add(new Dictionary<string, object>()
                                 {
                                     { "data", user },
                                     { "URL", user.GetURL() },
+                                    { "Likes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.LIKE) },
+                                    { "CommentLikes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT_LIKE) },
+                                    { "Posts", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.POST) },
+                                    { "Comments", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT) },
                                 });
                             });
 
