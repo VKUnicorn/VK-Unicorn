@@ -129,6 +129,8 @@ namespace VK_Unicorn
                             resultObjects = resultObjects
                                 .OrderByDescending(_ => (_["data"] as Database.Group).IsClosed)
                                 .ThenByDescending(_ => (int)_["Efficiency"])
+                                .ThenByDescending(_ => (_["data"] as Database.Group).LastActivity)
+                                .ThenByDescending(_ => (_["data"] as Database.Group).LastScanned)
                                 .ToList()
                             ;
 

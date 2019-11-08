@@ -154,6 +154,12 @@ namespace VK_Unicorn
             // Id города
             public long CityId { get; set; }
 
+            // Что было написано в статусе
+            public string Status { get; set; }
+
+            // Мобильный телефон
+            public string MobilePhone { get; set; }
+
             // URL главной фотографии в максимальном размере
             public string PhotoURL { get; set; }
 
@@ -631,12 +637,24 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Такая активность пользователя уже была добавлена?
+        /// Такая активность пользователя уже была сохранена?
         /// </summary>
         public bool IsUserActivityAlreadyExists(UserActivity activity)
         {
-            // TODO: реализовать
-            return false;
+            var result = false;
+            ForDatabaseUnlocked((db) =>
+            {
+                result = db.Table<UserActivity>()
+                    .Where(_ =>
+                           (_.Type == activity.Type)
+                        && (_.GroupId == activity.GroupId)
+                        && (_.PostId == activity.PostId)
+                        && (_.CommentId == activity.CommentId)
+                    )
+                    .FirstOrDefault() != null;
+            });
+
+            return result;
         }
     }
 }

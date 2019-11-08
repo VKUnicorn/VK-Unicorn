@@ -78,7 +78,7 @@ namespace VK_Unicorn
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                //currentTask = async () => { await WaitAndSlack(); };
+                                currentTask = async () => { await WaitAndSlack(); };
                             },
 
                             // Проверяем, авторизированы ли мы вообще. Если нет, то авторизируемся
@@ -115,7 +115,7 @@ namespace VK_Unicorn
                             {
                                 Database.Instance.ForBestGroupToInteract((group) =>
                                 {
-                                    currentTask = async () => { await ScanGroupTask(group); };
+                                    currentTask = async () => { await ScanGroupTask(settings, group); };
                                 });
                             },
 
@@ -341,7 +341,7 @@ namespace VK_Unicorn
             }
         }
 
-        async Task ScanGroupTask(Database.Group group)
+        async Task ScanGroupTask(Database.Settings settings, Database.Group group)
         {
             try
             {
@@ -384,7 +384,7 @@ namespace VK_Unicorn
                         }
 
                         // Запоминаем видели ли последнюю запись ранее
-                        var isLastPostNotSeenBefore = false;
+                        var isLastPostNotSeenBefore = true;
 
                         // Обходим все записи
                         foreach (var post in posts)
@@ -451,7 +451,7 @@ namespace VK_Unicorn
                             if (isLastPostNotSeenBefore)
                             {
                                 // Последняя запись не слишком старая?
-                                if ((DateTime.Now - posts.Last().Date) > Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                if ((DateTime.Now - posts.Last().Date) < Constants.MAX_SCANNING_DEPTH_IN_TIME)
                                 {
                                     // Увеличиваем отступ с которого будем продолжать сканирование
                                     scanOffset += postsLimit;
@@ -533,10 +533,10 @@ namespace VK_Unicorn
                 };
 
                 // DEBUG
-                Utils.Log("получили информацию о пользователях " + usersInfo.Count, LogLevel.ERROR);
+                Utils.Log("получили информацию о пользователях " + usersInfo.Count, LogLevel.NOTIFY);
                 foreach (var user in usersInfo)
                 {
-                    Utils.Log("    " + user.FirstName + " " + user.LastName, LogLevel.ERROR);
+                    Utils.Log("    " + user.FirstName + " " + user.LastName, LogLevel.NOTIFY);
                 }
 
                 // Обрабатываем интересующие нас активности: записи, лайки, комментарии и т.п.
@@ -584,14 +584,90 @@ namespace VK_Unicorn
                                 return;
                             }
 
+                            // Проверяем город учитывая настройки пользователя
+                            switch (settings.SearchMethod)
+                            {
+                                case Database.Settings.SearchMethodType.BY_CITY:
+                                    if (userInfo.City.Id.HasValue)
+                                    {
+                                        if (userInfo.City.Id.Value != settings.CityId)
+                                        {
+                                            return;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                    break;
+
+                                case Database.Settings.SearchMethodType.SMART:
+                                    if (!group.IsClosed)
+                                    {
+                                        if (userInfo.City.Id.HasValue)
+                                        {
+                                            if (userInfo.City.Id.Value != settings.CityId)
+                                            {
+                                                return;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            return;
+                                        }
+                                    }
+                                    break;
+                            }
+
+                            // Определяем дату рождения
+                            var birthDate = new DateTime();
+                            var birthDateSet = false;
+
+                            try
+                            {
+                                // Проверяем, указан ли год вообще
+                                if (userInfo.BirthDate.Count(_ => _ == '.') == 2)
+                                {
+                                    // Пробуем сконвертировать дату рождения
+                                    if (DateTime.TryParseExact(userInfo.BirthDate,"d.M.yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out birthDate))
+                                    {
+                                        birthDateSet = true;
+                                    }
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                // Не удалось преобразовать дату рождения
+                            }
+
+                            // Определяем Id города
+                            var cityId = userInfo.City != null ? userInfo.City.Id.GetValueOrDefault(0) : 0;
+
+                            // Определяем мобильный телефон
+                            var mobilePhone = userInfo.Contacts != null ? userInfo.Contacts.MobilePhone : "";
+
+                            Utils.Log(" DEBUG userActivityToProcess.UserId " + userActivityToProcess.UserId, LogLevel.NOTIFY);
+                            Utils.Log(" DEBUG userInfo.FirstName " + userInfo.FirstName, LogLevel.NOTIFY);
+                            Utils.Log(" DEBUG userInfo.LastName " + userInfo.LastName, LogLevel.NOTIFY);
+                            Utils.Log(" DEBUG birthDateSet " + birthDateSet, LogLevel.NOTIFY);
+                            Utils.Log(" DEBUG CityId " + cityId, LogLevel.NOTIFY);
+                            Utils.Log(" DEBUG userInfo.Status " + userInfo.Status, LogLevel.NOTIFY);
+                            Utils.Log(" DEBUG userInfo.Contacts.MobilePhone " + mobilePhone, LogLevel.NOTIFY);
+                            Utils.Log(" DEBUG userInfo.PhotoMaxOrig.ToString() " + userInfo.PhotoMaxOrig.ToString(), LogLevel.NOTIFY);
+
                             // Всё нормально, все условия и тесты пройдены, сохраняем пользователя
                             Database.Instance.InsertOrReplace(new Database.User()
                             {
                                 Id = userActivityToProcess.UserId,
                                 FirstName = userInfo.FirstName,
                                 LastName = userInfo.LastName,
-                                //BirthDate = userInfo.bir,
-
+                                BirthDate = birthDateSet ? birthDate : default(DateTime),
+                                CityId = cityId,
+                                Status = userInfo.Status,
+                                MobilePhone = mobilePhone,
+                                PhotoURL = userInfo.PhotoMaxOrig.ToString(),
+                                WhenAdded = DateTime.Now,
+                                FromGroupId = group.Id,
                             });
                         });
                     }
@@ -609,6 +685,15 @@ namespace VK_Unicorn
 
                     // Удаляем обработанную активность из списка обработки
                     userActivitiesToProcess.Remove(userActivityToProcess);
+                }
+
+                // Помечаем всех пользователей о которых мы получили информацию как просканированных
+                foreach (var userInfo in usersInfo)
+                {
+                    Database.Instance.InsertOrReplace(new Database.ScannedUser()
+                    {
+                        UserId = userInfo.Id
+                    });
                 }
 
                 // Помечаем сообщество как только что просканированное
@@ -643,7 +728,7 @@ namespace VK_Unicorn
 
         async Task WaitMinimumTimeout()
         {
-            await Task.Delay(Timeouts.MINIMUM_TIMEOUT);
+            await Task.Delay(Timeouts.AFTER_ANY_REQUEST_TO_API);
         }
 
         // Счётчик для отображения изменяющегося троеточия в процессе сканирования

@@ -11,7 +11,7 @@ namespace VK_Unicorn
         /// в разделе "3. Ограничения и рекомендации". В целом рекомендуется обращаться не чаще трёх раз в секунду,
         /// но мы будем сканировать значительно реже, опять же чтобы снизить угрозу бана аккаунта или появления капчи
         /// </summary>
-        public static TimeSpan MINIMUM_TIMEOUT = TimeSpan.FromSeconds(1);
+        public static TimeSpan AFTER_ANY_REQUEST_TO_API = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Таймаут для взаимодействия с сообществом после отправки заявки на вступление.

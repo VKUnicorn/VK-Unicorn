@@ -29,17 +29,21 @@ function oneFewMany(number, one, few, many)
 
 function isoTimeToLocalDeltaAsString(arg) {
     if (arg === undefined) {
-        return 'никогда'
+        return 'никогда';
     }
 
     var isoTime = Date.parse(arg);
     if (isoTime < 0)
     {
-        return 'никогда'
+        return 'никогда';
     }
 
     var delta = parseInt((new Date().getTime() - isoTime) / 1000 / 60);
     if (delta < 60) {
+        if (delta == 0) {
+            return 'только что';
+        }
+
         return delta + ' ' + oneFewMany(delta, 'минута', 'минуты', 'минут');
     }
 
