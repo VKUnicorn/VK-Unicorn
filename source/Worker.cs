@@ -21,6 +21,12 @@ namespace VK_Unicorn
         // Авторизированы ли ВКонтакте. Если нет, то будем пытаться авторизироваться заново
         bool isAuthorized;
 
+        // Произошла какая-то фатальная ошибка. Ничего не делаем
+        bool inFatalErrorState;
+
+        // Количество ошибок. Если слишком много, то перестаём что-то делать
+        int errorsCount;
+
         public Worker()
         {
             if (Instance == null)
@@ -55,6 +61,12 @@ namespace VK_Unicorn
                 // Текущая задача, если есть
                 Func<Task> currentTask = null;
 
+                // Фатальная ошибка. Ничего не делаем вообще
+                if (inFatalErrorState)
+                {
+                    currentTask = async () => { await WaitAlotAfterError(); };
+                }
+
                 // Если программа успешно настроена, то кэшируем эти настройки и используем их для выполнения текущей задачи
                 if (Database.Instance.IsSettingsValid())
                 {
@@ -63,22 +75,13 @@ namespace VK_Unicorn
                         // Готовим список задач, которые вообще можно делать. Задачи будут проверяться в порядке их объявления
                         var possibleTaskConditions = new List<Callback>()
                         {
-                            // Ищём группу которую можно просканировать и сканируем её, если есть
-                            () =>
-                            {
-                                Database.Instance.ForBestGroupToInteract((group) =>
-                                {
-                                    currentTask = async () => { await ScanGroupTask(group); };
-                                });
-                            },
-
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                currentTask = async () => { await WaitAndSlack(); };
+                                //currentTask = async () => { await WaitAndSlack(); };
                             },
 
-                            // Проверяем, залогинены ли мы вообще. Если нет, то добавляем задачу залогиниться
+                            // Проверяем, авторизированы ли мы вообще. Если нет, то авторизируемся
                             // Все задачи ниже требуют того, чтобы пользователь был залогинен
                             () =>
                             {
@@ -88,7 +91,7 @@ namespace VK_Unicorn
                                 }
                             },
 
-                            // Проверяем нужно ли получить основную информацию о каких-либо группах, которые добавил пользователь
+                            // Проверяем нужно ли получить основную информацию о каких-либо сообществах, которые добавил пользователь
                             () =>
                             {
                                 var groupsToReceiveInfo = Database.Instance.Take<Database.GroupToReceiveInfo>(VkLimits.GROUPS_GETBYID_GROUP_IDS);
@@ -98,12 +101,21 @@ namespace VK_Unicorn
                                 }
                             },
 
-                            // Ищем группы в которые можно подать заявки. Если такие есть, то подаём заявку
+                            // Ищем сообщества в которые можно подать заявки. Если такие есть, то подаём заявку
                             () =>
                             {
                                 Database.Instance.ForFirstInteractableWantToJoinGroup((group) =>
                                 {
                                     currentTask = async () => { await JoinClosedGroupTask(group); };
+                                });
+                            },
+
+                            // Ищём сообщество которое можно просканировать и сканируем его
+                            () =>
+                            {
+                                Database.Instance.ForBestGroupToInteract((group) =>
+                                {
+                                    currentTask = async () => { await ScanGroupTask(group); };
                                 });
                             },
 
@@ -189,46 +201,46 @@ namespace VK_Unicorn
 
                 if (groupIds.Count > 0)
                 {
-                    MainForm.Instance.SetStatus("получаем информацию о группах", StatusType.GENERAL);
+                    MainForm.Instance.SetStatus("получаем информацию о сообществах", StatusType.GENERAL);
 
-                    Utils.Log("Получаем информацию о группах " + groupIds.GenerateSeparatedString(", "), LogLevel.GENERAL);
+                    Utils.Log("Получаем информацию о сообществах " + groupIds.GenerateSeparatedString(", "), LogLevel.GENERAL);
 
                     var groupsInfo = await api.Groups.GetByIdAsync(groupIds, null, null);
                     if (groupsInfo != null)
                     {
-                        Utils.Log("Информация о группах успешно получена", LogLevel.SUCCESS);
+                        Utils.Log("Информация о сообществах успешно получена", LogLevel.SUCCESS);
 
                         foreach (var groupInfo in groupsInfo)
                         {
-                            // Группа не активна? Удалена, не создана, заблокирована?
+                            // Сообщество не активно? Удалено, не создано, заблокировано?
                             if (groupInfo.Deactivated != null)
                             {
                                 if (groupInfo.Deactivated != Deactivated.Activated)
                                 {
-                                    Utils.Log("Не добавляем группу " + groupInfo.GetURL() + " потому что она удалена", LogLevel.NOTIFY);
+                                    Utils.Log("Не добавляем сообщество " + groupInfo.GetURL() + " потому что оно удалено", LogLevel.NOTIFY);
                                 }
                             }
 
-                            // Группа не была уже добавлена ранее?
+                            // Сообщество не было уже добавлено ранее?
                             if (!Database.Instance.IsAlreadyExists<Database.Group>(groupInfo.Id))
                             {
-                                // Готовим новую группу
+                                // Готовим новое сообщество
                                 var newGroup = new Database.Group()
                                 {
                                     Id = groupInfo.Id,
                                     Name = groupInfo.Name,
                                     ScreenName = groupInfo.ScreenName,
                                     IsClosed = groupInfo.IsClosed.HasValue ? groupInfo.IsClosed == VkNet.Enums.GroupPublicity.Closed : false,
-                                    IsMember = groupInfo.IsMember.HasValue ? groupInfo.IsMember.Value : true,
+                                    IsMember = groupInfo.IsMember.GetValueOrDefault(true),
                                     PhotoURL = groupInfo.Photo200.ToString(),
                                 };
 
-                                // Добавляем группу в базу данных
+                                // Добавляем сообщество в базу данных
                                 Database.Instance.InsertOrReplace(newGroup);
                             }
                             else
                             {
-                                Utils.Log("Не добавляем группу " + groupInfo.ScreenName + " " + groupInfo.GetURL() + " потому что она уже была добавлена", LogLevel.NOTIFY);
+                                Utils.Log("Не добавляем сообщество " + groupInfo.ScreenName + " " + groupInfo.GetURL() + " потому что оно уже было добавлено", LogLevel.NOTIFY);
                             }
                         }
                     }
@@ -237,7 +249,7 @@ namespace VK_Unicorn
                         throw new Exception("ничего не получено в ответ");
                     }
 
-                    // Мы получили информацию о всех нужных группах, удаляем их из очереди на обработку
+                    // Мы получили информацию о всех нужных сообществах, удаляем их из очереди на обработку
                     foreach (var group in groupsToReceiveInfo)
                     {
                         Database.Instance.Delete(group);
@@ -246,7 +258,7 @@ namespace VK_Unicorn
             }
             catch (Exception ex)
             {
-                Utils.Log("не удалось получить информацию о группах. Причина: " + ex.Message, LogLevel.ERROR);
+                Utils.Log("не удалось получить информацию о сообществах. Причина: " + ex.Message, LogLevel.ERROR);
                 await WaitAlotAfterError();
             }
         }
@@ -255,11 +267,11 @@ namespace VK_Unicorn
         {
             try
             {
-                MainForm.Instance.SetStatus("присоединяемся к группе", StatusType.GENERAL);
+                MainForm.Instance.SetStatus("присоединяемся к сообществу", StatusType.GENERAL);
 
-                Utils.Log("Определяем, нужно ли присоединиться к группе " + group.Name, LogLevel.GENERAL);
+                Utils.Log("Определяем, нужно ли присоединиться к сообществу " + group.Name, LogLevel.GENERAL);
 
-                // Получаем информацию о группе. Может мы уже присоединились к ней? Поле member_status нельзя получить через обычный запрос
+                // Получаем информацию о сообществе. Может мы уже присоединились к нему? Поле member_status нельзя получить через обычный запрос
                 var response = await api.CallAsync("groups.getById", new VkNet.Utils.VkParameters()
                 {
                     { "group_id", group.ScreenName },
@@ -273,13 +285,13 @@ namespace VK_Unicorn
                         var groupInfo = (VkNet.Model.Group)groupInfoAsResponse;
                         if (groupInfo != null)
                         {
-                            Utils.Log("    статус участия в группе: " + groupInfo.MemberStatus, LogLevel.NOTIFY);
+                            Utils.Log("    статус участия в сообществе: " + groupInfo.MemberStatus, LogLevel.NOTIFY);
 
-                            // Обновляем данные о закрытости и членстве в группе
+                            // Обновляем данные о закрытости и членстве в сообществе
                             group.IsClosed = groupInfo.IsClosed.HasValue ? groupInfo.IsClosed == VkNet.Enums.GroupPublicity.Closed : group.IsClosed;
-                            group.IsMember = groupInfo.IsMember.HasValue ? groupInfo.IsMember.Value : group.IsMember;
+                            group.IsMember = groupInfo.IsMember.GetValueOrDefault(group.IsMember);
 
-                            // Всё ещё закрытая группа и не вступили?
+                            // Всё ещё закрытое сообщество и не вступили?
                             if (group.IsWantToJoin())
                             {
                                 switch (groupInfo.MemberStatus)
@@ -287,22 +299,22 @@ namespace VK_Unicorn
                                     case VkNet.Enums.MemberStatus.SendRequest:
                                         // За прошлые пять минут заявку всё ещё не приняли. Похоже заявки
                                         // принимает человек, а не бот, поэтому ждём значительно дольше
-                                        // прежде чем проверять эту группу снова
+                                        // прежде чем проверять это сообщество снова
                                         group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_NOT_ACCEPTED);
 
-                                        Utils.Log("Заявка на вступление в " + group.Name + " была уже отправлена, но ещё не принята. Ждём значительно дольше", LogLevel.WARNING);
+                                        Utils.Log("Заявка на вступление в сообщество " + group.Name + " была уже отправлена, но ещё не принята. Ждём значительно дольше", LogLevel.NOTIFY);
                                         break;
 
                                     case VkNet.Enums.MemberStatus.Rejected:
-                                        // Заявку на вступление отклонили? Удаляем группу из списка для оработки
-                                        Utils.Log("Заявка на вступление в группу " + group.Name + " " + group.GetURL() + " была отклонена. Удаляем группу", LogLevel.WARNING);
+                                        // Заявку на вступление отклонили? Удаляем сообщество из списка для оработки
+                                        Utils.Log("Заявка на вступление в сообщество " + group.Name + " " + group.GetURL() + " была отклонена. Удаляем сообщество", LogLevel.WARNING);
 
                                         Database.Instance.Delete(group);
                                         break;
 
                                     default:
                                         Utils.Log("Отправляем заявку на вступление в " + group.Name, LogLevel.GENERAL);
-                                        // Добавляем таймаут в пять минут для взаимодействия с группой
+                                        // Добавляем таймаут в пять минут для взаимодействия с сообществом
                                         // обычно за это время бот автоматически принимает заявку на вступление
                                         group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_SENT);
 
@@ -316,7 +328,7 @@ namespace VK_Unicorn
                                 Utils.Log("    присоединяться не нужно", LogLevel.NOTIFY);
                             }
 
-                            // Обновляем группу в базе данных
+                            // Обновляем сообщество в базе данных
                             Database.Instance.InsertOrReplace(group);
                         }
                     }
@@ -324,37 +336,19 @@ namespace VK_Unicorn
             }
             catch (Exception ex)
             {
-                Utils.Log("не удалось отправить заявку на вступление в группу " + group.Name + ". Причина: " + ex.Message, LogLevel.ERROR);
+                Utils.Log("не удалось отправить заявку на вступление в сообщество " + group.Name + ". Причина: " + ex.Message, LogLevel.ERROR);
                 await WaitAlotAfterError();
             }
         }
 
-        class ProfileActivity
-        {
-            public enum Type
-            {
-                POST,
-                LIKE,
-                COMMENT,
-                COMMENT_LIKE,
-            }
-
-            public long ProfileId;
-            public Type type;
-
-            public string content;
-
-            public long PostId;
-            public long? CommentId;
-        }
         async Task ScanGroupTask(Database.Group group)
         {
             try
             {
-                MainForm.Instance.SetStatus("сканируем группу", StatusType.GENERAL);
+                MainForm.Instance.SetStatus("сканируем сообщество", StatusType.GENERAL);
 
-                // Список интересующей нас активности профилей
-                var profileActivities = new List<ProfileActivity>();
+                // Список интересующей нас активности пользователей
+                var userActivitiesToProcess = new List<Database.UserActivity>();
 
                 var scanOffset = 0ul;
                 var needToLoadMorePosts = true;
@@ -363,14 +357,14 @@ namespace VK_Unicorn
                 {
                     needToLoadMorePosts = false;
 
-                    Utils.Log("Сканируем группу " + group.Name + " с позиции " + scanOffset, LogLevel.GENERAL);
+                    Utils.Log("Сканируем сообщество " + group.Name + " с позиции " + scanOffset, LogLevel.GENERAL);
 
                     try
                     {
-                        // Загружаем сообщения из группы
+                        // Загружаем сообщения из сообщества
                         // Максимум 5000 запросов в сутки https://vk.com/dev/data_limits
-                        // поэтому нет смысла получать меньше записей чем лимит VkLimits.WALL_GET_COUNT
-                        // т.к. каждый запрос ценен и нужно получить как можно больше информации сразу
+                        // каждый запрос ценен и нужно получить как можно больше информации сразу,
+                        // поэтому нет смысла получать меньше записей чем VkLimits.WALL_GET_COUNT
                         var postsLimit = 5ul; // VkLimits.WALL_GET_COUNT;
                         var wallGetObjects = await api.Wall.GetAsync(new WallGetParams()
                         {
@@ -383,12 +377,13 @@ namespace VK_Unicorn
                         // Начинаем работу с записями
                         var posts = wallGetObjects.WallPosts;
 
-                        // Нету больше записей. Сканирование группы завершено
+                        // Нету больше записей. Сканирование сообщества завершено
                         if (posts.Count <= 0)
                         {
                             break;
                         }
 
+                        // Запоминаем видели ли последнюю запись ранее
                         var isLastPostNotSeenBefore = false;
 
                         // Обходим все записи
@@ -396,12 +391,14 @@ namespace VK_Unicorn
                         {
                             // Нужно ли вообще сканировать запись?
                             var needToScanPost = true;
+                            var isPostNotSeenBefore = true;
 
                             // Ищем запись в нашей базе
-                            Database.Instance.ForScannedPostInfo(group.Id, post.Id.Value, (scannedPost) =>
+                            Database.Instance.ForScannedPostInfo(group.Id, post.Id.GetValueOrDefault(), (scannedPost) =>
                             {
                                 // Уже видели эту запись когда-то
                                 isLastPostNotSeenBefore = false;
+                                isPostNotSeenBefore = false;
 
                                 // Нужно сканировать запись повторно?
                                 needToScanPost = (post.Comments.Count > scannedPost.CommentsCount) || (post.Likes.Count > scannedPost.LikesCount);
@@ -409,14 +406,26 @@ namespace VK_Unicorn
 
                             if (needToScanPost)
                             {
-                                // Добавляем автора записи для дальнейшей обработки
-                                profileActivities.Add(new ProfileActivity()
+                                // Кто был фактическим автором записи? Пользователь или сообщество? Ищем наиболее подходящий Id
+                                var postAuthorId = post.SignerId.GetValueOrDefault(post.FromId.GetValueOrDefault());
+
+                                // Запись была не анонимной? (Не от сообщества?)
+                                if (postAuthorId > 0)
                                 {
-                                    ProfileId = post.FromId.Value,
-                                    type = ProfileActivity.Type.POST,
-                                    content = post.Text,
-                                    PostId = post.Id.Value,
-                                });
+                                    // Не видели эту запись раньше?
+                                    if (isPostNotSeenBefore)
+                                    {
+                                        // Добавляем автора записи для дальнейшей обработки
+                                        userActivitiesToProcess.Add(new Database.UserActivity()
+                                        {
+                                            UserId = postAuthorId,
+                                            Type = Database.UserActivity.ActivityType.POST,
+                                            Content = post.Text,
+                                            PostId = post.Id.GetValueOrDefault(),
+                                            WhenAdded = post.Date.GetValueOrDefault(),
+                                        });
+                                    }
+                                }
 
                                 // Сканируем лайки
                                 if (post.Likes.Count > 0)
@@ -448,6 +457,9 @@ namespace VK_Unicorn
 
                                     // Нужно загрузить ещё записи
                                     needToLoadMorePosts = true;
+
+                                    // DEBUG Для отладки
+                                    Utils.Log("хочу загрузить ещё", LogLevel.GENERAL);
                                 }
                             }
                         }
@@ -458,23 +470,81 @@ namespace VK_Unicorn
                         await WaitAlotAfterError();
                     }
 
-                    // Для дебага
+                    // DEBUG Для отладки
                     needToLoadMorePosts = false;
                 }
 
-                // Обрабатываем интересующие нас записи, лайки, комментарии и т.п.
+                // Составляем список тех пользователей, о которых нужно получить информацию
+                var userIdsToReceiveInfo = new List<long>();
 
-                // Помечаем группу как только что просканированную
+                // Сначала добавляем все возможные Id пользователей в общий список
+                foreach (var userActivityToProcess in userActivitiesToProcess)
+                {
+                    userIdsToReceiveInfo.Add(userActivityToProcess.UserId);
+                }
+
+                // Удаляем дубликаты
+                userIdsToReceiveInfo = userIdsToReceiveInfo.Distinct().ToList();
+
+                // Удаляем тех пользователей, которых мы уже просканировали
+                userIdsToReceiveInfo.RemoveAll(_ => Database.Instance.IsAlreadyExists<Database.ScannedUser>(_));
+
+                // Загружаем информацию о нужных пользователях
+                var users = new List<User>();
+                while (userIdsToReceiveInfo.Count > 0)
+                {
+                    // Берём максимальное количество Id, которое мы можем просканировать за один запрос
+                    var chunkOfUserIdsToReceiveInfo = userIdsToReceiveInfo.Take(VkLimits.USERS_GET_USER_IDS).ToList();
+
+                    // Удаляем то количество Id, которые мы взяли для получения
+                    userIdsToReceiveInfo.RemoveRange(0, chunkOfUserIdsToReceiveInfo.Count);
+
+                    // Получаем информацию о этих пользователях
+                    users.AddRange(await api.Users.GetAsync(chunkOfUserIdsToReceiveInfo));
+                }
+
+                // Обрабатываем интересующие нас активности: записи, лайки, комментарии и т.п.
+                while (userActivitiesToProcess.Count > 0)
+                {
+                    // Обрабатываем первый найденный элемент
+                    var userActivityToProcess = userActivitiesToProcess.First();
+
+                    // DEBUG Выводим отладочную информацию о активности
+                    Utils.Log("Активность: " + userActivityToProcess.Type, LogLevel.NOTIFY);
+                    Utils.Log("    userId: " + Constants.VK_WEB_PAGE + "id" + userActivityToProcess.UserId, LogLevel.NOTIFY);
+                    Utils.Log("    postId: " + userActivityToProcess.PostId, LogLevel.NOTIFY);
+                    Utils.Log("    content: " + userActivityToProcess.Content, LogLevel.NOTIFY);
+                    Utils.Log("    whenAdded: " + userActivityToProcess.WhenAdded, LogLevel.NOTIFY);
+
+                    // Пользователь уже был добавлен ранее?
+                    if (Database.Instance.IsAlreadyExists<Database.User>(userActivityToProcess.UserId))
+                    {
+                        // Сохраняем эту активность как новую активность пользователя
+                    }
+                    else
+                    {
+                        // Пользователь нам не известен, сканируем пользователя
+
+                    }
+
+                    // Удаляем обработанную активность из списка обработки
+                    userActivitiesToProcess.Remove(userActivityToProcess);
+                }
+
+                // Помечаем сообщество как только что просканированное
                 group.MarkAsJustScanned();
 
                 // Устанавливаем время ожидания перед следующим сканированием
-                group.SetInteractTimeout(Timeouts.AFTER_GROUP_WAS_SCANNED);
+                //group.SetInteractTimeout(Timeouts.AFTER_GROUP_WAS_SCANNED);
             }
             catch (Exception ex)
             {
-                Utils.Log("не удалось просканировать группу " + group.Name + ". Причина: " + ex.Message, LogLevel.ERROR);
+                Utils.Log("не удалось просканировать сообщество " + group.Name + ". Причина: " + ex.Message, LogLevel.ERROR);
                 await WaitAlotAfterError();
             }
+
+            // DEBUG Для отладки
+            inFatalErrorState = true;
         }
 
         async Task WaitAndSlack()
@@ -493,11 +563,7 @@ namespace VK_Unicorn
 
         async Task WaitMinimumTimeout()
         {
-            // Ждём некоторое время. Торопиться некуда, лучше сканировать медленно, но зато без угрозы бана аккаунта
-            // Слишком частые запросы это плохо, о лимитах можно почитать тут https://vk.com/dev/api_requests
-            // в разделе "3. Ограничения и рекомендации". В целом рекомендуется обращаться не чаще трёх раз в секунду,
-            // но мы будем сканировать значительно реже, опять же чтобы снизить угрозу бана аккаунта или появления капчи
-            await Task.Delay(TimeSpan.FromSeconds(1.5d));
+            await Task.Delay(Timeouts.MINIMUM_TIMEOUT);
         }
 
         // Счётчик для отображения изменяющегося троеточия в процессе сканирования
@@ -513,15 +579,15 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Получаем ссылку на новую группу, получаем из неё DomainName
-        /// Добавляем группу в таблицу GroupToAdd
+        /// Получаем ссылку на новое сообщество, получаем из неё DomainName
+        /// Добавляем сообщество в таблицу GroupToReceiveInfo
         /// </summary>
-        public void RegisterNewGroupToAdd(string groupWebUrl)
+        public void RegisterNewGroupToReceiveInfo(string groupWebUrl)
         {
             // Удаляем все символы перед доменным именем
             var domainName = Regex.Replace(groupWebUrl, @".+\/", "").Trim();
 
-            // Это группа начинающаяся с public?
+            // Это сообщество начинающееся с public?
             if (Regex.Match(domainName.ToLowerInvariant(), @"public\d+$").Success)
             {
                 // Заменяем слово piblic на club т.к. API ВКонтакта больше не принимает public
@@ -539,21 +605,21 @@ namespace VK_Unicorn
 
                     if (result)
                     {
-                        Utils.Log("Группа " + domainName + " успешно добавлена в очередь на начальное сканирование", LogLevel.SUCCESS);
+                        Utils.Log("Сообщество " + domainName + " успешно добавлено в очередь на начальное сканирование", LogLevel.SUCCESS);
                     }
                     else
                     {
-                        throw new Exception("скорее всего группа уже добавлена в очередь на начальное сканирование");
+                        throw new Exception("скорее всего сообщество уже добавлено в очередь на начальное сканирование");
                     }
                 }
                 else
                 {
-                    throw new Exception("не удалось получить имя группы из ссылки");
+                    throw new Exception("не удалось получить имя сообщества из ссылки");
                 }
             }
             catch (Exception ex)
             {
-                Utils.Log("не удалось добавить группу " + groupWebUrl + " на сканирование. Причина: " + ex.Message, LogLevel.ERROR);
+                Utils.Log("не удалось добавить сообщество " + groupWebUrl + " на сканирование. Причина: " + ex.Message, LogLevel.ERROR);
             }
         }
     }

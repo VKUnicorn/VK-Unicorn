@@ -4,12 +4,12 @@ function loadGroups() {
 
     $.getJSON('groups', {
     }, function(result) {
-        // Добавляем отдельные категории для групп
+        // Добавляем отдельные категории для сообществ
         function addGroupCategory(isClosed) {
             $(`
                 <div class="row-fluid mx-1" id="groups-header-closed-${isClosed}">
                     <div class="alert alert-secondary bg-light pt-1 pl-3 pb-0 mt-2 mb-0" role="alert">
-                        <h5 class="mb-1">${isClosed ? 'Закрытые' : 'Открытые'} группы<span class="badge badge-success opaque-5 ml-1" id="badge-groups-closed-${isClosed}"></span></h5>
+                        <h5 class="mb-1">${isClosed ? 'Закрытые' : 'Открытые'} сообщества<span class="badge badge-success opaque-5 ml-1" id="badge-groups-closed-${isClosed}"></span></h5>
                     </div>
                 </div>
                 <div class="row mx-0" id="groups-closed-${isClosed}">
@@ -22,7 +22,7 @@ function loadGroups() {
         let openGroupsCount = 0;
         addGroupCategory(false);
 
-        // Добавляем загруженные группы в сооветствующие категории
+        // Добавляем загруженные сообщества в сооветствующие категории
         for (let groupExtraInfo of result) {
             let group = groupExtraInfo.data;
 
@@ -31,13 +31,13 @@ function loadGroups() {
             let warningElement = '';
             if (group.IsClosed) {
                 lockElement = '<i class="lni-' + (group.IsMember ? 'un' : '') + 'lock mr-1"></i>';
-                lockHintElement = '<br /><font color=' + (group.IsMember ? 'green' : 'red') + '>Группа закрыта и вы ' + (group.IsMember ? '' : 'не ') + 'являетесь её участником</font>';
+                lockHintElement = '<br /><font color=' + (group.IsMember ? 'green' : 'red') + '>Сообщество закрыто и вы ' + (group.IsMember ? '' : 'не ') + 'являетесь его участником</font>';
                 if (!group.IsMember) {
                     warningElement = 'bg-error';
                 }
             }
 
-            // Заполняем карточку группы
+            // Заполняем карточку сообщества
             let groupCard = $(`
                 <div class="col-sm-3 px-1 py-1">
                     <div class="card ${warningElement}">
@@ -66,35 +66,35 @@ function loadGroups() {
                 trigger: 'hover',
                 placement: 'bottom',
                 delay: { "show": 450, "hide": 100 },
-                content: 'Удалить группу навсегда'
+                content: 'Удалить сообщество навсегда'
             });
 
             groupCard.find('span.small-info-box').popover({
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 450, "hide": 100 },
-                content: 'Сколько профилей было найдено из этой группы'
+                content: 'Сколько пользователей было найдено из этого сообщества'
             });
 
             groupCard.find('#last-activity').popover({
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 450, "hide": 100 },
-                content: 'Как давно было найдено что-нибудь полезное в этой группе' + lockHintElement
+                content: 'Как давно было найдено что-нибудь полезное в этом сообществе' + lockHintElement
             });
 
             groupCard.find('#last-scanned').popover({
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 450, "hide": 100 },
-                content: 'Как давно было последнее сканирование группы'
+                content: 'Как давно было последнее сканирование сообщества'
             });
 
             // Оработчики событий
             groupCard.find('.delete-group-button').click(function(){
                 bootbox.confirm({
                     title: "Удалить?",
-                    message: "Вы действительно хотите навсегда удалить группу \"" + group.Name + "\"?",
+                    message: "Вы действительно хотите навсегда удалить сообщество \"" + group.Name + "\"?",
                     backdrop: true,
                     callback: function (result) {
                         if (result) {
@@ -105,14 +105,14 @@ function loadGroups() {
                             },
                             function(data, status) {
                                 if (status) {
-                                    // Удаляем группу из UI
+                                    // Удаляем сообщество из UI
                                     groupCard.fadeOut();
                                 }
                                 else {
-                                    $.hulla.send("Не удалось удалить группу \"" + group.Name + "\"", "danger");
+                                    $.hulla.send("Не удалось удалить сообщество \"" + group.Name + "\"", "danger");
                                 }
                             }).fail(function(result) {
-                                $.hulla.send("Не удалось удалить группу \"" + group.Name + "\"", "danger");
+                                $.hulla.send("Не удалось удалить сообщество \"" + group.Name + "\"", "danger");
                             });
                         }
                     }
@@ -128,7 +128,7 @@ function loadGroups() {
             }
         }
 
-        // Удаляем пустые категории и заполняем баджи с количеством групп
+        // Удаляем пустые категории и заполняем баджи с количеством сообществ
         if (closedGroupsCount > 0) {
             $('#badge-groups-closed-true').text(closedGroupsCount);
         } else {
@@ -145,45 +145,45 @@ function loadGroups() {
         finish_loading();
 
         let recordsCount = result.length;
-        $.hulla.send(one_few_many(recordsCount, "Загружена", "Загружено", "Загружено") + " " + recordsCount + " " + one_few_many(recordsCount, "группа", "группы", "групп"), "success");
+        $.hulla.send(oneFewMany(recordsCount, "Загружено", "Загружены", "Загружено") + " " + recordsCount + " " + oneFewMany(recordsCount, "сообщество", "сообщества", "сообществ"), "success");
 
-        // Показываем кнопку добавления новой группы если всё нормально загрузилось
+        // Показываем кнопку добавления нового сообщества если всё нормально загрузилось
         $('#add-group-button').show();
 
-        // Не загружено ни одной группы? Показываем окно добавления групп
+        // Не загружено ни одного сообщества? Показываем окно добавления сообществ
         if (recordsCount == 0) {
             showAddGroupDialog();
         }
     }).fail(function(result) {
         finish_loading();
 
-        $.hulla.send("Ошибка при загрузке списка групп.<br>Главный модуль программы не запущен или в нём произошла внутренняя ошибка", "danger");
+        $.hulla.send("Ошибка при загрузке списка сообществ.<br>Главный модуль программы не запущен или в нём произошла внутренняя ошибка", "danger");
     })
 }
 
 function showAddGroupDialog() {
     bootbox.prompt({
-        title: "Добавить группу",
-        message: "Введите адрес группы или её короткое имя. Можно в виде списка из нескольких групп:",
+        title: "Добавить сообщество",
+        message: "Введите адрес сообщества или его короткое имя. Можно в виде списка из нескольких сообществ:",
         inputType: 'textarea',
         placeholder: "https://vk.com/club123456\nhttps://vk.com/public123456\nhttps://vk.com/apiclub\napiclub",
         backdrop: true,
         callback: function(groupNames) {
             if (groupNames) {
-                // Отправляем запрос на добавление новой группы
+                // Отправляем запрос на добавление нового сообщества
                 $.post("add_group",
                 {
                     url: groupNames
                 },
                 function(data, status) {
                     if (status) {
-                        $.hulla.send("Группа \"" + groupNames + "\" добавлена<br>Она появится в списке после начальной обработки", "success");
+                        $.hulla.send("Сообщество \"" + groupNames + "\" добавлено<br>Оно появится в списке после начальной обработки", "success");
                     }
                     else {
-                        $.hulla.send("Не удалось добавить группу \"" + groupNames + "\"", "danger");
+                        $.hulla.send("Не удалось добавить сообщество \"" + groupNames + "\"", "danger");
                     }
                 }).fail(function(result) {
-                    $.hulla.send("Не удалось добавить группу \"" + groupNames + "\"", "danger");
+                    $.hulla.send("Не удалось добавить сообщество \"" + groupNames + "\"", "danger");
                 });
             }
         }

@@ -35,14 +35,14 @@ namespace VK_Unicorn
                 // Запросили API
                 switch (request)
                 {
-                    // Удаление группы
+                    // Удаление сообщества
                     case "delete_group":
                         var isDeleted = Database.Instance.Delete<Database.Group>(long.Parse(parametersDictionary["id"]));
 
                         handled = true;
                         break;
 
-                    // Добавление группы
+                    // Добавление сообщества
                     case "add_group":
                         // Разделяем строку на список строк
                         var groupsToAdd = WebUtility.UrlDecode(parametersDictionary["url"]).Split(
@@ -50,7 +50,7 @@ namespace VK_Unicorn
                             StringSplitOptions.None
                         );
 
-                        // Добавляем каждую группу
+                        // Добавляем каждое сообщество
                         foreach (var group in groupsToAdd)
                         {
                             // Пропускаем пустые строки
@@ -59,7 +59,7 @@ namespace VK_Unicorn
                                 continue;
                             }
 
-                            Worker.Instance.RegisterNewGroupToAdd(group);
+                            Worker.Instance.RegisterNewGroupToReceiveInfo(group);
                         }
 
                         handled = true;
@@ -112,7 +112,7 @@ namespace VK_Unicorn
                     // Запросили API
                     switch (request)
                     {
-                        // Получение списка групп
+                        // Получение списка сообществ
                         case "groups":
                             Database.Instance.ForEach<Database.Group>((group) =>
                             {
@@ -124,8 +124,8 @@ namespace VK_Unicorn
                                 });
                             });
 
-                            // Сортируем группы статусу закрытости, а потом по эффективости.
-                            // Сначала идут группы с которых было получено больше всего профилей
+                            // Сортируем сообщества по статусу закрытости, а потом по эффективости.
+                            // Сначала идут сообщества с которых было получено больше всего пользователей
                             resultObjects = resultObjects
                                 .OrderByDescending(_ => (_["data"] as Database.Group).IsClosed)
                                 .ThenByDescending(_ => (int)_["Efficiency"])
@@ -135,14 +135,14 @@ namespace VK_Unicorn
                             handled = true;
                             break;
 
-                        // Получение списка профилей
-                        case "profiles":
-                            Database.Instance.ForEach<Database.Profile>((profile) =>
+                        // Получение списка пользователей
+                        case "users":
+                            Database.Instance.ForEach<Database.User>((user) =>
                             {
                                 resultObjects.Add(new Dictionary<string, object>()
                                 {
-                                    { "data", profile },
-                                    { "URL", profile.GetURL() },
+                                    { "data", user },
+                                    { "URL", user.GetURL() },
                                 });
                             });
 

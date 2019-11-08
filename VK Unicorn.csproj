@@ -159,6 +159,7 @@
     </Compile>
     <EmbeddedResource Include="source\SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -173,7 +174,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="web\utils.js" />
-    <EmbeddedResource Include="web\profiles.js" />
+    <EmbeddedResource Include="web\users.js" />
     <EmbeddedResource Include="web\groups.js" />
     <EmbeddedResource Include="web\hullabaloo.min.js" />
     <EmbeddedResource Include="web\main.js" />

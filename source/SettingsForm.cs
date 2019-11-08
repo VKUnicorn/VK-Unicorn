@@ -31,11 +31,11 @@ namespace VK_Unicorn
 
                 switch (settings.SearchMethod)
                 {
-                    case Database.SearchMethod.SMART:
+                    case Database.Settings.SearchMethodType.SMART:
                         SearchSmartRadioButton.Checked = true;
                         break;
 
-                    case Database.SearchMethod.ALL_OF_TARGET_SEX:
+                    case Database.Settings.SearchMethodType.ALL_OF_TARGET_SEX:
                         SearchAllRadioButton.Checked = true;
                         break;
 
@@ -48,15 +48,15 @@ namespace VK_Unicorn
 
         void ApplyButton_Click(object sender, EventArgs e)
         {
-            // Определяем метод поиска профилей
-            var searchMethod = Database.SearchMethod.BY_CITY;
+            // Определяем метод поиска пользователей
+            var searchMethod = Database.Settings.SearchMethodType.BY_CITY;
             if (SearchSmartRadioButton.Checked)
             {
-                searchMethod = Database.SearchMethod.SMART;
+                searchMethod = Database.Settings.SearchMethodType.SMART;
             }
             if (SearchAllRadioButton.Checked)
             {
-                searchMethod = Database.SearchMethod.ALL_OF_TARGET_SEX;
+                searchMethod = Database.Settings.SearchMethodType.ALL_OF_TARGET_SEX;
             }
 
             // Сохраняем настройки в базу

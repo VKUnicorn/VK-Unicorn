@@ -13,69 +13,19 @@ namespace VK_Unicorn
 
         public enum HiddenStatus
         {
-            // Профиль не скрыт
+            // Пользователь не скрыт
             NOT_HIDDEN,
-            // Профиль скрыт пока не появится ещё какая-то активность
+            // Пользователь скрыт пока не появится ещё какая-то активность
             HIDDEN_UNTIL_ACTIVITY,
         }
 
-        public enum SearchMethod
-        {
-            // Только те профили, в которых указан твой город
-            BY_CITY,
-            // Все профили из закрытых групп, остальные по городу
-            SMART,
-            // Все профили c полом Constants.TARGET_SEX_ID. Огромное количество спама и ботов
-            ALL_OF_TARGET_SEX,
-        }
-
-        // Основная таблица с интересными нам профилями
-        public class Profile
-        {
-            // Id профиля. Например у Павла Дурова этот Id равен единице - https://vk.com/id1
-            [PrimaryKey, Unique]
-            public long Id { get; set; }
-
-            // Имя
-            public string FirstName { get; set; }
-
-            // Фамилия
-            public string LastName { get; set; }
-
-            // Дата рождения
-            public DateTime BirthDate { get; set; }
-
-            // Id города откуда был добавлен профиль
-            public long CityId { get; set; }
-
-            // URL главной фотографии в максимальном размере
-            public string PhotoURL { get; set; }
-
-            // Когда этот профиль был добавлен в базу данных
-            public DateTime WhenAdded { get; set; }
-
-            // С какой группы был добавлен профиль
-            public long FromGroupId { get; set; }
-
-            // Скрыт ли этот профиль пользователем
-            public HiddenStatus IsHidden { get; set; }
-
-            /// <summary>
-            /// Возвращает ссылку на профиль
-            /// </summary>
-            public string GetURL()
-            {
-                return Constants.VK_WEB_PAGE + "id" + Id;
-            }
-        }
-
-        // Таблица с группами о которых ещё предстоит получить информацию и добавить в обычную
-        // таблицу с группами, если там ещё нету такой же
+        // Таблица с сообществами о которых ещё предстоит получить информацию и добавить в обычную
+        // таблицу с сообществами, если там ещё нету такой же
         public class GroupToReceiveInfo
         {
-            // Введённый пользователем id группы. Идентификатор или короткое имя сообщества
+            // Введённый пользователем id сообщества. Идентификатор или короткое имя сообщества
             // Например пользователь ввёл адрес https://vk.com/public1 или https://vk.com/club1
-            // Это всё адреса одной и той же группы https://vk.com/apiclub, но по public1, как и
+            // Это всё адреса одного и того же сообщества https://vk.com/apiclub, но по public1, как и
             // по club1 получить информацию по запросу wall.get нельзя. Чтобы не создавать путаницу
             // мы просто получим реальный id сообщества через запрос groups.getById и дальше уже
             // будем работать только с ним. Нам всё равно вызывать этот запрос для получения имени
@@ -84,57 +34,56 @@ namespace VK_Unicorn
             public string DomainName { get; set; }
         }
 
-        // Таблица с группами
+        // Таблица с сообществами
         public class Group
         {
-            // Id группы. Например у группы "ВКонтакте API" этот Id равен единице https://vk.com/public1
+            // Id сообщества. Например у сообщества "ВКонтакте API" этот Id равен единице https://vk.com/public1
             // Не тот, который ввёл пользователь, а тот, который получим с сервера потом сами
             [PrimaryKey, Unique]
             public long Id { get; set; }
 
-            // Название группы
+            // Название сообщества
             public string Name { get; set; }
 
-            // Короткий адрес группы. Сохраняем его для открытия ссылок
+            // Короткий адрес сообщества. Сохраняем его для открытия ссылок
             public string ScreenName { get; set; }
 
-            // Статус закрытости группы
+            // Статус закрытости сообщества
             public bool IsClosed { get; set; }
 
-            // Статус членства в группе. Актуально только для закрытых групп
+            // Статус членства в сообществе. Актуально только для закрытых сообществ
             public bool IsMember { get; set; }
 
             // URL главной фотографии в максимальном размере
             public string PhotoURL { get; set; }
 
-            // Как давно было найдено чего-нибудь полезное в этой группе
+            // Как давно было найдено чего-нибудь полезное в этом сообществе
             public DateTime LastActivity { get; set; }
 
-            // Как давно был последний успешный скан группы
+            // Как давно был последний успешный скан сообщества
             public DateTime LastScanned { get; set; }
 
-            // Дата когда будет разрешено в следующий раз взаимодейстовать с группой
-            // например мы отправили заявку в группу и будем пытаться сканировать её только
-            // через минут пять. А так же нету смысла сканировать группу прям сразу же после
-            // того как просканировали её, можно подождать минут 30
+            // Дата когда будет разрешено в следующий раз взаимодейстовать с сообществом
+            // Например мы отправили заявку в сообщество и будем пытаться сканировать сообщество только через минут пять
+            // А так же нету смысла сканировать сообщество прям сразу же после того как просканировали его, можно подождать минут 30
             public DateTime InteractTimeout { get; set; }
 
             /// <summary>
-            /// Сколько анкет было найдено с этой группы
+            /// Сколько пользователей было найдено с этого сообщества
             /// </summary>
             public int GetEfficiency()
             {
                 var result = 0;
                 Instance.ForDatabaseUnlocked((db) =>
                 {
-                    result = db.Table<Profile>().Where(_ => _.FromGroupId == Id).Count();
+                    result = db.Table<User>().Where(_ => _.FromGroupId == Id).Count();
                 });
 
                 return result;
             }
 
             /// <summary>
-            /// Возвращает ссылку на группу
+            /// Возвращает ссылку на сообщество
             /// </summary>
             public string GetURL()
             {
@@ -142,7 +91,7 @@ namespace VK_Unicorn
             }
 
             /// <summary>
-            /// Это закрытая группа в которую ещё не вступили?
+            /// Это закрытое сообщество в которое ещё не вступили?
             /// </summary>
             public bool IsWantToJoin()
             {
@@ -150,7 +99,7 @@ namespace VK_Unicorn
             }
 
             /// <summary>
-            /// Прошло ли время после которого разрешено взаимодействовать с группой
+            /// Прошло ли время после которого разрешено взаимодействовать с сообществом
             /// </summary>
             public bool CanInteract()
             {
@@ -158,7 +107,7 @@ namespace VK_Unicorn
             }
 
             /// <summary>
-            /// Устанавливаем таймаут на дальнейшее взаимодействие с группой
+            /// Устанавливаем таймаут на дальнейшее взаимодействие с сообществом
             /// </summary>
             public void SetInteractTimeout(TimeSpan timeSpan)
             {
@@ -168,7 +117,7 @@ namespace VK_Unicorn
             }
 
             /// <summary>
-            /// Помечаем группу как только что просканированную
+            /// Помечаем сообщество как только что просканированную
             /// </summary>
             public void MarkAsJustScanned()
             {
@@ -186,76 +135,89 @@ namespace VK_Unicorn
             }
         }
 
-        // Таблица активности когда кто-то лайкает запись
-        public class LikeActivity
+        // Основная таблица с интересными нам пользователями
+        public class User
         {
-            // Id профиля, который что-то лайкнул
-            public long Id { get; set; }
-
-            // Id группы в которой была запись
-            public long GroupId { get; set; }
-
-            // Id записи из группы
-            public long PostId { get; set; }
-
-            // Что было написано в записи, которую лайкнули
-            public string PostContent { get; set; }
-
-            // Когда этот профиль был лайкнут
-            public DateTime WhenAdded { get; set; }
-        }
-
-        // Таблица активности когда кто-то пишет запись
-        public class PostActivity
-        {
-            // Id профиля, который что-то написал
-            public long ProfileId { get; set; }
-
-            // Id группы в которой была запись
-            public long GroupId { get; set; }
-
-            // Id записи из группы
-            public long PostId { get; set; }
-
-            // Что было написано в записи
-            public string PostContent { get; set; }
-
-            // Когда эта запись была добавлена
-            public DateTime WhenAdded { get; set; }
-        }
-
-        // Таблица активности когда кто-то пишет комментарий
-        public class CommentActivity
-        {
-            // Id профиля, который что-то написал
-            public long ProfileId { get; set; }
-
-            // Id группы в которой была запись
-            public long GroupId { get; set; }
-
-            // Id записи из группы
-            public long PostId { get; set; }
-
-            // Id комментария к записи
-            public long CommentId { get; set; }
-
-            // Что было написано в комментарии
-            public string CommentContent { get; set; }
-
-            // Когда этот комментарий был добавлен
-            public DateTime WhenAdded { get; set; }
-        }
-
-        // Таблица с id тех профилей, которые мы уже просканировали.
-        // Эта таблица нужна чтобы не сканировать сто раз одни и тех же профили, а
-        // следовательно будет отправляться значительно меньше запросов на серверы
-        // ВКонтакте. После того как профиль попадает в эту таблицу мы больше не
-        // будем получать никакую информацию о нём в дальнейшем
-        public class ScannedProfile
-        {
-            // Id профиля
+            // Id пользователя. Например у Павла Дурова этот Id равен единице - https://vk.com/id1
             [PrimaryKey, Unique]
             public long Id { get; set; }
+
+            // Имя
+            public string FirstName { get; set; }
+
+            // Фамилия
+            public string LastName { get; set; }
+
+            // Дата рождения
+            public DateTime BirthDate { get; set; }
+
+            // Id города
+            public long CityId { get; set; }
+
+            // URL главной фотографии в максимальном размере
+            public string PhotoURL { get; set; }
+
+            // Когда этот пользователь был добавлен в базу данных
+            public DateTime WhenAdded { get; set; }
+
+            // С какого сообщества был добавлен пользователь
+            public long FromGroupId { get; set; }
+
+            // Скрыт ли этот пользователь
+            public HiddenStatus IsHidden { get; set; }
+
+            /// <summary>
+            /// Возвращает ссылку на пользователя
+            /// </summary>
+            public string GetURL()
+            {
+                return Constants.VK_WEB_PAGE + "id" + Id;
+            }
+        }
+
+        // Таблица с действиями пользователя
+        public class UserActivity
+        {
+            public enum ActivityType
+            {
+                POST,
+                LIKE,
+                COMMENT,
+                COMMENT_LIKE,
+            }
+
+            // Тип активности
+            public ActivityType Type { get; set; }
+
+            // Id пользователя, который что-то сделал
+            public long UserId { get; set; }
+
+            // Id сообщества в которой была запись
+            public long GroupId { get; set; }
+
+            // Id записи из сообщества
+            public long PostId { get; set; }
+
+            // Id комментария к записи. Может быть не определён
+            public long CommentId { get; set; }
+
+            // Что было в содержимом
+            public string Content { get; set; }
+
+            // Когда была произведена эта активость
+            public DateTime WhenAdded { get; set; }
+        }
+
+        // Таблица с id тех пользователей, которых мы уже просканировали.
+        // Эта таблица нужна чтобы не сканировать сто раз одного и того же пользователя, а
+        // следовательно будет отправляться значительно меньше запросов на серверы
+        // ВКонтакте. После того как пользователь попадает в эту таблицу мы больше не
+        // будем получать никакую информацию о нём в дальнейшем
+        public class ScannedUser
+        {
+            // Id пользователя
+            [PrimaryKey, Unique]
+            public long UserId { get; set; }
         }
 
         // Таблица с id тех записей, которые мы уже просканировали.
@@ -263,10 +225,10 @@ namespace VK_Unicorn
         // потом повторно сканировать запись где что-то изменилось в большую сторону
         public class ScannedPost
         {
-            // Id группы, в которой была написана запись
+            // Id сообщества, в котором была написана запись
             public long GroupId { get; set; }
 
-            // Id записи в этой группе
+            // Id записи в этом сообществе
             public long PostId { get; set; }
 
             // Счётчик лайков. Если он изменится в большую сторону, то будем
@@ -284,6 +246,16 @@ namespace VK_Unicorn
         // Таблица настроек приложения
         public class Settings
         {
+            public enum SearchMethodType
+            {
+                // Только те пользователи, у которых указан твой город
+                BY_CITY,
+                // Все пользователи из закрытых сообществ, остальные по городу
+                SMART,
+                // Все пользователи c полом Constants.TARGET_SEX_ID. Огромное количество спама и ботов
+                ALL_OF_TARGET_SEX,
+            }
+
             // Всегда равен INTERNAL_DB_MARKER
             [PrimaryKey, Unique]
             public string Id { get; set; }
@@ -300,8 +272,8 @@ namespace VK_Unicorn
             // Id города
             public long CityId { get; set; }
 
-            // Метод поиска профилей
-            public SearchMethod SearchMethod { get; set; }
+            // Метод поиска пользователей
+            public SearchMethodType SearchMethod { get; set; }
 
             // Стоп слова
             public string StopWords { get; set; }
@@ -362,10 +334,9 @@ namespace VK_Unicorn
                 db.CreateTables<_System, Settings>();
 
                 // Создаём все остальные таблицы
-                db.CreateTable<Profile>();
+                db.CreateTables<User, UserActivity>();
                 db.CreateTables<GroupToReceiveInfo, Group>();
-                db.CreateTables<LikeActivity, PostActivity, CommentActivity>();
-                db.CreateTables<ScannedProfile, ScannedPost>();
+                db.CreateTables<ScannedUser, ScannedPost>();
             });
         }
 
@@ -580,14 +551,14 @@ namespace VK_Unicorn
         public void ShowStatistics()
         {
             Utils.Log("Статистика:", LogLevel.SUCCESS);
-            Utils.Log("    Всего найдено полезных профилей: " + GetCount<Profile>(), LogLevel.NOTIFY);
-            Utils.Log("    Количество групп для сканирования: " + GetCount<Group>(), LogLevel.NOTIFY);
-            Utils.Log("    Просканировано профилей: " + GetCount<ScannedProfile>(), LogLevel.NOTIFY);
+            Utils.Log("    Всего найдено полезных пользователей: " + GetCount<User>(), LogLevel.NOTIFY);
+            Utils.Log("    Количество сообществ для сканирования: " + GetCount<Group>(), LogLevel.NOTIFY);
+            Utils.Log("    Просканировано пользователей: " + GetCount<ScannedUser>(), LogLevel.NOTIFY);
             Utils.Log("    Просканировано записей: " + GetCount<ScannedPost>(), LogLevel.NOTIFY);
         }
 
         /// <summary>
-        /// Вызывает callback для каждой группы с которой можно взаимодействовать
+        /// Вызывает callback для каждого сообщества с которым можно взаимодействовать
         /// </summary>
         public void ForEachInteractableGroup(Callback<Group> callback)
         {
@@ -601,8 +572,8 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Вызывает callback на группу, к которой мы присоеденились (если закрытая), с которой можно взамодействовать
-        /// и с которой дольше всего не взаимодействовали
+        /// Вызывает callback на сообщество, к которому мы присоеденились (если закрытое), с которым можно взамодействовать
+        /// и с которым дольше всего не взаимодействовали
         /// </summary>
         public void ForBestGroupToInteract(Callback<Group> callback)
         {
@@ -621,7 +592,7 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Вызывает callback на закрытую группу, в которой ещё нету членства и с которой можно взамодействовать
+        /// Вызывает callback на закрытое сообщество, в котором ещё нету членства и с котором можно взамодействовать
         /// </summary>
         public void ForFirstInteractableWantToJoinGroup(Callback<Group> callback)
         {
@@ -640,7 +611,7 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Вызывает callback на запись из группы, если она уже просканирована
+        /// Вызывает callback на запись из сообщества, если она уже просканирована
         /// </summary>
         public void ForScannedPostInfo(long groupId, long postId, Callback<ScannedPost> callback)
         {

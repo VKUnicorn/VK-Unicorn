@@ -2,7 +2,7 @@ function clear_workspace() {
     // Очищаем все элементы из основного рабочего контейнера
     $('#workspace').empty()
 
-    // Скрываем кнопку добавления новой группы
+    // Скрываем кнопку добавления нового сообщества
     $('#add-group-button').hide()
 }
 
@@ -37,7 +37,7 @@ function main() {
         trigger: 'hover',
         placement: 'left',
         delay: { "show": 450, "hide": 100 },
-        content: 'Настроить группы'
+        content: 'Настроить сообщества'
     });
 
     $('#head-logo').popover({
@@ -52,9 +52,9 @@ function main() {
         trigger: 'hover',
         placement: 'top',
         delay: { "show": 450, "hide": 100 },
-        content: 'Добавить группу'
+        content: 'Добавить сообщество'
     });
 
-    // Загружаем профили как действие по умолчанию
-    loadProfiles();
+    // Загружаем пользователей как действие по умолчанию
+    loadUsers();
 }

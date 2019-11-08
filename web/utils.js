@@ -2,7 +2,7 @@
 // 21 год
 // 22 года
 // 27 лет
-function one_few_many(number, one, few, many)
+function oneFewMany(number, one, few, many)
 {
     number = Math.abs(number);
     var mod100 = number % 100;
@@ -40,14 +40,14 @@ function isoTimeToLocalDeltaAsString(arg) {
 
     var delta = parseInt((new Date().getTime() - isoTime) / 1000 / 60);
     if (delta < 60) {
-        return delta + ' ' + one_few_many(delta, 'минута', 'минуты', 'минут');
+        return delta + ' ' + oneFewMany(delta, 'минута', 'минуты', 'минут');
     }
 
     delta = parseInt(delta / 60)
     if (delta < 24) {
-        return delta + ' ' + one_few_many(delta, 'час', 'часа', 'часов');
+        return delta + ' ' + oneFewMany(delta, 'час', 'часа', 'часов');
     }
 
     delta = parseInt(delta / 24);
-    return delta + ' ' + one_few_many(delta, 'день', 'дня', 'дней');
+    return delta + ' ' + oneFewMany(delta, 'день', 'дня', 'дней');
 }

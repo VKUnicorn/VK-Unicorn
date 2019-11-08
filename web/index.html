@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="favicon.ico" rel="icon" type="image/x-icon"/>
@@ -28,7 +28,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #604294">
         <!-- Иконка программы -->
         <div class="mt-1" id="head-logo">
-            <a class="nav-link m-0 p-0" onclick="loadProfiles()"><img src="favicon.ico" style="width: 32px; height: 32px"/></a>
+            <a class="nav-link m-0 p-0" onclick="loadUsers()"><img src="favicon.ico" style="width: 32px; height: 32px"/></a>
         </div>
 
         <!-- Название программы и версия -->
@@ -38,21 +38,21 @@
         <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
         </ul>
 
-        <!-- Настройки групп -->
+        <!-- Настройки сообществ -->
         <div class="mr-2" id="group-setup">
             <a class="nav-link m-0 p-0" onclick="loadGroups()" id="display-groups"><i class="lni-cog size-md"></i></a>
         </div>
 
-        <!-- Поиск профиля по id -->
+        <!-- Поиск пользователя по id -->
         <form class="form-inlinemy-2 my-lg-0">
             <div class="input-group">
-                <!-- Иконка профиля -->
+                <!-- Иконка пользователя -->
                 <div class="input-group-prepend">
                     <span class="input-group-text px-2" id="basic-addon1"><i class="lni-user size-sm"></i></span>
                 </div>
 
-                <!-- Поле ввода для id профиля -->
-                <input type="text" class="form-control" placeholder="id профиля" aria-label="profile-id" aria-describedby="basic-addon1">
+                <!-- Поле ввода для id пользователя -->
+                <input type="text" class="form-control" placeholder="id пользователя" aria-label="user-id" aria-describedby="basic-addon1">
 
                 <!-- Кнопка поиска -->
                 <button class="btn btn-primary my-2 my-sm-0 rounded-0" style="background-color: #8a61d1; border-color:#8a61d1">Найти</button>
@@ -61,7 +61,7 @@
     </nav>
 
     <div class="container">
-        <!-- Основное рабочее место. Сюда будут загружаться профили и группы -->
+        <!-- Основное рабочее место. Сюда будут загружаться пользователи и сообщества -->
         <div class="grid" id="workspace">
         </div>
 
@@ -83,7 +83,7 @@
         </div>
     </div>
 
-    <!-- Кнопка добавления новой группы -->
+    <!-- Кнопка добавления нового сообщества -->
     <a class="nav-link add-group-button" id="add-group-button" onclick="showAddGroupDialog()">
         <i class="lni-plus size-lg centered pb-1"></i>
     </a>
@@ -92,7 +92,7 @@
     <script src="utils.js"></script>
     <script src="main.js"></script>
     <script src="groups.js"></script>
-    <script src="profiles.js"></script>
+    <script src="users.js"></script>
     <script src="hullabaloo.min.js"></script>
 </body>
 </html>

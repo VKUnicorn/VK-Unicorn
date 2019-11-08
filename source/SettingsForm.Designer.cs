@@ -330,10 +330,10 @@
             this.SearchAllRadioButton.AutoSize = true;
             this.SearchAllRadioButton.Location = new System.Drawing.Point(11, 142);
             this.SearchAllRadioButton.Name = "SearchAllRadioButton";
-            this.SearchAllRadioButton.Size = new System.Drawing.Size(524, 20);
+            this.SearchAllRadioButton.Size = new System.Drawing.Size(573, 20);
             this.SearchAllRadioButton.TabIndex = 21;
             this.SearchAllRadioButton.TabStop = true;
-            this.SearchAllRadioButton.Text = "Все. Ищет все профили женского пола. Огромное количество спама и ботов";
+            this.SearchAllRadioButton.Text = "Все. Ищет всех пользователей женского пола. Огромное количество спама и ботов";
             this.SearchAllRadioButton.UseVisualStyleBackColor = true;
             // 
             // SearchSmartRadioButton
@@ -341,10 +341,10 @@
             this.SearchSmartRadioButton.AutoSize = true;
             this.SearchSmartRadioButton.Location = new System.Drawing.Point(11, 122);
             this.SearchSmartRadioButton.Name = "SearchSmartRadioButton";
-            this.SearchSmartRadioButton.Size = new System.Drawing.Size(381, 20);
+            this.SearchSmartRadioButton.Size = new System.Drawing.Size(448, 20);
             this.SearchSmartRadioButton.TabIndex = 20;
             this.SearchSmartRadioButton.TabStop = true;
-            this.SearchSmartRadioButton.Text = "Все профили из закрытых групп, остальные по городу";
+            this.SearchSmartRadioButton.Text = "Все пользователи из закрытых сообществ, остальные по городу";
             this.SearchSmartRadioButton.UseVisualStyleBackColor = true;
             // 
             // SearchByCityRadioButton
@@ -352,10 +352,10 @@
             this.SearchByCityRadioButton.AutoSize = true;
             this.SearchByCityRadioButton.Location = new System.Drawing.Point(11, 102);
             this.SearchByCityRadioButton.Name = "SearchByCityRadioButton";
-            this.SearchByCityRadioButton.Size = new System.Drawing.Size(515, 20);
+            this.SearchByCityRadioButton.Size = new System.Drawing.Size(550, 20);
             this.SearchByCityRadioButton.TabIndex = 19;
             this.SearchByCityRadioButton.TabStop = true;
-            this.SearchByCityRadioButton.Text = "По городу. Только профили, в которых указан твой город (рекомендуется)";
+            this.SearchByCityRadioButton.Text = "По городу. Только пользователи, у которых указан твой город (рекомендуется)";
             this.SearchByCityRadioButton.UseVisualStyleBackColor = true;
             // 
             // CityFilterLabel
