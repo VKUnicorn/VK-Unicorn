@@ -142,6 +142,12 @@ namespace VK_Unicorn
                         case "users":
                             Database.Instance.ForEach<Database.User>((user) =>
                             {
+                                // Не показываем старых пользователей
+                                if (DateTime.Now - user.LastActivity > Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                {
+                                    return;
+                                }
+
                                 // Заменяем ссылку на фото, если нужно
                                 // Это связано с тем, что многие скрипты для uBlock/ADblock блокируют
                                 // загрузку изображений ВКонтакта с другого домена, в итоге изображение блокируется

@@ -27,9 +27,15 @@ function oneFewMany(number, one, few, many)
     return result;
 }
 
-function isoTimeToAgeAsString(isoTime) {
+function isoTimeToAgeAsString(isoTimeAsString) {
+    var isoTime = Date.parse(isoTimeAsString);
+    if (isoTime < 0)
+    {
+        return '';
+    }
+
     var today = new Date();
-    var birthDate = new Date(Date.parse(isoTime));
+    var birthDate = new Date(isoTime);
     var age = today.getFullYear() - birthDate.getFullYear();
     var m = today.getMonth() - birthDate.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
@@ -38,7 +44,7 @@ function isoTimeToAgeAsString(isoTime) {
     return age + ' ' + oneFewMany(age, 'год', 'года', 'лет');
 }
 
-function isoTimeToLocalDeltaAsString(isoTime) {
+function isoTimeToLocalDeltaAsString(isoTimeAsString) {
     if (isoTime === undefined) {
         return 'никогда';
     }

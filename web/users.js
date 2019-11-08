@@ -28,6 +28,12 @@ function loadUsers() {
             let isUserNew = true;
             let age = user.BirthDate == 0 ? '' : isoTimeToAgeAsString(user.BirthDate);
 
+            let ageOverlay = age != '' ? `
+                <div class="card-img-overlay small-info">
+                    <span class="small-info-box">${age}</span>
+                </div>
+            ` : '';
+
             // Заполняем карточку пользователя
             let userCard = $(`
                 <div class="col-sm-2 px-1 py-1">
@@ -36,19 +42,19 @@ function loadUsers() {
                             <a class="btn btn-success float-left px-1 py-1 hide-user-button"><i class="lni-check-mark-circle size-sm" style="color: white"></i></a>
                             <a class="btn btn-danger float-right px-2 py-2 delete-user-button"><i class="lni-close" style="color: white"></i></a>
                         </div>
-                        <img class="card-img-top" src="${user.PhotoURL}">
-                        <div class="card-img-overlay small-info">
-                            <span class="small-info-box">${age}</span>
-                        </div>
+                        <a href="${userExtraInfo.URL}" target="_blank">
+                            <img class="card-img-top" src="${user.PhotoURL}">
+                        </a>
+                        ${ageOverlay}
                         <div class="card-body py-0 px-2">
                             <p class="card-text my-0 text-truncate">${user.FirstName} ${user.LastName}</p>
                         </div>
                         <div class="card-footer pt-0 px-2" style="padding-bottom: 1px">
-                            <div>
+                            <div style="padding-top: 2px">
                                 <small class="text-muted">
-                                    <i class="lni-heart mr-1"></i>100
-                                    <i class="lni-popup mr-1"></i>200
-                                    <i class="lni-comment-reply mr-1"></i>300
+                                    <i class="lni-heart mr-1"></i><span class="activity-counter">100</span>
+                                    <i class="lni-popup mr-1"></i><span class="activity-counter">200</span>
+                                    <i class="lni-comment-reply mr-1"></i><span class="activity-counter">300</span>
                                 </small>
                             </div>
                         </div>

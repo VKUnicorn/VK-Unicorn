@@ -45,6 +45,12 @@
     100% { transform: rotate(360deg); }
 }
 
+.activity-counter {
+    position: relative;
+    left: -1px;
+    bottom: 1px;
+}
+
 .col-sm-2 {
     display: flex;
 }
@@ -91,6 +97,7 @@
     object-fit: cover;
 }
 .col-sm-2 .card-img-top {
+    width: 11rem;
     height: 11rem;
 }
 .col-sm-3 .card-img-top {

@@ -52,7 +52,7 @@ function main() {
         trigger: 'hover',
         placement: 'top',
         delay: { "show": 450, "hide": 100 },
-        content: 'Добавить сообщество'
+        content: '<center>Добавить сообщество</center>'
     });
 
     // Загружаем пользователей как действие по умолчанию

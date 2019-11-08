@@ -54,8 +54,8 @@ function loadGroups() {
                             <p class="card-text my-0 text-truncate" id="group-name">${group.Name}</p>
                         </div>
                         <div class="card-footer pt-0 px-2" style="padding-bottom: 1px">
-                            <div class="float-left" id="last-activity" data-html="true"><small class="text-muted">${lockElement}<i class="lni-pulse mr-1"></i>${isoTimeToLocalDeltaAsString(group.LastActivity)}</small></div>
-                            <div class="float-right" id="last-scanned"><small class="text-muted"><i class="lni-reload" style="padding-right: 2px"></i>${isoTimeToLocalDeltaAsString(group.LastScanned)}</small></div>
+                            <div class="float-left" id="last-activity" data-html="true"><small class="text-muted">${lockElement}<i class="lni-pulse mr-1"></i><span class="activity-counter">${isoTimeToLocalDeltaAsString(group.LastActivity)}</span></small></div>
+                            <div class="float-right" id="last-scanned"><small class="text-muted"><i class="lni-reload" style="padding-right: 4px"></i><span class="activity-counter">${isoTimeToLocalDeltaAsString(group.LastScanned)}</span></small></div>
                         </div>
                     </div>
                 </div>
