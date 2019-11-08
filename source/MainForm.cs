@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace VK_Unicorn
@@ -40,10 +39,10 @@ namespace VK_Unicorn
             try
             {
                 var listener = new WebListener(Constants.WEB_PORT);
-                ShowResults.Enabled = true;
+                StartWorkingButton.Enabled = true;
                 Utils.Log("Веб сервер подключен по адресу " + Constants.RESULTS_WEB_PAGE, LogLevel.SUCCESS);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Utils.Log("Веб сервер не подключен на порт " + Constants.WEB_PORT + ". Причина: " + ex.Message, LogLevel.ERROR);
             }
@@ -66,7 +65,7 @@ namespace VK_Unicorn
             OpenSettingsWindow();
         }
 
-        void ShowResults_Click(object sender, EventArgs e)
+        void StartWorkingButton_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start(Constants.RESULTS_WEB_PAGE);
         }

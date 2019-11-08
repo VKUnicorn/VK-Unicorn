@@ -31,7 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.ExitButton = new System.Windows.Forms.Button();
             this.LogTextBox = new System.Windows.Forms.RichTextBox();
-            this.ShowResults = new System.Windows.Forms.Button();
+            this.StartWorkingButton = new System.Windows.Forms.Button();
             this.LogGroupBox = new System.Windows.Forms.GroupBox();
             this.VersionLabel = new System.Windows.Forms.Label();
             this.StatusLabel = new System.Windows.Forms.Label();
@@ -67,19 +67,19 @@
             this.LogTextBox.Text = "";
             this.LogTextBox.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.LogTextBox_LinkClicked);
             // 
-            // ShowResults
+            // StartWorkingButton
             // 
-            this.ShowResults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ShowResults.Enabled = false;
-            this.ShowResults.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.ShowResults.Location = new System.Drawing.Point(496, 447);
-            this.ShowResults.Name = "ShowResults";
-            this.ShowResults.Size = new System.Drawing.Size(118, 38);
-            this.ShowResults.TabIndex = 2;
-            this.ShowResults.TabStop = false;
-            this.ShowResults.Text = "Результаты";
-            this.ShowResults.UseVisualStyleBackColor = true;
-            this.ShowResults.Click += new System.EventHandler(this.ShowResults_Click);
+            this.StartWorkingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.StartWorkingButton.Enabled = false;
+            this.StartWorkingButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.StartWorkingButton.Location = new System.Drawing.Point(496, 447);
+            this.StartWorkingButton.Name = "StartWorkingButton";
+            this.StartWorkingButton.Size = new System.Drawing.Size(118, 38);
+            this.StartWorkingButton.TabIndex = 2;
+            this.StartWorkingButton.TabStop = false;
+            this.StartWorkingButton.Text = "Начать работу";
+            this.StartWorkingButton.UseVisualStyleBackColor = true;
+            this.StartWorkingButton.Click += new System.EventHandler(this.StartWorkingButton_Click);
             // 
             // LogGroupBox
             // 
@@ -142,7 +142,7 @@
             this.Controls.Add(this.StatusLabel);
             this.Controls.Add(this.VersionLabel);
             this.Controls.Add(this.LogGroupBox);
-            this.Controls.Add(this.ShowResults);
+            this.Controls.Add(this.StartWorkingButton);
             this.Controls.Add(this.ExitButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -161,7 +161,7 @@
 
         private System.Windows.Forms.Button ExitButton;
         private System.Windows.Forms.RichTextBox LogTextBox;
-        private System.Windows.Forms.Button ShowResults;
+        private System.Windows.Forms.Button StartWorkingButton;
         private System.Windows.Forms.GroupBox LogGroupBox;
         private System.Windows.Forms.Label VersionLabel;
         private System.Windows.Forms.Label StatusLabel;

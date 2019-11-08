@@ -551,7 +551,7 @@ namespace VK_Unicorn
         public void ShowStatistics()
         {
             Utils.Log("Статистика:", LogLevel.SUCCESS);
-            Utils.Log("    Всего найдено полезных пользователей: " + GetCount<User>(), LogLevel.NOTIFY);
+            Utils.Log("    Всего найдено пользователей: " + GetCount<User>(), LogLevel.NOTIFY);
             Utils.Log("    Количество сообществ для сканирования: " + GetCount<Group>(), LogLevel.NOTIFY);
             Utils.Log("    Просканировано пользователей: " + GetCount<ScannedUser>(), LogLevel.NOTIFY);
             Utils.Log("    Просканировано записей: " + GetCount<ScannedPost>(), LogLevel.NOTIFY);
@@ -573,7 +573,7 @@ namespace VK_Unicorn
 
         /// <summary>
         /// Вызывает callback на сообщество, к которому мы присоеденились (если закрытое), с которым можно взамодействовать
-        /// и с которым дольше всего не взаимодействовали
+        /// и с которым дольше всего не взаимодействовали. В приоритете идут закрытые сообщества
         /// </summary>
         public void ForBestGroupToInteract(Callback<Group> callback)
         {
@@ -583,7 +583,10 @@ namespace VK_Unicorn
                 allGroups.RemoveAll(_ =>
                     !_.CanInteract() || _.IsWantToJoin()
                 );
-                var targetGroup = allGroups.OrderBy(_ => _.LastScanned).FirstOrDefault();
+                var targetGroup = allGroups
+                    .OrderBy(_ => _.IsClosed)
+                    .ThenBy(_ => _.LastScanned)
+                    .FirstOrDefault();
                 if (targetGroup != null)
                 {
                     callback(targetGroup);
@@ -625,6 +628,15 @@ namespace VK_Unicorn
                     callback(result);
                 }
             });
+        }
+
+        /// <summary>
+        /// Такая активность пользователя уже была добавлена?
+        /// </summary>
+        public bool IsUserActivityAlreadyExists(UserActivity activity)
+        {
+            // TODO: реализовать
+            return false;
         }
     }
 }

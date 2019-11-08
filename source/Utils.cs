@@ -159,6 +159,29 @@ namespace VK_Unicorn
             return "text/html";
         }
 
+        public static bool IsOneOf<T>(this T valueToFind, params T[] valuesToCheck)
+        {
+            foreach (var value in valuesToCheck)
+            {
+                if (valueToFind.Equals(value))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsNoneOf<T>(this T valueToFind, params T[] valuesToCheck)
+        {
+            return !IsOneOf(valueToFind, valuesToCheck);
+        }
+
+        public static bool IsProfileIdNotGroupId(long id)
+        {
+            return id > 0;
+        }
+
         static Dictionary<string, byte[]> embeddedFilesCache = new Dictionary<string, byte[]>();
         public static byte[] GetEmbeddedFileByName(string fileName)
         {

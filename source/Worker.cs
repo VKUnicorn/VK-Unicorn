@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using VkNet;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using VkNet;
 using VkNet.Model;
 using VkNet.Enums.Filters;
 using VkNet.Enums.SafetyEnums;
 using VkNet.Model.RequestParams;
-using System.Text.RegularExpressions;
 
 namespace VK_Unicorn
 {
@@ -91,7 +91,7 @@ namespace VK_Unicorn
                                 }
                             },
 
-                            // Проверяем нужно ли получить основную информацию о каких-либо сообществах, которые добавил пользователь
+                            // Проверяем нужно ли получить основную информацию о каких-либо сообществах, которые мы добавили
                             () =>
                             {
                                 var groupsToReceiveInfo = Database.Instance.Take<Database.GroupToReceiveInfo>(VkLimits.GROUPS_GETBYID_GROUP_IDS);
@@ -152,7 +152,7 @@ namespace VK_Unicorn
                     await currentTask();
                 }
 
-                // Ждём минимальное время
+                // Ждём минимальное время в любом случае
                 await WaitMinimumTimeout();
             }
         }
@@ -285,7 +285,7 @@ namespace VK_Unicorn
                         var groupInfo = (VkNet.Model.Group)groupInfoAsResponse;
                         if (groupInfo != null)
                         {
-                            Utils.Log("    статус участия в сообществе: " + groupInfo.MemberStatus, LogLevel.NOTIFY);
+                            Utils.Log("Статус участия в сообществе: " + groupInfo.MemberStatus, LogLevel.NOTIFY);
 
                             // Обновляем данные о закрытости и членстве в сообществе
                             group.IsClosed = groupInfo.IsClosed.HasValue ? groupInfo.IsClosed == VkNet.Enums.GroupPublicity.Closed : group.IsClosed;
@@ -325,10 +325,10 @@ namespace VK_Unicorn
                             }
                             else
                             {
-                                Utils.Log("    присоединяться не нужно", LogLevel.NOTIFY);
+                                Utils.Log("Присоединяться не нужно", LogLevel.NOTIFY);
                             }
 
-                            // Обновляем сообщество в базе данных
+                            // Обновляем новую информацию о сообществе в базе данных
                             Database.Instance.InsertOrReplace(group);
                         }
                     }
@@ -410,7 +410,7 @@ namespace VK_Unicorn
                                 var postAuthorId = post.SignerId.GetValueOrDefault(post.FromId.GetValueOrDefault());
 
                                 // Запись была не анонимной? (Не от сообщества?)
-                                if (postAuthorId > 0)
+                                if (Utils.IsProfileIdNotGroupId(postAuthorId))
                                 {
                                     // Не видели эту запись раньше?
                                     if (isPostNotSeenBefore)
@@ -422,6 +422,7 @@ namespace VK_Unicorn
                                             Type = Database.UserActivity.ActivityType.POST,
                                             Content = post.Text,
                                             PostId = post.Id.GetValueOrDefault(),
+                                            GroupId = group.Id,
                                             WhenAdded = post.Date.GetValueOrDefault(),
                                         });
                                     }
@@ -490,23 +491,58 @@ namespace VK_Unicorn
                 userIdsToReceiveInfo.RemoveAll(_ => Database.Instance.IsAlreadyExists<Database.ScannedUser>(_));
 
                 // Загружаем информацию о нужных пользователях
-                var users = new List<User>();
+                var usersInfo = new List<User>();
                 while (userIdsToReceiveInfo.Count > 0)
                 {
                     // Берём максимальное количество Id, которое мы можем просканировать за один запрос
                     var chunkOfUserIdsToReceiveInfo = userIdsToReceiveInfo.Take(VkLimits.USERS_GET_USER_IDS).ToList();
 
-                    // Удаляем то количество Id, которые мы взяли для получения
+                    // Удаляем то количество Id, которое мы взяли для сканирования
                     userIdsToReceiveInfo.RemoveRange(0, chunkOfUserIdsToReceiveInfo.Count);
 
                     // Получаем информацию о этих пользователях
-                    users.AddRange(await api.Users.GetAsync(chunkOfUserIdsToReceiveInfo));
+                    try
+                    {
+                        var fieldsToReceive =
+                              ProfileFields.Sex
+                            | ProfileFields.City
+                            | ProfileFields.PhotoMaxOrig
+                            | ProfileFields.Site
+                            | ProfileFields.BirthDate
+                            | ProfileFields.Status
+                            | ProfileFields.Contacts
+                        ;
+                        usersInfo.AddRange(await api.Users.GetAsync(chunkOfUserIdsToReceiveInfo, fieldsToReceive));
+                        await WaitMinimumTimeout();
+                    }
+                    catch (Exception ex)
+                    {
+                        Utils.Log("не удалось получить информацию о некоторых пользователях. Причина: " + ex.Message, LogLevel.ERROR);
+                        await WaitAlotAfterError();
+                    }
+                }
+
+                // Вызывает callback для полученной информации о пользователе, если она есть
+                Callback<long, Callback<User>> ForReceivedInfoAboutUser = (userId, callback) =>
+                {
+                    var userInfo = usersInfo.Where(_ => _.Id == userId).FirstOrDefault();
+                    if (userInfo != null)
+                    {
+                        callback(userInfo);
+                    }
+                };
+
+                // DEBUG
+                Utils.Log("получили информацию о пользователях " + usersInfo.Count, LogLevel.ERROR);
+                foreach (var user in usersInfo)
+                {
+                    Utils.Log("    " + user.FirstName + " " + user.LastName, LogLevel.ERROR);
                 }
 
                 // Обрабатываем интересующие нас активности: записи, лайки, комментарии и т.п.
                 while (userActivitiesToProcess.Count > 0)
                 {
-                    // Обрабатываем первый найденный элемент
+                    // Берём первую же активность из списка для обработки
                     var userActivityToProcess = userActivitiesToProcess.First();
 
                     // DEBUG Выводим отладочную информацию о активности
@@ -516,15 +552,59 @@ namespace VK_Unicorn
                     Utils.Log("    content: " + userActivityToProcess.Content, LogLevel.NOTIFY);
                     Utils.Log("    whenAdded: " + userActivityToProcess.WhenAdded, LogLevel.NOTIFY);
 
+                    // Нужно ли будет сохранить данные о активности?
+                    var needToSaveActivity = false;
+
                     // Пользователь уже был добавлен ранее?
                     if (Database.Instance.IsAlreadyExists<Database.User>(userActivityToProcess.UserId))
                     {
-                        // Сохраняем эту активность как новую активность пользователя
+                        needToSaveActivity = true;
                     }
                     else
                     {
-                        // Пользователь нам не известен, сканируем пользователя
+                        ForReceivedInfoAboutUser(userActivityToProcess.UserId, (userInfo) =>
+                        {
+                            // Пользователь забанен?
+                            if (userInfo.Deactivated != Deactivated.Activated)
+                            {
+                                // Не сохраняем лайки и лайки постов от деактивированных пользователей т.к.
+                                // в них не содержится никакой полезной информации
+                                if (userActivityToProcess.Type.IsOneOf(Database.UserActivity.ActivityType.LIKE, Database.UserActivity.ActivityType.COMMENT_LIKE))
+                                {
+                                    return;
+                                }
+                            }
 
+                            // Проверяем пол пользователя
+                            if (userInfo.Sex != Constants.TARGET_SEX_ID)
+                            {
+                                // Неправильный пол. Удаляем всю активность этого пользователя из
+                                // очереди на проверку и завершаем сканирование активности
+                                userActivitiesToProcess.RemoveAll(_ => _.UserId == userActivityToProcess.UserId);
+                                return;
+                            }
+
+                            // Всё нормально, все условия и тесты пройдены, сохраняем пользователя
+                            Database.Instance.InsertOrReplace(new Database.User()
+                            {
+                                Id = userActivityToProcess.UserId,
+                                FirstName = userInfo.FirstName,
+                                LastName = userInfo.LastName,
+                                //BirthDate = userInfo.bir,
+
+                            });
+                        });
+                    }
+
+                    // Нужно ли сохранить данные о активности?
+                    if (needToSaveActivity)
+                    {
+                        // Эта активность не была уже была добавлена?
+                        if (!Database.Instance.IsUserActivityAlreadyExists(userActivityToProcess))
+                        {
+                            // Сохраняем эту активность как новую активность пользователя
+                            Database.Instance.InsertOrReplace(userActivityToProcess);
+                        }
                     }
 
                     // Удаляем обработанную активность из списка обработки
@@ -534,7 +614,7 @@ namespace VK_Unicorn
                 // Помечаем сообщество как только что просканированное
                 group.MarkAsJustScanned();
 
-                // Устанавливаем время ожидания перед следующим сканированием
+                // Устанавливаем время ожидания перед следующим сканированием сообщества
                 //group.SetInteractTimeout(Timeouts.AFTER_GROUP_WAS_SCANNED);
             }
             catch (Exception ex)

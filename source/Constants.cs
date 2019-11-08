@@ -19,9 +19,7 @@ namespace VK_Unicorn
         public const char STOP_WORDS_SEPARATOR = ';';
 
         // Id пола ВКонтакте который нам интересен
-        // 0 - мужской
-        // 1 - женский
-        public const int TARGET_SEX_ID = 1;
+        public const VkNet.Enums.Sex TARGET_SEX_ID = VkNet.Enums.Sex.Female;
 
         // Пользователи с возрастом ниже этого значения показываются, но будут явно помечены как потенциально опасные по причине
         // УК РФ Статья 240.1. Получение сексуальных услуг несовершеннолетнего
