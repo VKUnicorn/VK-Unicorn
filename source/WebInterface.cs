@@ -20,11 +20,10 @@ namespace VK_Unicorn
             }
         }
 
-        public bool HandlePostRequest(string request, out byte[] data, out string responseContentType, out string responseCode, Dictionary<string, string> parametersDictionary)
+        public bool HandlePostRequest(string request, out byte[] data, out HttpStatusCode statusCode, Dictionary<string, string> parametersDictionary)
         {
             data = Encoding.UTF8.GetBytes(string.Empty);
-            responseContentType = "text/html";
-            responseCode = "200 OK";
+            statusCode = HttpStatusCode.OK;
 
             // Обработан ли запрос на API?
             var handled = false;
@@ -72,7 +71,6 @@ namespace VK_Unicorn
                 {
                     // Отправляем JSON ответ
                     data = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(resultObjects));
-                    responseCode = "200 OK";
                     return true;
                 }
             }
@@ -80,17 +78,15 @@ namespace VK_Unicorn
             {
                 Utils.Log("не удалось обработать запрос. Причина: " + ex.Message, LogLevel.ERROR);
                 data = Encoding.UTF8.GetBytes(ex.Message);
-                responseCode = "500 Internal server error";
+                statusCode = HttpStatusCode.InternalServerError;
                 return true;
             }
 
             return false;
         }
 
-        public bool HandleGetRequest(string request, out byte[] data, out string responseContentType, Dictionary<string, string> parametersDictionary)
+        public bool HandleGetRequest(string request, out byte[] data)
         {
-            responseContentType = Utils.GetMIMETypeByFilename(request);
-
             // Обрабатываем известные запросы на получение файлов и API
             if (request != string.Empty)
             {

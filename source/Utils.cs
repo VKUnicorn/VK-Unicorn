@@ -143,31 +143,6 @@ namespace VK_Unicorn
             return Constants.VK_WEB_PAGE + self.ScreenName;
         }
 
-        // https://ru.wikipedia.org/wiki/Список_MIME-типов
-        public static string GetMIMETypeByFilename(string fileName)
-        {
-            var lowercased = fileName.ToLowerInvariant();
-
-            if (fileName.EndsWith(".css"))
-            {
-                return "text/css";
-            }
-            else if (fileName.EndsWith(".ico"))
-            {
-                return "image/vnd.microsoft.icon";
-            }
-            else if (fileName.EndsWith(".png"))
-            {
-                return "image/png";
-            }
-            else if (fileName.EndsWith(".jpg"))
-            {
-                return "image/jpeg";
-            }
-
-            return "text/html";
-        }
-
         public static bool IsOneOf<T>(this T valueToFind, params T[] valuesToCheck)
         {
             foreach (var value in valuesToCheck)

@@ -36,10 +36,13 @@ namespace VK_Unicorn
             // Запускаем веб сервер
             Utils.Log("Пытаемся запустить веб сервер на порт " + Constants.WEB_PORT, LogLevel.GENERAL);
             Utils.Log("Веб сервер нужен для просмотра результатов сканирования в браузере в виде привычной веб страницы", LogLevel.NOTIFY);
+
             try
             {
-                var listener = new WebListener(Constants.WEB_PORT);
+                new HTTPServer(Constants.WEB_PORT);
+
                 StartWorkingButton.Enabled = true;
+
                 Utils.Log("Веб сервер подключен по адресу " + Constants.RESULTS_WEB_PAGE, LogLevel.SUCCESS);
             }
             catch (Exception ex)
