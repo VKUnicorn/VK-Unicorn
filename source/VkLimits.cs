@@ -15,5 +15,8 @@
 
         // https://vk.com/dev/likes.getList
         public const int LIKES_GET_LIST_COUNT = 100;
+
+        // https://vk.com/dev/execute
+        public const int EXECUTE_VK_API_METHODS_COUNT = 25;
     }
 }

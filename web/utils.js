@@ -45,11 +45,11 @@ function isoTimeToAgeAsString(isoTimeAsString) {
 }
 
 function isoTimeToLocalDeltaAsString(isoTimeAsString) {
-    if (isoTime === undefined) {
+    if (isoTimeAsString === undefined) {
         return 'никогда';
     }
 
-    var isoTime = Date.parse(isoTime);
+    var isoTime = Date.parse(isoTimeAsString);
     if (isoTime < 0)
     {
         return 'никогда';

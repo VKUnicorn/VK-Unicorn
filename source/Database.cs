@@ -219,6 +219,12 @@ namespace VK_Unicorn
 
             // Когда была произведена эта активость
             public DateTime WhenHappened { get; set; }
+
+            // Метод для клонирования
+            public UserActivity ShallowCopy()
+            {
+                return (UserActivity)MemberwiseClone();
+            }
         }
 
         // Таблица с id тех пользователей, которых мы уже просканировали.
@@ -688,6 +694,7 @@ namespace VK_Unicorn
                 result = db.Table<UserActivity>()
                     .Where(_ =>
                            (_.Type == activity.Type)
+                        && (_.UserId == activity.UserId)
                         && (_.GroupId == activity.GroupId)
                         && (_.PostId == activity.PostId)
                         && (_.CommentId == activity.CommentId)
