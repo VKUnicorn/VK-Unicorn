@@ -402,6 +402,14 @@ namespace VK_Unicorn
 
                                 // Нужно сканировать запись повторно?
                                 needToScanPost = (post.Comments.Count > scannedPost.CommentsCount) || (post.Likes.Count > scannedPost.LikesCount);
+
+                                // DEBUG
+                                if (needToScanPost)
+                                {
+                                    Utils.Log("нужно сканировать пост заново", LogLevel.ERROR);
+                                    Utils.Log("      к " + post.Comments.Count + " >= " + scannedPost.CommentsCount, LogLevel.ERROR);
+                                    Utils.Log("      л " + post.Likes.Count + " >= " + scannedPost.LikesCount, LogLevel.ERROR);
+                                }
                             });
 
                             if (needToScanPost)
@@ -431,7 +439,54 @@ namespace VK_Unicorn
                                 // Сканируем лайки
                                 if (post.Likes.Count > 0)
                                 {
+                                    // DEBUG
+                                    Utils.Log("сканируем лайки " + post.Likes.Count, LogLevel.ERROR);
 
+                                    // Загружаем информацию о лайках
+                                    var offset = 0u;
+                                    var likesToLoad = post.Likes.Count;
+                                    while (likesToLoad > 0)
+                                    {
+                                        try
+                                        {
+                                            // Отправляем запрос к API ВКонтакте
+                                            var likesUserIds = await api.Likes.GetListAsync(new LikesGetListParams()
+                                            {
+                                                Type = LikeObjectType.Post,
+                                                OwnerId = group.GetNegativeId(),
+                                                ItemId = post.Id.GetValueOrDefault(),
+                                                Offset = offset,
+                                                Count = VkLimits.LIKES_GET_LIST_COUNT,
+                                            });
+                                            await WaitMinimumTimeout();
+
+                                            foreach (var likeUserId in likesUserIds)
+                                            {
+                                                // Добавляем автора лайка для дальнейшей обработки
+                                                userActivitiesToProcess.Add(new Database.UserActivity()
+                                                {
+                                                    UserId = likeUserId,
+                                                    Type = Database.UserActivity.ActivityType.LIKE,
+                                                    Content = post.Text,
+                                                    PostId = post.Id.GetValueOrDefault(),
+                                                    GroupId = group.Id,
+                                                    WhenHappened = post.Date.GetValueOrDefault(),
+                                                });
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Utils.Log("не удалось получить информацию о лайках к посту " + post.Id.GetValueOrDefault() + ". Причина: " + ex.Message, LogLevel.ERROR);
+                                            await WaitAlotAfterError();
+                                        }
+
+                                        // Нужно загрузить ещё больше информации о лайках?
+                                        likesToLoad -= VkLimits.LIKES_GET_LIST_COUNT;
+                                        if (likesToLoad > 0)
+                                        {
+                                            offset += VkLimits.LIKES_GET_LIST_COUNT;
+                                        }
+                                    }
                                 }
 
                                 // Сканируем комментарии
@@ -591,7 +646,6 @@ namespace VK_Unicorn
                         ForReceivedInfoAboutUser(userActivityToProcess.UserId, (userInfo) =>
                         {
                             // Пользователь забанен?
-                            /*
                             if (userInfo.Deactivated != Deactivated.Activated)
                             {
                                 // Не сохраняем лайки и лайки постов от деактивированных пользователей т.к.
@@ -602,6 +656,7 @@ namespace VK_Unicorn
                                 }
                             }
 
+                            /*
                             // Локальная функуия на удаление всей активности этого пользователя
                             Callback DeleteAllActivitiesToProcessFromThisUser = () =>
                             {

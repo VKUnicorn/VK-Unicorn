@@ -88,21 +88,21 @@ function loadUsers() {
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 450, "hide": 100 },
-                content: 'Сколько пользователь поставил лайков'
+                content: 'Общее количество лайков к постам и комментариям'
             });
 
             userCard.find('#posts-counter').popover({
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 450, "hide": 100 },
-                content: 'Сколько пользователь написал постов'
+                content: 'Количество постов'
             });
 
             userCard.find('#comments-counter').popover({
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 450, "hide": 100 },
-                content: 'Сколько пользователь написал комментариев к постам'
+                content: 'Количество комментариев'
             });
 
             // Увеличиваем счётчики

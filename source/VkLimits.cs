@@ -12,5 +12,8 @@
 
         // https://vk.com/dev/users.get
         public const int USERS_GET_USER_IDS = 1000;
+
+        // https://vk.com/dev/likes.getList
+        public const int LIKES_GET_LIST_COUNT = 100;
     }
 }

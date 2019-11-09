@@ -8,6 +8,7 @@ namespace VK_Unicorn
     class WebClient
     {
         MemoryStream memoryStream = new MemoryStream();
+        readonly Socket networkSocket;
         readonly NetworkStream networkStream;
         readonly StreamReader streamReader;
 
@@ -19,7 +20,8 @@ namespace VK_Unicorn
 
         public WebClient(Socket socket)
         {
-            networkStream = new NetworkStream(socket, true);
+            networkSocket = socket;
+            networkStream = new NetworkStream(networkSocket, true);
             streamReader = new StreamReader(memoryStream);
         }
 
@@ -28,14 +30,22 @@ namespace VK_Unicorn
             var buffer = new byte[4096];
             while (true)
             {
-                var bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length);
-                if (bytesRead == 0)
-                {
-                    return;
-                }
-
                 memoryStream.Seek(0, SeekOrigin.End);
-                memoryStream.Write(buffer, 0, bytesRead);
+
+                while (true)
+                {
+                    var bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length);
+                    if (bytesRead == 0)
+                    {
+                        return;
+                    }
+
+                    memoryStream.Write(buffer, 0, bytesRead);
+                    if (networkSocket.Available == 0)
+                    {
+                        break;
+                    }
+                }
 
                 var done = ProcessHeader();
                 if (done)

@@ -78,6 +78,7 @@ namespace VK_Unicorn
             }
             catch (System.Exception ex)
             {
+                Utils.Log("не удалось обработать запрос. Причина: " + ex.Message, LogLevel.ERROR);
                 data = Encoding.UTF8.GetBytes(ex.Message);
                 responseCode = "500 Internal server error";
                 return true;
