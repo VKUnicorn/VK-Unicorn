@@ -138,7 +138,7 @@ function loadGroups() {
         finish_loading();
 
         let recordsCount = result.length;
-        $.hulla.send(oneFewMany(recordsCount, "Загружено", "Загружены", "Загружено") + " " + recordsCount + " " + oneFewMany(recordsCount, "сообщество", "сообщества", "сообществ"), "success");
+        $.hulla.send(oneFewMany(recordsCount, "Загружено", "Загружены", "Загружено") + " " + oneFewMany(recordsCount, "сообщество", "сообщества", "сообществ", true), "success");
 
         // Показываем кнопку добавления нового сообщества если всё нормально загрузилось
         $('#add-group-button').show();

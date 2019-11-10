@@ -32,7 +32,7 @@ function loadUsers() {
             let age = user.BirthDate == 0 ? 0 : isoTimeToAge(user.BirthDate);
             let isNotInConsentAge = (age > 0) && (age < 16);
             let isUnderage = (age > 0) && (age < 18);
-            let ageAsString = age > 0 ? (age + ' ' + oneFewMany(age, 'год', 'года', 'лет')) : '';
+            let ageAsString = age > 0 ? oneFewMany(age, 'год', 'года', 'лет', true) : '';
             let ageElement = ageAsString != '' ? `
                 <small>
                     <div class="card-img-overlay small-info">
@@ -202,7 +202,7 @@ function loadUsers() {
 
         let recordsCount = result.length;
         if (recordsCount > 0) {
-            $.hulla.send(oneFewMany(recordsCount, "Загружен", "Загружено", "Загружено") + " " + recordsCount + " " + oneFewMany(recordsCount, "пользователь", "пользователя", "пользователей"), "success");
+            $.hulla.send(oneFewMany(recordsCount, "Загружен", "Загружено", "Загружено") + " " + oneFewMany(recordsCount, "пользователь", "пользователя", "пользователей", true), "success");
         }
         else {
             $.hulla.send("Не было загружено ни одного пользователя, поэтому было открыто окно настройки сообществ", "success");

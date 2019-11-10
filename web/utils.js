@@ -2,26 +2,27 @@
 // 21 год
 // 22 года
 // 27 лет
-function oneFewMany(number, one, few, many)
+function oneFewMany(number, one, few, many, appendNumber)
 {
     number = Math.abs(number);
     var mod100 = number % 100;
 
+    var result = appendNumber ? number + ' ' : '';
     if (!(mod100 >= 11 && mod100 <= 19))
     {
         switch (number % 10)
         {
             case 1:
-                return one;
+                return result + one;
 
             case 2:
             case 3:
             case 4:
-                return few;
+                return result + few;
         }
     }
 
-    return many;
+    return result + many;
 }
 
 function isoTimeToAge(isoTimeAsString) {
@@ -58,16 +59,16 @@ function isoTimeToLocalDeltaAsString(isoTimeAsString) {
             return 'только что';
         }
 
-        return delta + ' ' + oneFewMany(delta, 'минута', 'минуты', 'минут');
+        return oneFewMany(delta, 'минута', 'минуты', 'минут', true);
     }
 
     delta = parseInt(delta / 60)
     if (delta < 24) {
-        return delta + ' ' + oneFewMany(delta, 'час', 'часа', 'часов');
+        return oneFewMany(delta, 'час', 'часа', 'часов', true);
     }
 
     delta = parseInt(delta / 24);
-    return delta + ' ' + oneFewMany(delta, 'день', 'дня', 'дней');
+    return oneFewMany(delta, 'день', 'дня', 'дней', true);
 }
 
 // Функция для обновления счётчика у баджа категории
