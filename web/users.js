@@ -51,8 +51,8 @@ function loadUsers(favorites) {
                 <div class="col-sm-2 px-1 py-1">
                     <div class="card ${warningElement}">
                         <div class="card-img-overlay px-1 py-1">
-                            <a class="btn btn-success float-left px-1 py-1" id="hide-button"><i class="lni-check-mark-circle size-sm" style="color: white"></i></a>
-                            <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close" style="color: white"></i></a>
+                            <a class="btn btn-success float-left px-1 py-1" id="hide-button"><i class="lni-check-mark-circle size-sm text-white"></i></a>
+                            <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close text-white"></i></a>
                         </div>
                         <a href="${userExtraInfo.URL}" target="_blank">
                             <img class="card-img-top" src="${user.PhotoURL}">
@@ -61,13 +61,16 @@ function loadUsers(favorites) {
                         <div class="card-body py-0 px-2">
                             <p class="card-text my-0 text-truncate">${fullName}</p>
                         </div>
-                        <div class="card-footer pt-0 px-2" style="padding-bottom: 1px">
-                            <div style="padding-top: 2px">
+                        <div class="card-footer pt-0 pl-2 pb-p-1 pr-p-3">
+                            <div class="float-left pt-p-2">
                                 <small class="text-muted">
                                     ${likesElement}
                                     ${postsElement}
                                     ${commentsElement}
                                 </small>
+                            </div>
+                            <div class="float-right pt-p-3">
+                                <i class="lni-star text-muted" id="favorite"></i>
                             </div>
                         </div>
                     </div>
@@ -108,6 +111,13 @@ function loadUsers(favorites) {
                 placement: 'top',
                 delay: { "show": 450, "hide": 100 },
                 content: 'Количество комментариев'
+            });
+
+            userCard.find('#favorite').popover({
+                trigger: 'hover',
+                placement: 'top',
+                delay: { "show": 450, "hide": 100 },
+                content: 'Добавить или удалить из избранного'
             });
 
             if (isUnderage) {

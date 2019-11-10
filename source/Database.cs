@@ -219,6 +219,7 @@ namespace VK_Unicorn
             public ActivityType Type { get; set; }
 
             // Id пользователя, который что-то сделал
+            [PrimaryKey]
             public long UserId { get; set; }
 
             // Id сообщества в которой была запись
@@ -691,7 +692,7 @@ namespace VK_Unicorn
                     !_.CanInteract() || _.IsWantToJoin()
                 );
                 var targetGroup = allGroups
-                    .OrderBy(_ => _.IsClosed)
+                    .OrderByDescending(_ => _.IsClosed)
                     .ThenBy(_ => _.LastScanned)
                     .FirstOrDefault();
                 if (targetGroup != null)

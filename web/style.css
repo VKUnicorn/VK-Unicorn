@@ -184,6 +184,74 @@
 }
 
 /*
+ * Вспомогательные CSS блоки для попиксельной подгонки
+ */
+
+.pt-p-1 {
+    padding-top: 1px;
+}
+.pt-p-2 {
+    padding-top: 2px;
+}
+.pt-p-3 {
+    padding-top: 3px;
+}
+.pt-p-4 {
+    padding-top: 4px;
+}
+.pt-p-5 {
+    padding-top: 5px;
+}
+
+.pb-p-1 {
+    padding-bottom: 1px;
+}
+.pb-p-2 {
+    padding-bottom: 2px;
+}
+.pb-p-3 {
+    padding-bottom: 3px;
+}
+.pb-p-4 {
+    padding-bottom: 4px;
+}
+.pb-p-5 {
+    padding-bottom: 5px;
+}
+
+.pl-p-1 {
+    padding-left: 1px;
+}
+.pl-p-2 {
+    padding-left: 2px;
+}
+.pl-p-3 {
+    padding-left: 3px;
+}
+.pl-p-4 {
+    padding-left: 4px;
+}
+.pl-p-5 {
+    padding-left: 5px;
+}
+
+.pr-p-1 {
+    padding-right: 1px;
+}
+.pr-p-2 {
+    padding-right: 2px;
+}
+.pr-p-3 {
+    padding-right: 3px;
+}
+.pr-p-4 {
+    padding-right: 4px;
+}
+.pr-p-5 {
+    padding-right: 5px;
+}
+
+/*
  * Bootstrap анимация
  */
 .fade {

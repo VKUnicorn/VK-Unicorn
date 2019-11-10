@@ -147,6 +147,9 @@ namespace VK_Unicorn
                         case "groups":
                             Database.Instance.ForEach<Database.Group>((group) =>
                             {
+                                // Заменяем ссылку на фото, если нужно
+                                group.PhotoURL = Utils.FixPhotoURL(group.PhotoURL);
+
                                 resultObjects.Add(new Dictionary<string, object>()
                                 {
                                     { "data", group },
@@ -158,7 +161,8 @@ namespace VK_Unicorn
                             // Сортируем сообщества по статусу закрытости, а потом по эффективости.
                             // Сначала идут сообщества с которых было получено больше всего пользователей
                             resultObjects = resultObjects
-                                .OrderByDescending(_ => (_["data"] as Database.Group).IsClosed)
+                                .OrderByDescending(_ => (_["data"] as Database.Group).IsClosed
+                                                     && (_["data"] as Database.Group).IsMember)
                                 .ThenByDescending(_ => (int)_["Efficiency"])
                                 .ThenByDescending(_ => (_["data"] as Database.Group).LastActivity)
                                 .ThenByDescending(_ => (_["data"] as Database.Group).LastScanned)
@@ -196,17 +200,7 @@ namespace VK_Unicorn
                                 }
 
                                 // Заменяем ссылку на фото, если нужно
-                                // Это связано с тем, что многие скрипты для uBlock/Adblock блокируют
-                                // загрузку изображений ВКонтакта с другого домена, в итоге изображение блокируется
-                                // и дизайн сайта страдает от неправильно отображаемых элементов интерфейса
-                                if (user.PhotoURL.StartsWith(Constants.VK_WEB_PAGE))
-                                {
-                                    // Удаляем начальный адрес до имени файла
-                                    user.PhotoURL = Regex.Replace(user.PhotoURL, @".+\/", "");
-
-                                    // Удаляем параметры запроса. Например ?ava=1 и т.п.
-                                    user.PhotoURL = Regex.Replace(user.PhotoURL, @"\?.+$", "");
-                                }
+                                user.PhotoURL = Utils.FixPhotoURL(user.PhotoURL);
 
                                 // Получаем список активностей пользователя
                                 var userActivites = Database.Instance.GetAllRecords<Database.UserActivity>(_ => _.UserId == user.Id);

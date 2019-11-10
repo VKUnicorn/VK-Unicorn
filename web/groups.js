@@ -41,7 +41,7 @@ function loadGroups() {
                 <div class="col-sm-3 px-1 py-1">
                     <div class="card ${warningElement}">
                         <div class="card-img-overlay px-1 py-1">
-                            <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close" style="color: white"></i></a>
+                            <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close text-white"></i></a>
                         </div>
                         <a href="${groupExtraInfo.URL}" target="_blank">
                             <img class="card-img-top" src="${group.PhotoURL}">
@@ -52,9 +52,9 @@ function loadGroups() {
                         <div class="card-body py-0 px-2">
                             <p class="card-text my-0 text-truncate" id="group-name">${group.Name}</p>
                         </div>
-                        <div class="card-footer pt-0 px-2" style="padding-bottom: 1px">
+                        <div class="card-footer pt-0 px-2 pb-p-1">
                             <div class="float-left" id="last-activity" data-html="true"><small class="text-muted">${lockElement}<i class="lni-pulse mr-1"></i><span class="activity-counter">${isoTimeToLocalDeltaAsString(group.LastActivity)}</span></small></div>
-                            <div class="float-right" id="last-scanned"><small class="text-muted"><i class="lni-reload" style="padding-right: 4px"></i><span class="activity-counter">${isoTimeToLocalDeltaAsString(group.LastScanned)}</span></small></div>
+                            <div class="float-right" id="last-scanned"><small class="text-muted"><i class="lni-reload pr-p-4"></i><span class="activity-counter">${isoTimeToLocalDeltaAsString(group.LastScanned)}</span></small></div>
                         </div>
                     </div>
                 </div>

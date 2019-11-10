@@ -292,6 +292,9 @@ namespace VK_Unicorn
                             group.IsClosed = groupInfo.IsClosed.HasValue ? groupInfo.IsClosed == VkNet.Enums.GroupPublicity.Closed : group.IsClosed;
                             group.IsMember = groupInfo.IsMember.GetValueOrDefault(group.IsMember);
 
+                            // Обновляем новую информацию о сообществе в базе данных
+                            Database.Instance.InsertOrReplace(group);
+
                             // Всё ещё закрытое сообщество и не вступили?
                             if (group.IsWantToJoin())
                             {
@@ -328,9 +331,6 @@ namespace VK_Unicorn
                             {
                                 Utils.Log("Присоединяться не нужно", LogLevel.NOTIFY);
                             }
-
-                            // Обновляем новую информацию о сообществе в базе данных
-                            Database.Instance.InsertOrReplace(group);
                         }
                     }
                 }
@@ -369,7 +369,7 @@ namespace VK_Unicorn
                         // Максимум 5000 запросов в сутки https://vk.com/dev/data_limits
                         // каждый запрос ценен и нужно получить как можно больше информации сразу,
                         // поэтому нет смысла получать меньше записей чем VkLimits.WALL_GET_COUNT
-                        var postsLimit = 5ul;// VkLimits.WALL_GET_COUNT;
+                        var postsLimit = VkLimits.WALL_GET_COUNT;
                         var wallGetObjects = await api.Wall.GetAsync(new WallGetParams()
                         {
                             OwnerId = group.GetNegativeIdForAPI(),
@@ -561,7 +561,7 @@ namespace VK_Unicorn
                     }
 
                     // DEBUG Для отладки
-                    needToLoadMorePosts = false;
+                    //needToLoadMorePosts = false;
                 }
 
                 // Получаем лайки к активностям через упакованные execute запросы
@@ -765,7 +765,6 @@ namespace VK_Unicorn
                                 }
                             }
 
-                            /*
                             // Проверяем пол пользователя
                             if (userInfo.Sex != Constants.TARGET_SEX_ID)
                             {
@@ -775,11 +774,14 @@ namespace VK_Unicorn
                                 return;
                             }
 
+                            // Определяем Id города
+                            var cityId = userInfo.City != null ? userInfo.City.Id.GetValueOrDefault(0) : 0;
+
                             // Проверяем город учитывая настройки пользователя
                             switch (settings.SearchMethod)
                             {
                                 case Database.Settings.SearchMethodType.BY_CITY:
-                                    if (userInfo.City.Id.GetValueOrDefault() != settings.CityId)
+                                    if (cityId != settings.CityId)
                                     {
                                         DeleteAllActivitiesToProcessFromThisUser();
                                         return;
@@ -789,7 +791,7 @@ namespace VK_Unicorn
                                 case Database.Settings.SearchMethodType.SMART:
                                     if (!group.IsClosed)
                                     {
-                                        if (userInfo.City.Id.GetValueOrDefault() != settings.CityId)
+                                        if (cityId != settings.CityId)
                                         {
                                             DeleteAllActivitiesToProcessFromThisUser();
                                             return;
@@ -797,7 +799,6 @@ namespace VK_Unicorn
                                     }
                                     break;
                             }
-                            */
 
                             // Это анкета бота? Эвристический анализ
                             if (false)
@@ -828,9 +829,6 @@ namespace VK_Unicorn
                             {
                                 // Не удалось преобразовать дату рождения, игнорируем ошибку
                             }
-
-                            // Определяем Id города
-                            var cityId = userInfo.City != null ? userInfo.City.Id.GetValueOrDefault(0) : 0;
 
                             // Определяем мобильный телефон
                             var mobilePhone = userInfo.Contacts != null ? userInfo.Contacts.MobilePhone : "";
@@ -916,7 +914,7 @@ namespace VK_Unicorn
                 group.MarkAsJustScanned();
 
                 // Устанавливаем время ожидания перед следующим сканированием сообщества
-                //group.SetInteractTimeout(Timeouts.AFTER_GROUP_WAS_SCANNED);
+                group.SetInteractTimeout(Timeouts.AFTER_GROUP_WAS_SCANNED);
             }
             catch (Exception ex)
             {

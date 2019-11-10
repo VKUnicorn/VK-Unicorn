@@ -22,6 +22,6 @@ namespace VK_Unicorn
         public const VkNet.Enums.Sex TARGET_SEX_ID = VkNet.Enums.Sex.Female;
 
         // Максимальная глубина сканирования записей по времени
-        public static readonly TimeSpan MAX_SCANNING_DEPTH_IN_TIME = TimeSpan.FromDays(90);
+        public static readonly TimeSpan MAX_SCANNING_DEPTH_IN_TIME = TimeSpan.FromDays(60);
     }
 }

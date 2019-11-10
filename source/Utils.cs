@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace VK_Unicorn
 {
@@ -169,6 +170,24 @@ namespace VK_Unicorn
             }
 
             return embeddedFilesCache[fileName];
+        }
+
+        public static string FixPhotoURL(string url)
+        {
+            // Заменяем ссылку на фото, если нужно
+            // Это связано с тем, что многие скрипты для uBlock/Adblock блокируют
+            // загрузку изображений ВКонтакта с другого домена, в итоге изображение блокируется
+            // и дизайн сайта страдает от неправильно отображаемых элементов интерфейса
+            if (url.StartsWith(Constants.VK_WEB_PAGE))
+            {
+                // Удаляем начальный адрес до имени файла
+                url = Regex.Replace(url, @".+\/", "");
+
+                // Удаляем параметры запроса. Например ?ava=1 и т.п.
+                url = Regex.Replace(url, @"\?.+$", "");
+            }
+
+            return url;
         }
     }
 
