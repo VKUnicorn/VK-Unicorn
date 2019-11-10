@@ -1,16 +1,16 @@
-function loadUsers() {
+function loadUsers(favorites) {
     clear_workspace();
     start_loading();
 
     $.getJSON('users', {
+        favorites: favorites
     }, function(result) {
         // Добавляем отдельные категории для пользователей
         function addUserCategory(isForNew) {
             $(`
-                <div class="row-fluid mx-1" id="users-header-new-${isForNew}">
-                    <div class="alert alert-secondary bg-light pt-1 pl-3 pb-0 mt-2 mb-0" role="alert">
-                        <h5 class="mb-1">${isForNew ? 'Новые' : 'Все остальные'} пользователи<span class="badge badge-success opaque-5 ml-1" id="badge">0</span></h5>
-                    </div>
+                <div id="users-header-new-${isForNew}">
+                    <h5 class="ml-1 mb-1 mt-2">${isForNew ? 'Новые' : 'Все остальные'} пользователи<span class="badge badge-success opaque-5 ml-1" id="badge">0</span></h5>
+                    <hr class="mx-1 my-0">
                 </div>
                 <div class="row mx-0" id="users-new-${isForNew}">
                 </div>
@@ -33,7 +33,7 @@ function loadUsers() {
             let isNotInConsentAge = (age > 0) && (age < 16);
             let isUnderage = (age > 0) && (age < 18);
             let ageAsString = age > 0 ? oneFewMany(age, 'год', 'года', 'лет', true) : '';
-            let ageElement = ageAsString != '' ? `
+            let ageElement = (ageAsString != '') ? `
                 <small>
                     <div class="card-img-overlay small-info">
                         <span class="small-info-box" id="age" data-html="true"><span class="small-info-box-text ${isUnderage ? 'color-error font-weight-bold opaque-9' : ''}">${ageAsString}</span></span>
@@ -75,14 +75,14 @@ function loadUsers() {
             `).appendTo($('#users-new-' + isUserNew));
 
             // Тултипы
-            userCard.find('.delete-user-button').popover({
+            userCard.find('#delete-button').popover({
                 trigger: 'hover',
                 placement: 'bottom',
                 delay: { "show": 450, "hide": 100 },
                 content: 'Удалить пользователя навсегда'
             });
 
-            userCard.find('.hide-user-button').popover({
+            userCard.find('#hide-button').popover({
                 trigger: 'hover',
                 placement: 'bottom',
                 delay: { "show": 450, "hide": 100 },
@@ -205,19 +205,17 @@ function loadUsers() {
             $.hulla.send(oneFewMany(recordsCount, "Загружен", "Загружено", "Загружено") + " " + oneFewMany(recordsCount, "пользователь", "пользователя", "пользователей", true), "success");
         }
         else {
-            $.hulla.send("Не было загружено ни одного пользователя, поэтому было открыто окно настройки сообществ", "success");
+            if (!favorites) {
+                $.hulla.send("Не было загружено ни одного пользователя, поэтому было открыто окно настройки сообществ", "success");
 
-            loadGroups();
+                loadGroups();
+            } else {
+                $.hulla.send("Не было загружено ни одного пользователя. Пользователей можно добавлять в избранное по клику на иконку звёздочки", "success");
+            }
         }
     }).fail(function(result) {
         finish_loading();
 
-        let responseJSON = result['responseJSON'];
-        if (responseJSON === undefined) {
-            $.hulla.send("Ошибка при загрузке списка пользователей.<br>Главный модуль программы не запущен или в нём произошла внутренняя ошибка", "danger");
-        }
-        else {
-            $.hulla.send(responseJSON.error, "danger");
-        }
+        $.hulla.send("Ошибка при загрузке списка пользователей.<br>Главный модуль программы не запущен или в нём произошла внутренняя ошибка", "danger");
     })
 }

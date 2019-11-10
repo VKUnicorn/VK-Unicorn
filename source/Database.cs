@@ -192,6 +192,9 @@ namespace VK_Unicorn
             // Скрыт ли этот пользователь
             public HiddenStatus IsHidden { get; set; }
 
+            // Добавлен ли этот пользователь в избранное
+            public bool IsFavorite { get; set; }
+
             /// <summary>
             /// Возвращает ссылку на пользователя
             /// </summary>

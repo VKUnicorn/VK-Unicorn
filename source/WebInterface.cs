@@ -5,6 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Collections.Specialized;
 
 namespace VK_Unicorn
 {
@@ -117,7 +118,7 @@ namespace VK_Unicorn
             return false;
         }
 
-        public bool HandleGetRequest(string request, out byte[] data)
+        public bool HandleGetRequest(string request, out byte[] data, NameValueCollection query)
         {
             // Обрабатываем известные запросы на получение файлов и API
             if (request != string.Empty)
@@ -169,8 +170,19 @@ namespace VK_Unicorn
 
                         // Получение списка пользователей
                         case "users":
+                            var onlyFavorites = query.Get("favorites") == "true";
+
                             Database.Instance.ForEach<Database.User>((user) =>
                             {
+                                // Не показывать пользователей не в избранном, если загружаем только избранных
+                                if (onlyFavorites)
+                                {
+                                    if (!user.IsFavorite)
+                                    {
+                                        return;
+                                    }
+                                }
+
                                 // Не показывать скрытых по каким-либо причинам пользователей
                                 if (user.IsHidden != Database.HiddenStatus.NOT_HIDDEN)
                                 {

@@ -88,6 +88,7 @@ namespace VK_Unicorn
                 case "POST":
                     Utils.Log("Получен API запрос " + request, LogLevel.NOTIFY);
 
+                    // Параметры запроса
                     var parametersDictionary = new Dictionary<string, string>();
                     using (var streamReader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
                     {
@@ -119,7 +120,7 @@ namespace VK_Unicorn
                     break;
 
                 case "GET":
-                    if (!WebInterface.Instance.HandleGetRequest(request, out data))
+                    if (!WebInterface.Instance.HandleGetRequest(request, out data, context.Request.QueryString))
                     {
                         statusCode = HttpStatusCode.NotFound;
                     }

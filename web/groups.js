@@ -7,10 +7,9 @@ function loadGroups() {
         // Добавляем отдельные категории для сообществ
         function addGroupCategory(isClosed) {
             $(`
-                <div class="row-fluid mx-1" id="groups-header-closed-${isClosed}">
-                    <div class="alert alert-secondary bg-light pt-1 pl-3 pb-0 mt-2 mb-0" role="alert">
-                        <h5 class="mb-1">${isClosed ? 'Закрытые' : 'Открытые'} сообщества<span class="badge badge-success opaque-5 ml-1" id="badge">0</span></h5>
-                    </div>
+                <div id="groups-header-closed-${isClosed}">
+                    <h5 class="ml-1 mb-1 mt-2">${isClosed ? 'Закрытые' : 'Открытые'} сообщества<span class="badge badge-success opaque-5 ml-1" id="badge">0</span></h5>
+                    <hr class="mx-1 my-0">
                 </div>
                 <div class="row mx-0" id="groups-closed-${isClosed}">
                 </div>
@@ -48,7 +47,7 @@ function loadGroups() {
                             <img class="card-img-top" src="${group.PhotoURL}">
                         </a>
                         <div class="card-img-overlay medium-info">
-                            <span class="small-info-box group-results">${groupExtraInfo.Efficiency}</span>
+                            <span class="small-info-box group-results" id="efficiency">${groupExtraInfo.Efficiency}</span>
                         </div>
                         <div class="card-body py-0 px-2">
                             <p class="card-text my-0 text-truncate" id="group-name">${group.Name}</p>
@@ -62,14 +61,14 @@ function loadGroups() {
             `).appendTo($('#groups-closed-' + group.IsClosed));
 
             // Тултипы
-            groupCard.find('.delete-group-button').popover({
+            groupCard.find('#delete-button').popover({
                 trigger: 'hover',
                 placement: 'bottom',
                 delay: { "show": 450, "hide": 100 },
                 content: 'Удалить сообщество навсегда'
             });
 
-            groupCard.find('span.small-info-box').popover({
+            groupCard.find('#efficiency').popover({
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 450, "hide": 100 },

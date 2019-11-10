@@ -33,13 +33,6 @@ function main() {
     $.hulla.options.alertClass = "settings-form-font";
 
     // Тултипы на основные элементы интерфейса
-    $('#display-groups').popover({
-        trigger: 'hover',
-        placement: 'left',
-        delay: { "show": 450, "hide": 100 },
-        content: 'Настроить сообщества'
-    });
-
     $('#head-logo').popover({
         trigger: 'hover',
         placement: 'right',
