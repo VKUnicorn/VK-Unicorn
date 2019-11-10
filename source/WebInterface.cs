@@ -37,32 +37,64 @@ namespace VK_Unicorn
                 {
                     // Удаление сообщества
                     case "delete_group":
-                        var isDeleted = Database.Instance.Delete<Database.Group>(long.Parse(parametersDictionary["id"]));
-
-                        handled = true;
+                        {
+                            Database.Instance.Delete<Database.Group>(long.Parse(parametersDictionary["id"]));
+                            handled = true;
+                        }
                         break;
 
                     // Добавление сообщества
                     case "add_group":
-                        // Разделяем строку на список строк
-                        var groupsToAdd = WebUtility.UrlDecode(parametersDictionary["url"]).Split(
-                            new[] { "\r\n", "\r", "\n" },
-                            StringSplitOptions.None
-                        );
-
-                        // Добавляем каждое сообщество
-                        foreach (var group in groupsToAdd)
                         {
-                            // Пропускаем пустые строки
-                            if (group.Trim() == string.Empty)
+                            // Разделяем строку на список строк
+                            var groupsToAdd = WebUtility.UrlDecode(parametersDictionary["url"]).Split(
+                                new[] { "\r\n", "\r", "\n" },
+                                StringSplitOptions.None
+                            );
+
+                            // Добавляем каждое сообщество
+                            foreach (var group in groupsToAdd)
                             {
-                                continue;
+                                // Пропускаем пустые строки
+                                if (group.Trim() == string.Empty)
+                                {
+                                    continue;
+                                }
+
+                                Worker.Instance.RegisterNewGroupToReceiveInfo(group);
                             }
 
-                            Worker.Instance.RegisterNewGroupToReceiveInfo(group);
+                            handled = true;
                         }
+                        break;
 
-                        handled = true;
+                    // Скрытие пользователя
+                    case "hide_user":
+                        {
+                            var userId = long.Parse(parametersDictionary["id"]);
+
+                            Database.Instance.ModifyFields<Database.User>(userId, (user) =>
+                            {
+                                user.IsHidden = Database.HiddenStatus.HIDDEN_UNTIL_ACTIVITY;
+                            });
+
+                            handled = true;
+                        }
+                        break;
+
+                    // Удаление пользователя
+                    case "delete_user":
+                        {
+                            var userId = long.Parse(parametersDictionary["id"]);
+
+                            // Удаляем самого пользователя
+                            Database.Instance.Delete<Database.User>(userId);
+
+                            // Удаляем всю связанную с ним активность
+                            Database.Instance.DeleteAllUserActivities(userId);
+
+                            handled = true;
+                        }
                         break;
                 }
 
@@ -74,7 +106,7 @@ namespace VK_Unicorn
                     return true;
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Utils.Log("не удалось обработать запрос. Причина: " + ex.Message, LogLevel.ERROR);
                 data = Encoding.UTF8.GetBytes(ex.Message);
@@ -139,6 +171,12 @@ namespace VK_Unicorn
                         case "users":
                             Database.Instance.ForEach<Database.User>((user) =>
                             {
+                                // Не показывать скрытых по каким-либо причинам пользователей
+                                if (user.IsHidden != Database.HiddenStatus.NOT_HIDDEN)
+                                {
+                                    return;
+                                }
+
                                 // Не показываем старых пользователей
                                 if (DateTime.Now - user.LastActivity > Constants.MAX_SCANNING_DEPTH_IN_TIME)
                                 {

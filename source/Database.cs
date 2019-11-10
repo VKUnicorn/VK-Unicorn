@@ -230,16 +230,16 @@ namespace VK_Unicorn
             // Когда была произведена эта активость
             public DateTime WhenHappened { get; set; }
 
-            // Метод для клонирования
-            public UserActivity ShallowCopy()
-            {
-                return (UserActivity)MemberwiseClone();
-            }
-
             // Эта активность - лайк к чему-либо?
             public bool IsLikeToSomething()
             {
                 return Type.IsOneOf(ActivityType.LIKE, ActivityType.COMMENT_LIKE);
+            }
+
+            // Возвращает клон активности
+            public UserActivity ShallowCopy()
+            {
+                return (UserActivity)MemberwiseClone();
             }
         }
 
@@ -255,14 +255,20 @@ namespace VK_Unicorn
             public long UserId { get; set; }
         }
 
-        // Таблица с id тех записей, которые мы уже просканировали.
+        // Таблица просканированных записей.
         // Запоминается так же количество лайков и комментариев к этой записи чтобы
         // потом повторно сканировать запись где что-то изменилось в большую сторону
-        public class ScannedPost
+        public class Post
         {
             // Id записи и сообщества вместе
             [PrimaryKey, Unique]
             public string Id { get; set; }
+
+            // Создаём скомбинированный Id сообщества и записи
+            public static string MakeId(long groupId, long postId)
+            {
+                return groupId + "_" + postId;
+            }
 
             // Id сообщества, в котором была написана запись
             public long GroupId { get; set; }
@@ -280,11 +286,6 @@ namespace VK_Unicorn
 
             // Что было в содержимом
             public string Content { get; set; }
-
-            public static string MakeId(long groupId, long postId)
-            {
-                return groupId + "_" + postId;
-            }
         }
 
         // Маркер для служебного использования. Менять не нужно
@@ -398,9 +399,9 @@ namespace VK_Unicorn
                 db.CreateTables<_System, Settings>();
 
                 // Создаём все остальные таблицы
-                db.CreateTables<User, UserActivity>();
+                db.CreateTables<User, ScannedUser, UserActivity>();
                 db.CreateTables<GroupToReceiveInfo, Group>();
-                db.CreateTables<ScannedUser, ScannedPost>();
+                db.CreateTable<Post>();
             });
         }
 
@@ -635,6 +636,9 @@ namespace VK_Unicorn
             });
         }
 
+        /// <summary>
+        /// Правильно ли заданы настройки программы?
+        /// </summary>
         public bool IsSettingsValid()
         {
             var result = false;
@@ -651,10 +655,10 @@ namespace VK_Unicorn
         public void ShowStatistics()
         {
             Utils.Log("Статистика:", LogLevel.SUCCESS);
-            Utils.Log("    Всего найдено пользователей: " + GetCount<User>(), LogLevel.NOTIFY);
+            Utils.Log("    Полезных пользователей: " + GetCount<User>(), LogLevel.NOTIFY);
             Utils.Log("    Количество сообществ для сканирования: " + GetCount<Group>(), LogLevel.NOTIFY);
-            Utils.Log("    Просканировано пользователей: " + GetCount<ScannedUser>(), LogLevel.NOTIFY);
-            Utils.Log("    Просканировано записей: " + GetCount<ScannedPost>(), LogLevel.NOTIFY);
+            Utils.Log("    Сохранено пользователей: " + GetCount<ScannedUser>(), LogLevel.NOTIFY);
+            Utils.Log("    Сохранено записей: " + GetCount<Post>(), LogLevel.NOTIFY);
         }
 
         /// <summary>
@@ -714,14 +718,6 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Вызывает callback на запись из сообщества, если она уже просканирована
-        /// </summary>
-        public void ForScannedPostInfo(long groupId, long postId, Callback<ScannedPost> callback)
-        {
-            For(ScannedPost.MakeId(groupId, postId), callback);
-        }
-
-        /// <summary>
         /// Такая активность пользователя уже была сохранена?
         /// </summary>
         public bool IsUserActivityAlreadyExists(UserActivity activity)
@@ -741,6 +737,17 @@ namespace VK_Unicorn
             });
 
             return result;
+        }
+
+        /// <summary>
+        /// Удаляет все активности пользователя
+        /// </summary>
+        public void DeleteAllUserActivities(long userId)
+        {
+            ForDatabaseLocked((db) =>
+            {
+                db.Execute("DELETE FROM " + typeof(UserActivity).Name + " WHERE UserId = " + userId);
+            });
         }
     }
 }

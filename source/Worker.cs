@@ -398,7 +398,7 @@ namespace VK_Unicorn
                             var isPostNotSeenBefore = true;
 
                             // Ищем запись в нашей базе
-                            Database.Instance.ForScannedPostInfo(group.Id, post.Id.GetValueOrDefault(), (scannedPost) =>
+                            Database.Instance.For<Database.Post>(Database.Post.MakeId(group.Id, post.Id.GetValueOrDefault()), (scannedPost) =>
                             {
                                 // Уже видели эту запись когда-то
                                 isLastPostNotSeenBefore = false;
@@ -523,9 +523,9 @@ namespace VK_Unicorn
                                 }
 
                                 // Запись нужно было просканировать. Сохраняем новую информацию о ней или обновляем старую
-                                Database.Instance.InsertOrReplace(new Database.ScannedPost()
+                                Database.Instance.InsertOrReplace(new Database.Post()
                                 {
-                                    Id = Database.ScannedPost.MakeId(group.Id, post.Id.GetValueOrDefault()),
+                                    Id = Database.Post.MakeId(group.Id, post.Id.GetValueOrDefault()),
                                     GroupId = group.Id,
                                     PostId = post.Id.GetValueOrDefault(),
                                     LikesCount = post.Likes.Count,
