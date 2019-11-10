@@ -112,9 +112,10 @@ namespace VK_Unicorn
             /// </summary>
             public void SetInteractTimeout(TimeSpan timeSpan)
             {
-                InteractTimeout = DateTime.Now.Add(timeSpan);
-
-                Instance.InsertOrReplace(this);
+                Instance.ModifyFields<Group>(Id, (group) =>
+                {
+                    group.InteractTimeout = DateTime.Now.Add(timeSpan);
+                });
             }
 
             /// <summary>
@@ -122,9 +123,10 @@ namespace VK_Unicorn
             /// </summary>
             public void MarkAsJustScanned()
             {
-                LastScanned = DateTime.Now;
-
-                Instance.InsertOrReplace(this);
+                Instance.ModifyFields<Group>(Id, (group) =>
+                {
+                    group.LastScanned = DateTime.Now;
+                });
             }
 
             /// <summary>
@@ -132,9 +134,10 @@ namespace VK_Unicorn
             /// </summary>
             public void MarkAsJustActive()
             {
-                LastActivity = DateTime.Now;
-
-                Instance.InsertOrReplace(this);
+                Instance.ModifyFields<Group>(Id, (group) =>
+                {
+                    group.LastActivity = DateTime.Now;
+                });
             }
 
             /// <summary>
@@ -231,6 +234,12 @@ namespace VK_Unicorn
             public UserActivity ShallowCopy()
             {
                 return (UserActivity)MemberwiseClone();
+            }
+
+            // Эта активность - лайк к чему-либо?
+            public bool IsLikeToSomething()
+            {
+                return Type.IsOneOf(ActivityType.LIKE, ActivityType.COMMENT_LIKE);
             }
         }
 
@@ -559,6 +568,25 @@ namespace VK_Unicorn
                 foreach (var record in db.Table<T>())
                 {
                     callback(record);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Модифицирует только некоторые поля записи
+        /// </summary>
+        public void ModifyFields<T>(object primaryKey, Callback<T> callbackToModifyFields) where T : new()
+        {
+            ForDatabaseUnlocked((db) =>
+            {
+                var record = db.Find<T>(primaryKey);
+                if (record != null)
+                {
+                    // Модифицируем нужные поля
+                    callbackToModifyFields(record);
+
+                    // Сохраняем запись
+                    InsertOrReplace(record);
                 }
             });
         }

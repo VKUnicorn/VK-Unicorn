@@ -92,14 +92,14 @@ function loadUsers() {
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 450, "hide": 100 },
-                content: 'Общее количество лайков к постам и комментариям'
+                content: 'Общее количество лайков к записям и комментариям'
             });
 
             userCard.find('#posts-counter').popover({
                 trigger: 'hover',
                 placement: 'top',
                 delay: { "show": 450, "hide": 100 },
-                content: 'Количество постов'
+                content: 'Количество записей'
             });
 
             userCard.find('#comments-counter').popover({

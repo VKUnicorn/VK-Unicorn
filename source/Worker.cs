@@ -79,7 +79,7 @@ namespace VK_Unicorn
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                currentTask = async () => { await WaitAndSlack(); };
+                                //currentTask = async () => { await WaitAndSlack(); };
                             },
 
                             // Проверяем, авторизированы ли мы вообще. Если нет, то авторизируемся
@@ -410,7 +410,7 @@ namespace VK_Unicorn
                                 // DEBUG
                                 if (needToScanPost)
                                 {
-                                    Utils.Log("нужно сканировать пост заново", LogLevel.ERROR);
+                                    Utils.Log("нужно сканировать запись заново", LogLevel.ERROR);
                                     Utils.Log("      к " + post.Comments.Count + " >= " + scannedPost.CommentsCount, LogLevel.ERROR);
                                     Utils.Log("      л " + post.Likes.Count + " >= " + scannedPost.LikesCount, LogLevel.ERROR);
                                 }
@@ -458,9 +458,9 @@ namespace VK_Unicorn
                                             PostId = post.Id.GetValueOrDefault(),
                                             GroupId = group.Id,
                                             // Мы не можем узнать время лайка, поэтому будем считать что пользователь
-                                            // проявил эту активность во время последнего сканирования, если пост уже
-                                            // был просканирован ранее. В другом случае считаем что лайк был поставлен
-                                            // в то же время, что и написан пост
+                                            // проявил эту активность во время последнего сканирования, если запись уже
+                                            // была просканирована ранее. В другом случае считаем что лайк был поставлен
+                                            // в то же время, что и написана запись
                                             WhenHappened = isPostNotSeenBefore ? post.Date.GetValueOrDefault() : DateTime.Now,
                                         });
                                     }
@@ -492,9 +492,9 @@ namespace VK_Unicorn
                                                         PostId = post.Id.GetValueOrDefault(),
                                                         GroupId = group.Id,
                                                         // Мы не можем узнать время лайка, поэтому будем считать что пользователь
-                                                        // проявил эту активность во время последнего сканирования, если пост уже
-                                                        // был просканирован ранее. В другом случае считаем что лайк был поставлен
-                                                        // в то же время, что и написан пост
+                                                        // проявил эту активность во время последнего сканирования, если запись уже
+                                                        // была просканирована ранее. В другом случае считаем что лайк был поставлен
+                                                        // в то же время, что и написана запись
                                                         WhenHappened = isPostNotSeenBefore ? post.Date.GetValueOrDefault() : DateTime.Now,
                                                     });
                                                 }
@@ -522,7 +522,7 @@ namespace VK_Unicorn
                                     // Сканируем лайки к комментариям
                                 }
 
-                                // Пост нужно было просканировать. Сохраняем новую информацию о нём или обновляем старую
+                                // Запись нужно было просканировать. Сохраняем новую информацию о ней или обновляем старую
                                 Database.Instance.InsertOrReplace(new Database.ScannedPost()
                                 {
                                     Id = Database.ScannedPost.MakeId(group.Id, post.Id.GetValueOrDefault()),
@@ -604,7 +604,7 @@ namespace VK_Unicorn
                                     // Добавляем активности от этих пользователей
                                     foreach (var userId in userIds)
                                     {
-                                        // Ищем активность по этому Id поста
+                                        // Ищем активность по этому Id записи
                                         var activity = chunkOfActivities.Where(_ => _.PostId == postId).FirstOrDefault();
                                         if (activity != null)
                                         {
@@ -710,19 +710,27 @@ namespace VK_Unicorn
                     Utils.Log("    " + user.FirstName + " " + user.LastName, LogLevel.NOTIFY);
                 }
 
+                // Сортируем активности. Лайки нас интересуют в последнюю очередь т.к. если удалённый
+                // или деактивированный пользователь не написал никаких постов и комментариев, то его
+                // лайки не нужно сохранять в базу
+                userActivitiesToProcess.Sort((left, right) =>
+                {
+                    return left.IsLikeToSomething().CompareTo(right.IsLikeToSomething());
+                });
+
                 // Обрабатываем интересующие нас активности: записи, лайки, комментарии и т.п.
                 while (userActivitiesToProcess.Count > 0)
                 {
                     // Берём первую же активность из списка для обработки
                     var userActivityToProcess = userActivitiesToProcess.First();
 
-                    // DEBUG Выводим отладочную информацию о активности
-                    Utils.Log("Активность: " + userActivityToProcess.Type, LogLevel.NOTIFY);
+                    // DEBUG Выводим отладочную информацию об активности
+                    Utils.Log("Активность: " + userActivityToProcess.Type, LogLevel.ERROR);
                     Utils.Log("    userId: " + Constants.VK_WEB_PAGE + "id" + userActivityToProcess.UserId, LogLevel.NOTIFY);
                     Utils.Log("    postId: " + userActivityToProcess.PostId, LogLevel.NOTIFY);
                     Utils.Log("    whenHappened: " + userActivityToProcess.WhenHappened, LogLevel.NOTIFY);
 
-                    // Нужно ли будет сохранить данные о активности?
+                    // Нужно ли будет сохранить данные об активности?
                     var needToSaveActivity = false;
 
                     // Пользователь уже был добавлен ранее?
@@ -734,20 +742,21 @@ namespace VK_Unicorn
                     {
                         ForReceivedInfoAboutUser(userActivityToProcess.UserId, (userInfo) =>
                         {
-                            // Пользователь забанен?
-                            /*
                             if (userInfo.Deactivated != null)
                             {
+                                // Пользователь деактивирован или удалён?
                                 if (userInfo.Deactivated != Deactivated.Activated)
                                 {
-                                    // Не сохраняем лайки и лайки постов от деактивированных пользователей т.к.
+                                    // Не сохраняем лайки от деактивированных или удалённых пользователей т.к.
                                     // в них не содержится никакой полезной информации
-                                    if (userActivityToProcess.Type.IsOneOf(Database.UserActivity.ActivityType.LIKE, Database.UserActivity.ActivityType.COMMENT_LIKE))
+                                    if (userActivityToProcess.IsLikeToSomething())
                                     {
                                         return;
                                     }
                                 }
                             }
+
+                            /*
                             // Локальная функуия на удаление всей активности этого пользователя
                             Callback DeleteAllActivitiesToProcessFromThisUser = () =>
                             {
