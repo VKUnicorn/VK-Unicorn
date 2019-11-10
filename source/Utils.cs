@@ -107,37 +107,6 @@ namespace VK_Unicorn
             return result;
         }
 
-        /// <summary>
-        /// Возвращает слово в зависимости от числа
-        /// 21 год
-        /// 22 года
-        /// 27 лет
-        /// </summary>
-        public static string OneFewMany(this int number, string one, string few, string many)
-        {
-            number = Math.Abs(number);
-            var mod100 = number % 100;
-
-            var result = many;
-            if (!(mod100 >= 11 && mod100 <= 19))
-            {
-                switch (number % 10)
-                {
-                    case 1:
-                        result = one;
-                        break;
-
-                    case 2:
-                    case 3:
-                    case 4:
-                        result = few;
-                        break;
-                }
-            }
-
-            return result;
-        }
-
         public static string GetURL(this VkNet.Model.Group self)
         {
             return Constants.VK_WEB_PAGE + self.ScreenName;

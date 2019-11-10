@@ -42,7 +42,7 @@ function loadGroups() {
                 <div class="col-sm-3 px-1 py-1">
                     <div class="card ${warningElement}">
                         <div class="card-img-overlay px-1 py-1">
-                            <a class="btn btn-danger float-right px-2 py-2 delete-group-button"><i class="lni-close" style="color: white"></i></a>
+                            <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close" style="color: white"></i></a>
                         </div>
                         <a href="${groupExtraInfo.URL}" target="_blank">
                             <img class="card-img-top" src="${group.PhotoURL}">
@@ -91,7 +91,7 @@ function loadGroups() {
             });
 
             // Оработчики событий
-            groupCard.find('.delete-group-button').click(function(){
+            groupCard.find('#delete-button').click(function(){
                 bootbox.confirm({
                     title: "Удалить?",
                     message: "Вы действительно хотите навсегда удалить сообщество \"" + group.Name + "\"?",
@@ -108,6 +108,8 @@ function loadGroups() {
                                     // Удаляем сообщество из UI
                                     updateBadgeRelative('#groups-header-closed-' + group.IsClosed, -1);
                                     groupCard.fadeOut();
+
+                                    $.hulla.send("Сообщество \"" + group.Name + "\" удалено", "danger");
                                 }
                                 else {
                                     $.hulla.send("Не удалось удалить сообщество \"" + group.Name + "\"", "danger");

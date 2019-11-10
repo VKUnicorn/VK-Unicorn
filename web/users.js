@@ -9,7 +9,7 @@ function loadUsers() {
             $(`
                 <div class="row-fluid mx-1" id="users-header-new-${isForNew}">
                     <div class="alert alert-secondary bg-light pt-1 pl-3 pb-0 mt-2 mb-0" role="alert">
-                        <h5 class="mb-1">${isForNew ? 'Новые ' : 'Все остальные '} пользователи<span class="badge badge-success opaque-5 ml-1" id="badge-users-new-${isForNew}"></span></h5>
+                        <h5 class="mb-1">${isForNew ? 'Новые' : 'Все остальные'} пользователи<span class="badge badge-success opaque-5 ml-1" id="badge">0</span></h5>
                     </div>
                 </div>
                 <div class="row mx-0" id="users-new-${isForNew}">
@@ -28,6 +28,7 @@ function loadUsers() {
             let isUserNew = true;
 
             // Подготавливаем блоки с информацией
+            let fullName = user.FirstName + ' ' + user.LastName;
             let age = user.BirthDate == 0 ? 0 : isoTimeToAge(user.BirthDate);
             let isNotInConsentAge = (age > 0) && (age < 16);
             let isUnderage = (age > 0) && (age < 18);
@@ -50,15 +51,15 @@ function loadUsers() {
                 <div class="col-sm-2 px-1 py-1">
                     <div class="card ${warningElement}">
                         <div class="card-img-overlay px-1 py-1">
-                            <a class="btn btn-success float-left px-1 py-1 hide-user-button"><i class="lni-check-mark-circle size-sm" style="color: white"></i></a>
-                            <a class="btn btn-danger float-right px-2 py-2 delete-user-button"><i class="lni-close" style="color: white"></i></a>
+                            <a class="btn btn-success float-left px-1 py-1" id="hide-button"><i class="lni-check-mark-circle size-sm" style="color: white"></i></a>
+                            <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close" style="color: white"></i></a>
                         </div>
                         <a href="${userExtraInfo.URL}" target="_blank">
                             <img class="card-img-top" src="${user.PhotoURL}">
                         </a>
                         ${ageElement}
                         <div class="card-body py-0 px-2">
-                            <p class="card-text my-0 text-truncate">${user.FirstName} ${user.LastName}</p>
+                            <p class="card-text my-0 text-truncate">${fullName}</p>
                         </div>
                         <div class="card-footer pt-0 px-2" style="padding-bottom: 1px">
                             <div style="padding-top: 2px">
@@ -121,6 +122,69 @@ function loadUsers() {
                 });
             }
 
+            // Оработчики событий
+            userCard.find('#hide-button').click(function(){
+                bootbox.confirm({
+                    title: "Скрыть?",
+                    message: "Вы действительно хотите скрыть пользователя \"" + fullName + "\"?",
+                    backdrop: true,
+                    callback: function(result) {
+                        if (result) {
+                            // Отправляем запрос на удаление
+                            $.post("hide_user",
+                            {
+                                id: user.Id
+                            },
+                            function(data, status) {
+                                if (status) {
+                                    // Удаляем пользователя из UI
+                                    updateBadgeRelative('#users-header-new-' + isUserNew, -1);
+                                    userCard.fadeOut();
+
+                                    $.hulla.send("Пользователь \"" + fullName + "\" скрыт", "danger");
+                                }
+                                else {
+                                    $.hulla.send("Не удалось скрыть пользователя \"" + fullName + "\"", "danger");
+                                }
+                            }).fail(function(result) {
+                                $.hulla.send("Не удалось скрыть пользователя \"" + fullName + "\"", "danger");
+                            });
+                        }
+                    }
+                });
+            });
+
+            userCard.find('#delete-button').click(function(){
+                bootbox.confirm({
+                    title: "Удалить?",
+                    message: "Вы действительно хотите навсегда удалить пользователя \"" + fullName + "\"?",
+                    backdrop: true,
+                    callback: function(result) {
+                        if (result) {
+                            // Отправляем запрос на удаление
+                            $.post("delete_user",
+                            {
+                                id: user.Id
+                            },
+                            function(data, status) {
+                                if (status) {
+                                    // Удаляем пользователя из UI
+                                    updateBadgeRelative('#users-header-new-' + isUserNew, -1);
+                                    userCard.fadeOut();
+
+                                    $.hulla.send("Пользователь \"" + fullName + "\" удалён", "danger");
+                                }
+                                else {
+                                    $.hulla.send("Не удалось удалить пользователя \"" + fullName + "\"", "danger");
+                                }
+                            }).fail(function(result) {
+                                $.hulla.send("Не удалось удалить пользователя \"" + fullName + "\"", "danger");
+                            });
+                        }
+                    }
+                });
+            });
+
             // Увеличиваем счётчики
             if (isUserNew) {
                 ++newUsersCount;
@@ -130,19 +194,9 @@ function loadUsers() {
             }
         }
 
-        // Удаляем пустые категории и заполняем баджи с количеством пользователей
-        if (newUsersCount > 0) {
-            $('#badge-users-new-true').text(newUsersCount);
-        } else {
-            $('#users-header-new-true').remove();
-            $('#users-new-true').remove();
-        }
-        if (notNewUsersCount > 0) {
-            $('#badge-users-new-false').text(notNewUsersCount);
-        } else {
-            $('#users-header-new-false').remove();
-            $('#users-new-false').remove();
-        }
+        // Заполняем баджи с количеством пользователей
+        updateBadgeRelative('#users-header-new-true', newUsersCount);
+        updateBadgeRelative('#users-header-new-false', notNewUsersCount);
 
         finish_loading();
 

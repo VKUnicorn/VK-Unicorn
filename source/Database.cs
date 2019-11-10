@@ -119,7 +119,7 @@ namespace VK_Unicorn
             }
 
             /// <summary>
-            /// Помечаем сообщество как только что просканированную
+            /// Помечаем сообщество как только что просканированное
             /// </summary>
             public void MarkAsJustScanned()
             {
@@ -746,7 +746,7 @@ namespace VK_Unicorn
         {
             ForDatabaseLocked((db) =>
             {
-                db.Execute("DELETE FROM " + typeof(UserActivity).Name + " WHERE UserId = " + userId);
+                db.Execute("DELETE FROM " + typeof(UserActivity).Name + " WHERE UserId = ?", userId);
             });
         }
     }

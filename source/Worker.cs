@@ -218,7 +218,7 @@ namespace VK_Unicorn
                             {
                                 if (groupInfo.Deactivated != Deactivated.Activated)
                                 {
-                                    Utils.Log("Не добавляем сообщество " + groupInfo.GetURL() + " потому что оно удалено", LogLevel.NOTIFY);
+                                    Utils.Log("Не добавляем сообщество " + groupInfo.GetURL() + " потому что оно удалено или заблокировано", LogLevel.NOTIFY);
                                 }
                             }
 
@@ -564,7 +564,7 @@ namespace VK_Unicorn
                     needToLoadMorePosts = false;
                 }
 
-                // Получаем лайки к активностям через execute запросы
+                // Получаем лайки к активностям через упакованные execute запросы
                 while (activitiesToReceiveLikesByExecute.Count > 0)
                 {
                     // Берём из очереди максимальное количество активностей, которое мы можем просканировать за один запрос
@@ -742,6 +742,12 @@ namespace VK_Unicorn
                     {
                         ForReceivedInfoAboutUser(userActivityToProcess.UserId, (userInfo) =>
                         {
+                            // Локальная функция на удаление всей активности этого пользователя
+                            Callback DeleteAllActivitiesToProcessFromThisUser = () =>
+                            {
+                                userActivitiesToProcess.RemoveAll(_ => _.UserId == userActivityToProcess.UserId);
+                            };
+
                             if (userInfo.Deactivated != null)
                             {
                                 // Пользователь деактивирован или удалён?
@@ -751,18 +757,15 @@ namespace VK_Unicorn
                                     // в них не содержится никакой полезной информации
                                     if (userActivityToProcess.IsLikeToSomething())
                                     {
+                                        // Можно смело удалять всю активность от этого пользователя т.к. там
+                                        // остались одни лайки
+                                        DeleteAllActivitiesToProcessFromThisUser();
                                         return;
                                     }
                                 }
                             }
 
                             /*
-                            // Локальная функуия на удаление всей активности этого пользователя
-                            Callback DeleteAllActivitiesToProcessFromThisUser = () =>
-                            {
-                                userActivitiesToProcess.RemoveAll(_ => _.UserId == userActivityToProcess.UserId);
-                            };
-
                             // Проверяем пол пользователя
                             if (userInfo.Sex != Constants.TARGET_SEX_ID)
                             {
@@ -794,6 +797,7 @@ namespace VK_Unicorn
                                     }
                                     break;
                             }
+                            */
 
                             // Это анкета бота? Эвристический анализ
                             if (false)
@@ -803,7 +807,6 @@ namespace VK_Unicorn
                                 DeleteAllActivitiesToProcessFromThisUser();
                                 return;
                             }
-                            */
 
                             // Определяем дату рождения
                             var birthDate = new DateTime();
