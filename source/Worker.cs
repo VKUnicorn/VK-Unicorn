@@ -442,11 +442,7 @@ namespace VK_Unicorn
                                 // Сканируем лайки
                                 if (post.Likes.Count > 0)
                                 {
-                                    // DEBUG
-                                    Utils.Log("сканируем лайки " + post.Likes.Count, LogLevel.ERROR);
-
                                     // Загружаем информацию о лайках сразу или подготавливаем для execute запросов
-                                    var offset = 0u;
                                     var likesToLoad = post.Likes.Count;
                                     if (likesToLoad <= VkLimits.LIKES_GET_LIST_COUNT)
                                     {
@@ -466,7 +462,10 @@ namespace VK_Unicorn
                                     }
                                     else
                                     {
+                                        Utils.Log("Сканируем лайки сразу " + likesToLoad, LogLevel.GENERAL);
+
                                         // Очень много лайков, загружаем порциями через обычные запросы
+                                        var offset = 0u;
                                         while (likesToLoad > 0)
                                         {
                                             try
@@ -564,6 +563,13 @@ namespace VK_Unicorn
                     //needToLoadMorePosts = false;
                 }
 
+                // Нужно получить какую-то информацию о лайках?
+                if (activitiesToReceiveLikesByExecute.Count > 0)
+                {
+                    // Оповещаем об этом в лог
+                    Utils.Log("Получаем информацию о лайках через упакованные execute запросы. Количество для обработки: " + activitiesToReceiveLikesByExecute.Count, LogLevel.GENERAL);
+                }
+
                 // Получаем лайки к активностям через упакованные execute запросы
                 while (activitiesToReceiveLikesByExecute.Count > 0)
                 {
@@ -642,6 +648,13 @@ namespace VK_Unicorn
                 // Удаляем тех пользователей, которых мы уже просканировали
                 userIdsToReceiveInfo.RemoveAll(_ => Database.Instance.IsAlreadyExists<Database.ScannedUser>(_));
 
+                // Нужно получить какую-то информацию о пользователях?
+                if (userIdsToReceiveInfo.Count > 0)
+                {
+                    // Оповещаем об этом в лог
+                    Utils.Log("Получаем информацию о пользователях. Количество для обработки: " + userIdsToReceiveInfo.Count, LogLevel.GENERAL);
+                }
+
                 // Загружаем информацию о нужных пользователях
                 var usersInfo = new List<User>();
                 while (userIdsToReceiveInfo.Count > 0)
@@ -703,13 +716,6 @@ namespace VK_Unicorn
                     }
                 };
 
-                // DEBUG
-                Utils.Log("Получили информацию о пользователях " + usersInfo.Count, LogLevel.NOTIFY);
-                foreach (var user in usersInfo)
-                {
-                    Utils.Log("    " + user.FirstName + " " + user.LastName, LogLevel.NOTIFY);
-                }
-
                 // Сортируем активности. Лайки нас интересуют в последнюю очередь т.к. если удалённый
                 // или деактивированный пользователь не написал никаких постов и комментариев, то его
                 // лайки не нужно сохранять в базу
@@ -725,10 +731,12 @@ namespace VK_Unicorn
                     var userActivityToProcess = userActivitiesToProcess.First();
 
                     // DEBUG Выводим отладочную информацию об активности
+                    /*
                     Utils.Log("Активность: " + userActivityToProcess.Type, LogLevel.ERROR);
                     Utils.Log("    userId: " + Constants.VK_WEB_PAGE + "id" + userActivityToProcess.UserId, LogLevel.NOTIFY);
                     Utils.Log("    postId: " + userActivityToProcess.PostId, LogLevel.NOTIFY);
                     Utils.Log("    whenHappened: " + userActivityToProcess.WhenHappened, LogLevel.NOTIFY);
+                    */
 
                     // Нужно ли будет сохранить данные об активности?
                     var needToSaveActivity = false;
@@ -834,6 +842,7 @@ namespace VK_Unicorn
                             var mobilePhone = userInfo.Contacts != null ? userInfo.Contacts.MobilePhone : "";
                             var homePhone = userInfo.Contacts != null ? userInfo.Contacts.HomePhone : "";
 
+                            /*
                             Utils.Log(" DEBUG userActivityToProcess.UserId " + userActivityToProcess.UserId, LogLevel.NOTIFY);
                             Utils.Log(" DEBUG userInfo.FirstName " + userInfo.FirstName, LogLevel.NOTIFY);
                             Utils.Log(" DEBUG userInfo.LastName " + userInfo.LastName, LogLevel.NOTIFY);
@@ -843,6 +852,7 @@ namespace VK_Unicorn
                             Utils.Log(" DEBUG userInfo.Contacts.MobilePhone " + mobilePhone + " isnull" + (userInfo.Contacts == null), LogLevel.NOTIFY);
                             Utils.Log(" DEBUG userInfo.Contacts.HomePhone " + homePhone + " isnull" + (userInfo.Contacts == null), LogLevel.NOTIFY);
                             Utils.Log(" DEBUG userInfo.PhotoMaxOrig.ToString() " + userInfo.PhotoMaxOrig.ToString(), LogLevel.NOTIFY);
+                            */
 
                             // Всё нормально, все условия и тесты пройдены, сохраняем пользователя
                             Database.Instance.InsertOrReplace(new Database.User()
@@ -869,7 +879,8 @@ namespace VK_Unicorn
                         });
                     }
 
-                    Utils.Log("    needToSave: " + needToSaveActivity, LogLevel.WARNING);
+                    // DEBUG
+                    //Utils.Log("    needToSave: " + needToSaveActivity, LogLevel.WARNING);
 
                     // Нужно ли сохранить данные о активности?
                     if (needToSaveActivity)
