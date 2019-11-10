@@ -79,7 +79,7 @@ namespace VK_Unicorn
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                //currentTask = async () => { await WaitAndSlack(); };
+                                currentTask = async () => { await WaitAndSlack(); };
                             },
 
                             // Проверяем, авторизированы ли мы вообще. Если нет, то авторизируемся
@@ -273,14 +273,14 @@ namespace VK_Unicorn
                 Utils.Log("Определяем, нужно ли присоединиться к сообществу " + group.Name, LogLevel.GENERAL);
 
                 // Получаем информацию о сообществе. Может мы уже присоединились к нему? Поле member_status нельзя получить через обычный запрос
-                var response = await api.CallAsync("groups.getById", new VkNet.Utils.VkParameters()
+                var response = await api.CallAsync("groups.getById", new VkParameters()
                 {
                     { "group_id", group.ScreenName },
                     { "fields", "member_status" },
                 });
                 if (response != null)
                 {
-                    var groupInfoAsResponse = ((VkNet.Utils.VkResponseArray)response).FirstOrDefault();
+                    var groupInfoAsResponse = ((VkResponseArray)response).FirstOrDefault();
                     if (groupInfoAsResponse != null)
                     {
                         var groupInfo = (VkNet.Model.Group)groupInfoAsResponse;
@@ -410,9 +410,9 @@ namespace VK_Unicorn
                                 // DEBUG
                                 if (needToScanPost)
                                 {
-                                    Utils.Log("нужно сканировать запись заново", LogLevel.ERROR);
-                                    Utils.Log("      к " + post.Comments.Count + " >= " + scannedPost.CommentsCount, LogLevel.ERROR);
-                                    Utils.Log("      л " + post.Likes.Count + " >= " + scannedPost.LikesCount, LogLevel.ERROR);
+                                    Utils.Log("DEBUG нужно сканировать запись заново", LogLevel.ERROR);
+                                    Utils.Log("DEBUG       к " + post.Comments.Count + " >= " + scannedPost.CommentsCount, LogLevel.ERROR);
+                                    Utils.Log("DEBUG       л " + post.Likes.Count + " >= " + scannedPost.LikesCount, LogLevel.ERROR);
                                 }
                             });
 
@@ -543,7 +543,7 @@ namespace VK_Unicorn
                             if (isLastPostNotSeenBefore)
                             {
                                 // Последняя запись не слишком старая?
-                                if ((DateTime.Now - posts.Last().Date) < Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                if ((DateTime.Now - posts.Last().Date.GetValueOrDefault()) < Constants.MAX_SCANNING_DEPTH_IN_TIME)
                                 {
                                     // Увеличиваем отступ с которого будем продолжать сканирование
                                     scanOffset += postsLimit;
@@ -868,20 +868,31 @@ namespace VK_Unicorn
                         });
                     }
 
-                    Utils.Log("    needToSave: " + needToSaveActivity, LogLevel.ERROR);
+                    Utils.Log("    needToSave: " + needToSaveActivity, LogLevel.WARNING);
 
                     // Нужно ли сохранить данные о активности?
                     if (needToSaveActivity)
                     {
-                        // Эта активность не была уже была добавлена?
+                        // Эта активность не была ещё добавлена ранее?
                         if (!Database.Instance.IsUserActivityAlreadyExists(userActivityToProcess))
                         {
                             // Сохраняем эту активность как новую активность пользователя
                             Database.Instance.InsertOrReplace(userActivityToProcess);
 
-                            // TODO:
-                            // Показываем пользователя снова, если он был скрыт нами и обновляем у него
-                            // дату последней активности
+                            // Обновляем поля у пользователя
+                            Database.Instance.ModifyFields<Database.User>(userActivityToProcess.UserId, (user) =>
+                            {
+                                // Найденная активность была раньше той, которую мы уже сохранили?
+                                if (user.LastActivity < userActivityToProcess.WhenHappened)
+                                {
+                                    // Показываем пользователя снова, если он был скрыт нами
+                                    if (user.IsHidden == Database.HiddenStatus.HIDDEN_UNTIL_ACTIVITY)
+                                    {
+                                        // Обновляем дату последней активности
+                                        user.LastActivity = userActivityToProcess.WhenHappened;
+                                    }
+                                }
+                            });
                         }
                     }
 

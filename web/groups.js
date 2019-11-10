@@ -9,7 +9,7 @@ function loadGroups() {
             $(`
                 <div class="row-fluid mx-1" id="groups-header-closed-${isClosed}">
                     <div class="alert alert-secondary bg-light pt-1 pl-3 pb-0 mt-2 mb-0" role="alert">
-                        <h5 class="mb-1">${isClosed ? 'Закрытые' : 'Открытые'} сообщества<span class="badge badge-success opaque-5 ml-1" id="badge-groups-closed-${isClosed}"></span></h5>
+                        <h5 class="mb-1">${isClosed ? 'Закрытые' : 'Открытые'} сообщества<span class="badge badge-success opaque-5 ml-1" id="badge">0</span></h5>
                     </div>
                 </div>
                 <div class="row mx-0" id="groups-closed-${isClosed}">
@@ -106,6 +106,7 @@ function loadGroups() {
                             function(data, status) {
                                 if (status) {
                                     // Удаляем сообщество из UI
+                                    updateBadgeRelative('#groups-header-closed-' + group.IsClosed, -1);
                                     groupCard.fadeOut();
                                 }
                                 else {
@@ -128,19 +129,9 @@ function loadGroups() {
             }
         }
 
-        // Удаляем пустые категории и заполняем баджи с количеством сообществ
-        if (closedGroupsCount > 0) {
-            $('#badge-groups-closed-true').text(closedGroupsCount);
-        } else {
-            $('#groups-header-closed-true').remove();
-            $('#groups-closed-true').remove();
-        }
-        if (openGroupsCount > 0) {
-            $('#badge-groups-closed-false').text(openGroupsCount);
-        } else {
-            $('#groups-header-closed-false').remove();
-            $('#groups-closed-false').remove();
-        }
+        // Заполняем баджи с количеством сообществ
+        updateBadgeRelative('#groups-header-closed-true', closedGroupsCount);
+        updateBadgeRelative('#groups-header-closed-false', openGroupsCount);
 
         finish_loading();
 

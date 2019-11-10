@@ -7,31 +7,28 @@ function oneFewMany(number, one, few, many)
     number = Math.abs(number);
     var mod100 = number % 100;
 
-    var result = many;
     if (!(mod100 >= 11 && mod100 <= 19))
     {
         switch (number % 10)
         {
             case 1:
-                result = one;
-                break;
+                return one;
 
             case 2:
             case 3:
             case 4:
-                result = few;
-                break;
+                return few;
         }
     }
 
-    return result;
+    return many;
 }
 
 function isoTimeToAge(isoTimeAsString) {
     var isoTime = Date.parse(isoTimeAsString);
     if (isoTime < 0)
     {
-        return '';
+        return 0;
     }
 
     var today = new Date();
@@ -71,4 +68,21 @@ function isoTimeToLocalDeltaAsString(isoTimeAsString) {
 
     delta = parseInt(delta / 24);
     return delta + ' ' + oneFewMany(delta, 'день', 'дня', 'дней');
+}
+
+// Функция для обновления счётчика у баджа категории
+function updateBadgeRelative(category, value) {
+    let categoryElement = $(category);
+    let badgeElement = categoryElement.find('#badge');
+
+    let oldValue = parseInt(badgeElement.text());
+    let newValue = oldValue + value;
+
+    badgeElement.text(newValue);
+
+    if (newValue > 0) {
+        categoryElement.show();
+    } else {
+        categoryElement.hide();
+    }
 }
