@@ -79,7 +79,7 @@ namespace VK_Unicorn
                             // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                //currentTask = async () => { await WaitAndSlack(); };
+                                currentTask = async () => { await WaitAndSlack(); };
                             },
 
                             // Проверяем, авторизированы ли мы вообще. Если нет, то авторизируемся
@@ -369,10 +369,10 @@ namespace VK_Unicorn
                         // Максимум 5000 запросов в сутки https://vk.com/dev/data_limits
                         // каждый запрос ценен и нужно получить как можно больше информации сразу,
                         // поэтому нет смысла получать меньше записей чем VkLimits.WALL_GET_COUNT
-                        var postsLimit = 15ul;// VkLimits.WALL_GET_COUNT;
+                        var postsLimit = 5ul;// VkLimits.WALL_GET_COUNT;
                         var wallGetObjects = await api.Wall.GetAsync(new WallGetParams()
                         {
-                            OwnerId = group.GetNegativeId(),
+                            OwnerId = group.GetNegativeIdForAPI(),
                             Count = postsLimit,
                             Offset = scanOffset,
                         });
@@ -432,7 +432,6 @@ namespace VK_Unicorn
                                         {
                                             UserId = postAuthorId,
                                             Type = Database.UserActivity.ActivityType.POST,
-                                            Content = post.Text,
                                             PostId = post.Id.GetValueOrDefault(),
                                             GroupId = group.Id,
                                             WhenHappened = post.Date.GetValueOrDefault(),
@@ -456,10 +455,13 @@ namespace VK_Unicorn
                                         {
                                             // UserId пока нам неизвестен и будет получен в результате execute запроса
                                             Type = Database.UserActivity.ActivityType.LIKE,
-                                            Content = post.Text,
                                             PostId = post.Id.GetValueOrDefault(),
                                             GroupId = group.Id,
-                                            WhenHappened = post.Date.GetValueOrDefault(),
+                                            // Мы не можем узнать время лайка, поэтому будем считать что пользователь
+                                            // проявил эту активность во время последнего сканирования, если пост уже
+                                            // был просканирован ранее. В другом случае считаем что лайк был поставлен
+                                            // в то же время, что и написан пост
+                                            WhenHappened = isPostNotSeenBefore ? post.Date.GetValueOrDefault() : DateTime.Now,
                                         });
                                     }
                                     else
@@ -473,7 +475,7 @@ namespace VK_Unicorn
                                                 var likesUserIds = await api.Likes.GetListAsync(new LikesGetListParams()
                                                 {
                                                     Type = LikeObjectType.Post,
-                                                    OwnerId = group.GetNegativeId(),
+                                                    OwnerId = group.GetNegativeIdForAPI(),
                                                     ItemId = post.Id.GetValueOrDefault(),
                                                     Offset = offset,
                                                     Count = VkLimits.LIKES_GET_LIST_COUNT,
@@ -487,16 +489,19 @@ namespace VK_Unicorn
                                                     {
                                                         UserId = likeUserId,
                                                         Type = Database.UserActivity.ActivityType.LIKE,
-                                                        Content = post.Text,
                                                         PostId = post.Id.GetValueOrDefault(),
                                                         GroupId = group.Id,
-                                                        WhenHappened = post.Date.GetValueOrDefault(),
+                                                        // Мы не можем узнать время лайка, поэтому будем считать что пользователь
+                                                        // проявил эту активность во время последнего сканирования, если пост уже
+                                                        // был просканирован ранее. В другом случае считаем что лайк был поставлен
+                                                        // в то же время, что и написан пост
+                                                        WhenHappened = isPostNotSeenBefore ? post.Date.GetValueOrDefault() : DateTime.Now,
                                                     });
                                                 }
                                             }
                                             catch (Exception ex)
                                             {
-                                                Utils.Log("не удалось получить информацию о лайках к посту " + post.Id.GetValueOrDefault() + ". Причина: " + ex.Message, LogLevel.ERROR);
+                                                Utils.Log("не удалось получить информацию о большом количестве лайков к записи " + post.Id.GetValueOrDefault() + ". Причина: " + ex.Message, LogLevel.ERROR);
                                                 await WaitAlotAfterError();
                                             }
 
@@ -525,6 +530,7 @@ namespace VK_Unicorn
                                     PostId = post.Id.GetValueOrDefault(),
                                     LikesCount = post.Likes.Count,
                                     CommentsCount = post.Comments.Count,
+                                    Content = post.Text,
                                 });
                             }
                         }
@@ -561,7 +567,10 @@ namespace VK_Unicorn
                 // Получаем лайки к активностям через execute запросы
                 while (activitiesToReceiveLikesByExecute.Count > 0)
                 {
+                    // Берём из очереди максимальное количество активностей, которое мы можем просканировать за один запрос
                     var chunkOfActivities = activitiesToReceiveLikesByExecute.Take(VkLimits.EXECUTE_VK_API_METHODS_COUNT).ToList();
+
+                    // Удаляем из очереди то количество активностей, которое мы взяли для сканирования
                     activitiesToReceiveLikesByExecute.RemoveRange(0, chunkOfActivities.Count);
 
                     try
@@ -570,7 +579,8 @@ namespace VK_Unicorn
                         var listOfAPICalls = new List<string>();
                         foreach (var activity in chunkOfActivities)
                         {
-                            listOfAPICalls.Add("{\"item_id\":" + activity.PostId + "}+API.likes.getList({\"type\":\"post\",\"owner_id\":" + group.GetNegativeId() + ",\"item_id\":" + activity.PostId + "})");
+                            var isComment = activity.Type == Database.UserActivity.ActivityType.COMMENT;
+                            listOfAPICalls.Add("{\"item_id\":" + activity.PostId + "}+API.likes.getList({\"type\":\"" + (isComment ? "comment" : "post") + "\",\"owner_id\":" + group.GetNegativeIdForAPI() + ",\"item_id\":" + (isComment ? activity.CommentId : activity.PostId) + "})");
                         }
 
                         // Вызываем execute запрос
@@ -694,7 +704,7 @@ namespace VK_Unicorn
                 };
 
                 // DEBUG
-                Utils.Log("получили информацию о пользователях " + usersInfo.Count, LogLevel.NOTIFY);
+                Utils.Log("Получили информацию о пользователях " + usersInfo.Count, LogLevel.NOTIFY);
                 foreach (var user in usersInfo)
                 {
                     Utils.Log("    " + user.FirstName + " " + user.LastName, LogLevel.NOTIFY);
@@ -710,7 +720,6 @@ namespace VK_Unicorn
                     Utils.Log("Активность: " + userActivityToProcess.Type, LogLevel.NOTIFY);
                     Utils.Log("    userId: " + Constants.VK_WEB_PAGE + "id" + userActivityToProcess.UserId, LogLevel.NOTIFY);
                     Utils.Log("    postId: " + userActivityToProcess.PostId, LogLevel.NOTIFY);
-                    Utils.Log("    content: " + userActivityToProcess.Content, LogLevel.NOTIFY);
                     Utils.Log("    whenHappened: " + userActivityToProcess.WhenHappened, LogLevel.NOTIFY);
 
                     // Нужно ли будет сохранить данные о активности?
@@ -726,6 +735,7 @@ namespace VK_Unicorn
                         ForReceivedInfoAboutUser(userActivityToProcess.UserId, (userInfo) =>
                         {
                             // Пользователь забанен?
+                            /*
                             if (userInfo.Deactivated != null)
                             {
                                 if (userInfo.Deactivated != Deactivated.Activated)
@@ -738,8 +748,6 @@ namespace VK_Unicorn
                                     }
                                 }
                             }
-
-                            /*
                             // Локальная функуия на удаление всей активности этого пользователя
                             Callback DeleteAllActivitiesToProcessFromThisUser = () =>
                             {
@@ -842,6 +850,9 @@ namespace VK_Unicorn
                                 WhenAdded = DateTime.Now,
                                 FromGroupId = group.Id,
                             });
+
+                            // Помечаем сообщество как только что активное
+                            group.MarkAsJustActive();
 
                             // Нужно так же сохранить это активность пользователя
                             needToSaveActivity = true;

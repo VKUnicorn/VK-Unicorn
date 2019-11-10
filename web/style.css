@@ -73,7 +73,10 @@
     background-color: #ffffcc !important;
 }
 .bg-error {
-    background-color: rgba(255, 230, 230, 0.6) !important;
+    background-color: rgb(255, 204, 204, 0.7) !important;
+}
+.color-error {
+    color: red !important;
 }
 .small-info-box {
     background-color: rgba(87, 87, 87, 0.5);
@@ -107,7 +110,7 @@
     object-fit: cover;
 }
 .col-sm-2 .card-img-top {
-    width: 11rem;
+    width: calc(11rem - 1px);
     height: 11rem;
 }
 .col-sm-3 .card-img-top {
@@ -173,6 +176,9 @@
     opacity: 0.9;
 }
 
+.popover.no-weight-limit {
+    max-width: unset !important;
+}
 /*
 .card-img-top {
     margin-right: 100rem;

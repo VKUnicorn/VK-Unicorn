@@ -96,7 +96,7 @@ function loadGroups() {
                     title: "Удалить?",
                     message: "Вы действительно хотите навсегда удалить сообщество \"" + group.Name + "\"?",
                     backdrop: true,
-                    callback: function (result) {
+                    callback: function(result) {
                         if (result) {
                             // Отправляем запрос на удаление
                             $.post("delete_group",

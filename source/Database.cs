@@ -128,9 +128,19 @@ namespace VK_Unicorn
             }
 
             /// <summary>
+            /// Помечаем сообщество как только что активное
+            /// </summary>
+            public void MarkAsJustActive()
+            {
+                LastActivity = DateTime.Now;
+
+                Instance.InsertOrReplace(this);
+            }
+
+            /// <summary>
             /// Возвращает Id со знаком минус. Используется в API запросах
             /// </summary>
-            public long GetNegativeId()
+            public long GetNegativeIdForAPI()
             {
                 return -Id;
             }
@@ -214,9 +224,6 @@ namespace VK_Unicorn
             // Id комментария к записи. Может быть не определён
             public long CommentId { get; set; }
 
-            // Что было в содержимом
-            public string Content { get; set; }
-
             // Когда была произведена эта активость
             public DateTime WhenHappened { get; set; }
 
@@ -261,6 +268,9 @@ namespace VK_Unicorn
             // Счётчик комментариев. Если он изменится в большую сторону, то будем
             // сканировать запись повторно
             public int CommentsCount { get; set; }
+
+            // Что было в содержимом
+            public string Content { get; set; }
 
             public static string MakeId(long groupId, long postId)
             {

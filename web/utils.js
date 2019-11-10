@@ -27,7 +27,7 @@ function oneFewMany(number, one, few, many)
     return result;
 }
 
-function isoTimeToAgeAsString(isoTimeAsString) {
+function isoTimeToAge(isoTimeAsString) {
     var isoTime = Date.parse(isoTimeAsString);
     if (isoTime < 0)
     {
@@ -41,7 +41,7 @@ function isoTimeToAgeAsString(isoTimeAsString) {
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
         age--;
     }
-    return age + ' ' + oneFewMany(age, 'год', 'года', 'лет');
+    return age;
 }
 
 function isoTimeToLocalDeltaAsString(isoTimeAsString) {

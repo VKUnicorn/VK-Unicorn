@@ -28,14 +28,18 @@ function loadUsers() {
             let isUserNew = true;
 
             // Подготавливаем блоки с информацией
-            let age = user.BirthDate == 0 ? '' : isoTimeToAgeAsString(user.BirthDate);
-            let ageElement = age != '' ? `
+            let age = user.BirthDate == 0 ? 0 : isoTimeToAge(user.BirthDate);
+            let isNotInConsentAge = (age > 0) && (age < 16);
+            let isUnderage = (age > 0) && (age < 18);
+            let ageAsString = age > 0 ? (age + ' ' + oneFewMany(age, 'год', 'года', 'лет')) : '';
+            let ageElement = ageAsString != '' ? `
                 <small>
                     <div class="card-img-overlay small-info">
-                        <span class="small-info-box"><span class="small-info-box-text">${age}</span></span>
+                        <span class="small-info-box" id="age" data-html="true"><span class="small-info-box-text ${isUnderage ? 'color-error font-weight-bold opaque-9' : ''}">${ageAsString}</span></span>
                     </div>
                 </small>
             ` : '';
+            let warningElement = isUnderage ? 'bg-error' : '';
             let totalLikes = userExtraInfo.Likes + userExtraInfo.CommentLikes;
             let likesElement = totalLikes > 0 ? '<span id="likes-counter"><i class="lni-heart mr-1"></i><span class="activity-counter">' + totalLikes + '</span></span>' : '';
             let postsElement = userExtraInfo.Posts > 0 ? '<span id="posts-counter"><i class="lni-popup mr-1"></i><span class="activity-counter">' + userExtraInfo.Posts + '</span></span>' : '';
@@ -44,7 +48,7 @@ function loadUsers() {
             // Заполняем карточку пользователя
             let userCard = $(`
                 <div class="col-sm-2 px-1 py-1">
-                    <div class="card">
+                    <div class="card ${warningElement}">
                         <div class="card-img-overlay px-1 py-1">
                             <a class="btn btn-success float-left px-1 py-1 hide-user-button"><i class="lni-check-mark-circle size-sm" style="color: white"></i></a>
                             <a class="btn btn-danger float-right px-2 py-2 delete-user-button"><i class="lni-close" style="color: white"></i></a>
@@ -104,6 +108,18 @@ function loadUsers() {
                 delay: { "show": 450, "hide": 100 },
                 content: 'Количество комментариев'
             });
+
+            if (isUnderage) {
+                userCard.find('#age').popover({
+                    template: '<div class="popover no-weight-limit" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>',
+                    trigger: 'hover',
+                    placement: 'top',
+                    delay: { "show": 450, "hide": 100 },
+                    content:
+                        isNotInConsentAge ? 'Пользователь не достиг возраста сексуального согласия<br /><font color=red>УК РФ Статья 134. Половое сношение и иные действия сексуального характера с лицом, не достигшим шестнадцатилетнего возраста<br />УК РФ Статья 135. Развратные действия</font>'
+                                          : 'Пользователь не достиг совершеннолетия<br /><font color=red>УК РФ Статья 240.1. Получение сексуальных услуг несовершеннолетнего</font>'
+                });
+            }
 
             // Увеличиваем счётчики
             if (isUserNew) {

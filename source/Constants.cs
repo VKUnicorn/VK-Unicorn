@@ -21,11 +21,6 @@ namespace VK_Unicorn
         // Id пола ВКонтакте который нам интересен
         public const VkNet.Enums.Sex TARGET_SEX_ID = VkNet.Enums.Sex.Female;
 
-        // Пользователи с возрастом ниже этого значения показываются, но будут явно помечены как потенциально опасные по причине
-        // УК РФ Статья 240.1. Получение сексуальных услуг несовершеннолетнего
-        // http://www.consultant.ru/document/cons_doc_LAW_10699/dde581e459215d45b7512d19d96d3d5040893d4c/
-        public const int MINIMUM_AGE = 18;
-
         // Максимальная глубина сканирования записей по времени
         public static readonly TimeSpan MAX_SCANNING_DEPTH_IN_TIME = TimeSpan.FromDays(90);
     }
