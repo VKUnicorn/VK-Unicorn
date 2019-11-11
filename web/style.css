@@ -299,9 +299,6 @@ body {
 .fade {
     transition:opacity 0.15s linear !important;
 }
-.nofade {
-    transition:opacity 0s linear !important;
-}
 .collapsing {
     transition:height 0.35s ease !important;
 }

@@ -177,6 +177,9 @@ namespace VK_Unicorn
             // Домашний телефон
             public string HomePhone { get; set; }
 
+            // Сайт
+            public string Site { get; set; }
+
             // URL главной фотографии в максимальном размере
             public string PhotoURL { get; set; }
 

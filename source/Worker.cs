@@ -869,6 +869,7 @@ namespace VK_Unicorn
                                 Status = userInfo.Status,
                                 MobilePhone = mobilePhone,
                                 HomePhone = homePhone,
+                                Site = userInfo.Site,
                                 PhotoURL = userInfo.PhotoMaxOrig.ToString(),
                                 LastActivity = userActivityToProcess.WhenHappened,
                                 WhenAdded = DateTime.Now,

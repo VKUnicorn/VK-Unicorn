@@ -38,7 +38,7 @@ function loadUsers(favorites) {
             let ageElement = (ageAsString != '') ? `
                 <small>
                     <div class="card-img-overlay small-info">
-                        <span class="small-info-box" id="age" data-html="true"><span class="small-info-box-text ${isUnderage ? 'color-error font-weight-bold opaque-9' : ''}">${ageAsString}</span></span>
+                        <span class="small-info-box" id="age"><span class="small-info-box-text ${isUnderage ? 'color-error font-weight-bold opaque-9' : ''}">${ageAsString}</span></span>
                     </div>
                 </small>
             ` : '';
@@ -59,10 +59,10 @@ function loadUsers(favorites) {
                 <div class="col-sm-2 px-1 py-1">
                     <div class="card ${cardUnderlayClass}">
                         <div class="card-img-overlay px-1 py-1">
-                            ${!user.IsDeactivated ? '<a class="btn btn-success float-left px-1 py-1" id="hide-button" data-html="true"><i class="lni-check-mark-circle size-sm text-white"></i></a>' : ''}
-                            <a class="btn btn-danger float-right px-2 py-2" id="delete-button" data-html="true"><i class="lni-close text-white"></i></a>
+                            ${!user.IsDeactivated ? '<a class="btn btn-success float-left px-1 py-1" id="hide-button"><i class="lni-check-mark-circle size-sm text-white"></i></a>' : ''}
+                            <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close text-white"></i></a>
                         </div>
-                        <a href="${userExtraInfo.URL}" target="_blank" id="user" data-html="true">
+                        <a href="${userExtraInfo.URL}" target="_blank" id="user">
                             <img class="card-img-top" src="${user.PhotoURL}">
                         </a>
                         ${ageElement}
@@ -88,32 +88,68 @@ function loadUsers(favorites) {
             // Основной тултип с недавними действиями пользователя
             function fillUserRecentActionsCard() {
                 function fillStatus() {
-                    let result = '';
-
                     if (user.Status) {
                         let status = user.Status.trim();
                         if (status != '') {
-                            if (actionsCard != '') {
-                                result += '<div class="mt-2"></div>';
-                            }
-
                             result += `
                                 <h6 class="mx-2 mb-1 mt-0">Статус:</h6>
                                 <div class="mx-2">
-                                    <span class="text-muted block-with-text-2"><i class="lni-chevron-right mr-1 text-dark"></i>${status}</span>
+                                    <span class="block-with-text-2"><i class="lni-chevron-right mr-1 text-dark"></i>${status}</span>
                                 </div>
                             `;
                         }
                     }
+                };
 
-                    return result;
+                function fillSite() {
+                    if (user.Site) {
+                        let site = user.Site.trim();
+                        if (site != '') {
+                            if (result != '') {
+                                result += '<div class="mt-2"></div>';
+                            }
+
+                            result += `
+                                <h6 class="mx-2 mb-1 mt-0">Сайт:</h6>
+                                <div class="mx-2">
+                                    <span class="block-with-text-1"><i class="lni-link mr-1 text-dark"></i><a href="${site}">${site}</a></span>
+                                </div>
+                            `;
+                        }
+                    }
+                };
+
+                function fillPhone() {
+                    if (user.MobilePhone || user.HomePhone) {
+                        let mobilePhone = user.MobilePhone.trim();
+                        let homePhone = user.HomePhone.trim();
+                        if ((mobilePhone != '') || (homePhone != '')) {
+                            if (result != '') {
+                                result += '<div class="mt-2"></div>';
+                            }
+
+                            if (mobilePhone != '') {
+                                mobilePhone = '<span class="block-with-text-1"><i class="lni-phone-handset mr-1 text-dark"></i>' + mobilePhone + '</span>';
+                            }
+
+                            if (homePhone != '') {
+                                homePhone = '<span class="block-with-text-1"><i class="lni-phone mr-1 text-dark"></i>' + homePhone + '</span>';
+                            }
+
+                            result += `
+                                <h6 class="mx-2 mb-1 mt-0">Телефон:</h6>
+                                <div class="mx-2">
+                                    ${mobilePhone}
+                                    ${homePhone}
+                                </div>
+                            `;
+                        }
+                    }
                 };
 
                 function fillRecentPosts() {
-                    let result = '';
-
                     if (recentPosts.length > 0) {
-                        if (actionsCard != '') {
+                        if (result != '') {
                             result += '<div class="mt-2"></div>';
                         }
 
@@ -136,15 +172,11 @@ function loadUsers(favorites) {
 
                         result += `</div>`
                     }
-
-                    return result;
                 };
 
                 function fillRecentLikes() {
-                    let result = '';
-
                     if (recentLikes.length > 0) {
-                        if (actionsCard != '') {
+                        if (result != '') {
                             result += '<div class="mt-2"></div>';
                         }
 
@@ -167,21 +199,23 @@ function loadUsers(favorites) {
 
                         result += `</div>`
                     }
-
-                    return result;
                 };
 
-                var actionsCard = '';
-                actionsCard += fillStatus();
-                actionsCard += fillRecentPosts();
-                actionsCard += fillRecentLikes();
-                return actionsCard;
+                var result = '';
+                fillStatus();
+                fillSite();
+                fillPhone();
+                fillRecentPosts();
+                fillRecentLikes();
+                return result;
             }
 
             userCard.find('#user').popover({
-                template: getPopoverTemplateWithClass("user-short-info nofade", "px-0"),
+                template: getPopoverTemplateWithClass("user-short-info", "px-0"),
                 trigger: 'hover',
                 placement: 'right',
+                animation: false,
+                html: true,
                 delay: { "show": 50, "hide": 25 },
                 content: fillUserRecentActionsCard()
             });
@@ -190,6 +224,7 @@ function loadUsers(favorites) {
             userCard.find('#delete-button').popover({
                 trigger: 'hover',
                 placement: 'bottom',
+                html: true,
                 delay: { "show": 1100, "hide": 100 },
                 content: 'Удалить пользователя навсегда<br /><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
             });
@@ -198,6 +233,7 @@ function loadUsers(favorites) {
                 userCard.find('#hide-button').popover({
                     trigger: 'hover',
                     placement: 'bottom',
+                    html: true,
                     delay: { "show": 1100, "hide": 100 },
                     content: 'Временно скрыть пользователя пока не появится любая новая активность<br /><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
                 });
@@ -236,6 +272,7 @@ function loadUsers(favorites) {
                     template: getPopoverTemplateWithClass("no-weight-limit"),
                     trigger: 'hover',
                     placement: 'top',
+                    html: true,
                     delay: { "show": 450, "hide": 100 },
                     content:
                         isNotInConsentAge ? 'Пользователь не достиг возраста сексуального согласия<br /><font color=red>УК РФ Статья 134. Половое сношение и иные действия сексуального характера с лицом, не достигшим шестнадцатилетнего возраста<br />УК РФ Статья 135. Развратные действия</font>'
