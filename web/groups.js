@@ -90,7 +90,7 @@ function loadGroups() {
             });
 
             // Оработчики событий
-            groupCard.find('#delete-button').click(function(){
+            groupCard.find('#delete-button').click(function() {
                 bootbox.confirm({
                     title: "Удалить?",
                     message: "Вы действительно хотите навсегда удалить сообщество \"" + group.Name + "\"?",

@@ -6,7 +6,7 @@ body {
 }
 
 .modal-open{
-  padding:0 !important;
+  padding: 0 !important;
   overflow-y: auto;
  }
 
@@ -38,6 +38,9 @@ body {
 }
 .color-error {
     color: red !important;
+}
+.stroke-red {
+    -webkit-text-stroke: 1px red;
 }
 .small-info-box {
     background-color: rgba(87, 87, 87, 0.5);

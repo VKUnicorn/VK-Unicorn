@@ -92,7 +92,7 @@ function updateBadgeRelative(category, value) {
 (function($) {
     var defaults = {
         NS: 'jquery.longclick-',
-        delay: 500
+        delay: 380
     };
 
     $.fn.mayTriggerLongClicks = function(options) {
@@ -107,6 +107,9 @@ function updateBadgeRelative(category, value) {
                 haveLongClick = true;
 
                 $(elm).trigger('longClick');
+
+                // Отключаем возможность любого выделения пока пользователь не отожмёт кнопку мыши
+                toggleAllSelection(false);
             }, settings.delay, this);
         }).on('mouseup', function() {
             clearTimeout(timer);
@@ -122,3 +125,15 @@ function updateBadgeRelative(category, value) {
 function getPopoverTemplateWithClass(customClass) {
     return '<div class="popover ' + customClass + '" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>';
 }
+
+// Отключает возможность любого выделения в документе
+function toggleAllSelection(isEnabled) {
+    document.onselectstart = () => {
+        return isEnabled;
+    };
+}
+
+// Восстанавливаем возможность любого выделения в документе когда пользователь отжимает кнопку мыши
+document.onmouseup = (e) => {
+    toggleAllSelection(true);
+};

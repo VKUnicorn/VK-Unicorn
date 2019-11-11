@@ -510,7 +510,7 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Удаляет запись
+        /// Удаляет запись из таблицы
         /// </summary>
         public bool Delete(object objectToDelete)
         {
@@ -567,7 +567,7 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Вызывает callback для каждой записи
+        /// Вызывает callback для каждой записи в таблице
         /// </summary>
         public void ForEach<T>(Callback<T> callback) where T : new()
         {
@@ -581,7 +581,7 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Модифицирует только некоторые поля записи
+        /// Модифицирует только некоторые поля записи в таблице
         /// </summary>
         public void ModifyFields<T>(object primaryKey, Callback<T> callbackToModifyFields) where T : new()
         {

@@ -92,15 +92,10 @@ namespace VK_Unicorn
                     var parametersDictionary = new Dictionary<string, string>();
                     using (var streamReader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
                     {
-                        while (true)
+                        var paramPairs = streamReader.ReadToEnd().Split('&');
+                        foreach (var paramPair in paramPairs)
                         {
-                            var param = streamReader.ReadLine();
-                            if (param == null)
-                            {
-                                break;
-                            }
-
-                            var splittedParam = param.Split('=');
+                            var splittedParam = paramPair.Split('=');
                             if (splittedParam.Length > 1)
                             {
                                 var paramKey = splittedParam[0];

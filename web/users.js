@@ -9,7 +9,7 @@ function loadUsers(favorites) {
         function addUserCategory(isForNew) {
             $(`
                 <div id="users-header-new-${isForNew}">
-                    <h5 class="ml-1 mb-1 mt-2">${isForNew ? 'Новые' : 'Все остальные'} пользователи<span class="badge badge-success opaque-5 ml-1" id="badge">0</span></h5>
+                    <h5 class="ml-1 mb-1 mt-2">${isForNew ? 'Новые' : 'Все остальные'}${favorites ? ' избранные' : ''} пользователи<span class="badge badge-success opaque-5 ml-1" id="badge">0</span></h5>
                     <hr class="mx-1 my-0">
                 </div>
                 <div class="row mx-0" id="users-new-${isForNew}">
@@ -70,7 +70,7 @@ function loadUsers(favorites) {
                                 </small>
                             </div>
                             <div class="float-right pt-p-3">
-                                <i class="lni-star text-muted opaque-4" id="favorite"></i>
+                                <i class="${user.IsFavorite ? 'lni-star-filled text-warning stroke-red' : 'lni-star text-muted'} opaque-4" id="favorite"></i>
                             </div>
                         </div>
                     </div>
@@ -81,7 +81,7 @@ function loadUsers(favorites) {
             userCard.find('#delete-button').popover({
                 trigger: 'hover',
                 placement: 'bottom',
-                delay: { "show": 450, "hide": 100 },
+                delay: { "show": 1100, "hide": 100 },
                 content: 'Удалить пользователя навсегда<br /><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
             });
 
@@ -89,7 +89,7 @@ function loadUsers(favorites) {
                 userCard.find('#hide-button').popover({
                     trigger: 'hover',
                     placement: 'bottom',
-                    delay: { "show": 450, "hide": 100 },
+                    delay: { "show": 1100, "hide": 100 },
                     content: 'Временно скрыть пользователя пока не появится любая новая активность<br /><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
                 });
             }
@@ -118,7 +118,7 @@ function loadUsers(favorites) {
             userCard.find('#favorite').popover({
                 trigger: 'hover',
                 placement: 'top',
-                delay: { "show": 450, "hide": 100 },
+                delay: { "show": 1100, "hide": 100 },
                 content: 'Добавить или удалить из избранного'
             });
 
@@ -185,8 +185,30 @@ function loadUsers(favorites) {
                 });
             });
 
-            userCard.find('#favorite').mayTriggerLongClicks().on('longClick', function(data) {
-                $.hulla.send("Ура", "danger");
+            let favoriteElement = userCard.find('#favorite');
+            favoriteElement.click(function() {
+                // Отправляем запрос на изменение статуса "в избранном"
+                $.post("favorite_user",
+                {
+                    id: user.Id,
+                    favorite: !user.IsFavorite,
+                },
+                function(data, status) {
+                    if (status) {
+                        // Изменяем статус избранности
+                        user.IsFavorite = !user.IsFavorite;
+
+                        // Обновляем интерфейс
+                        favoriteElement.removeClass();
+                        favoriteElement.addClass(user.IsFavorite ? "lni-star-filled text-warning stroke-red" : "lni-star text-muted");
+                        favoriteElement.addClass("opaque-4");
+                    }
+                    else {
+                        $.hulla.send("Не удалось изменить статус избранного у пользователя \"" + fullName + "\"", "danger");
+                    }
+                }).fail(function(result) {
+                    $.hulla.send("Не удалось изменить статус избранного у пользователя \"" + fullName + "\"", "danger");
+                });
             });
 
             // Увеличиваем счётчики
@@ -206,7 +228,7 @@ function loadUsers(favorites) {
 
         let recordsCount = result.length;
         if (recordsCount > 0) {
-            $.hulla.send(oneFewMany(recordsCount, "Загружен", "Загружено", "Загружено") + " " + oneFewMany(recordsCount, "пользователь", "пользователя", "пользователей", true), "success");
+            $.hulla.send(oneFewMany(recordsCount, "Загружен", "Загружено", "Загружено") + " " + recordsCount + (favorites ? ' ' + oneFewMany(recordsCount, "избранный", "избранных", "избранных") : '') + " " + oneFewMany(recordsCount, "пользователь", "пользователя", "пользователей"), "success");
         }
         else {
             if (!favorites) {

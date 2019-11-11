@@ -97,6 +97,22 @@ namespace VK_Unicorn
                             handled = true;
                         }
                         break;
+
+                    // Изменение статуса "в избранном" для пользователя
+                    case "favorite_user":
+                        {
+                            var userId = long.Parse(parametersDictionary["id"]);
+                            var favorite = bool.Parse(parametersDictionary["favorite"]);
+
+                            // Изменяем статус избранного
+                            Database.Instance.ModifyFields<Database.User>(userId, (user) =>
+                            {
+                                user.IsFavorite = favorite;
+                            });
+
+                            handled = true;
+                        }
+                        break;
                 }
 
                 // Запрос обработан?
