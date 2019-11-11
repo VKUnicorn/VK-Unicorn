@@ -301,12 +301,11 @@ namespace VK_Unicorn
                                 switch (groupInfo.MemberStatus)
                                 {
                                     case VkNet.Enums.MemberStatus.SendRequest:
-                                        // За прошлые пять минут заявку всё ещё не приняли. Похоже заявки
-                                        // принимает человек, а не бот, поэтому ждём значительно дольше
-                                        // прежде чем проверять это сообщество снова
-                                        group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_NOT_ACCEPTED);
-
+                                        // За прошлые пять минут заявку всё ещё не приняли. Похоже заявки принимает человек, а не бот
                                         Utils.Log("Заявка на вступление в сообщество " + group.Name + " была уже отправлена, но ещё не принята. Ждём значительно дольше", LogLevel.NOTIFY);
+
+                                        // Ждём значительно дольше прежде чем проверять это сообщество снова
+                                        group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_NOT_ACCEPTED);
                                         break;
 
                                     case VkNet.Enums.MemberStatus.Rejected:
@@ -318,6 +317,7 @@ namespace VK_Unicorn
 
                                     default:
                                         Utils.Log("Отправляем заявку на вступление в " + group.Name, LogLevel.GENERAL);
+
                                         // Добавляем таймаут в пять минут для взаимодействия с сообществом
                                         // обычно за это время бот автоматически принимает заявку на вступление
                                         group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_SENT);
@@ -393,6 +393,9 @@ namespace VK_Unicorn
                         // Обходим все записи
                         foreach (var post in posts)
                         {
+                            // Ограничиваем количество лайков которые "видны" нам в дальнейшем
+                            post.Likes.Count = Math.Min(post.Likes.Count, Constants.MAX_LIKES_TO_SCAN);
+
                             // Нужно ли вообще сканировать запись?
                             var needToScanPost = true;
                             var isPostNotSeenBefore = true;
@@ -558,9 +561,6 @@ namespace VK_Unicorn
                         Utils.Log("не удалось получить записи. Причина: " + ex.Message, LogLevel.ERROR);
                         await WaitAlotAfterError();
                     }
-
-                    // DEBUG Для отладки
-                    //needToLoadMorePosts = false;
                 }
 
                 // Нужно получить какую-то информацию о лайках?
