@@ -42,6 +42,23 @@ function isoTimeToAge(isoTimeAsString) {
     return age;
 }
 
+function isoTimeToLocalDaysDelta(isoTimeAsString) {
+    if (isoTimeAsString === undefined) {
+        return -1;
+    }
+
+    var isoTime = Date.parse(isoTimeAsString);
+    if (isoTime < 0)
+    {
+        return -1;
+    }
+
+    var today = new Date();
+    var targetDate = new Date(isoTime);
+    var differenceInTime = today.getTime() - targetDate.getTime();
+    return differenceInTime / (1000 * 3600 * 24);
+}
+
 function isoTimeToLocalDeltaAsString(isoTimeAsString) {
     if (isoTimeAsString === undefined) {
         return 'никогда';

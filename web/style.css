@@ -36,6 +36,9 @@ body {
 .bg-error {
     background-color: rgb(255, 204, 204, 0.7) !important;
 }
+.bg-new-user {
+    background-color: rgb(0, 255, 0, 0.08) !important;
+}
 .color-error {
     color: red !important;
 }

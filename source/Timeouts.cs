@@ -29,6 +29,6 @@ namespace VK_Unicorn
         /// <summary>
         /// Таймаут после сканирования сообщества
         /// </summary>
-        public static TimeSpan AFTER_GROUP_WAS_SCANNED = TimeSpan.FromMinutes(30);
+        public static TimeSpan AFTER_GROUP_WAS_SCANNED = TimeSpan.FromMinutes(40);
     }
 }

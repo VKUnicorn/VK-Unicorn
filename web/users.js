@@ -25,7 +25,8 @@ function loadUsers(favorites) {
         for (let userExtraInfo of result) {
             let user = userExtraInfo.data;
 
-            let isUserNew = true;
+            let lastActivityToLocalDaysDelta = isoTimeToLocalDaysDelta(user.LastActivity);
+            let isUserNew = (lastActivityToLocalDaysDelta >= 0) && (lastActivityToLocalDaysDelta < 5);
 
             // Подготавливаем блоки с информацией
             let fullName = user.FirstName + ' ' + user.LastName;
@@ -40,7 +41,13 @@ function loadUsers(favorites) {
                     </div>
                 </small>
             ` : '';
-            let warningElement = isUnderage ? 'bg-error' : '';
+            let cardUnderlayClass = '';
+            if (isUserNew) {
+                cardUnderlayClass = 'bg-new-user';
+            }
+            if (isUnderage) {
+                cardUnderlayClass = 'bg-error';
+            }
             let totalLikes = userExtraInfo.Likes + userExtraInfo.CommentLikes;
             let likesElement = totalLikes > 0 ? '<span id="likes-counter"><i class="lni-heart mr-1"></i><span class="activity-counter">' + totalLikes + '</span></span>' : '';
             let postsElement = userExtraInfo.Posts > 0 ? '<span id="posts-counter"><i class="lni-popup mr-1"></i><span class="activity-counter">' + userExtraInfo.Posts + '</span></span>' : '';
@@ -49,7 +56,7 @@ function loadUsers(favorites) {
             // Заполняем карточку пользователя
             let userCard = $(`
                 <div class="col-sm-2 px-1 py-1">
-                    <div class="card ${warningElement}">
+                    <div class="card ${cardUnderlayClass}">
                         <div class="card-img-overlay px-1 py-1">
                             ${!user.IsDeactivated ? '<a class="btn btn-success float-left px-1 py-1" id="hide-button" data-html="true"><i class="lni-check-mark-circle size-sm text-white"></i></a>' : ''}
                             <a class="btn btn-danger float-right px-2 py-2" id="delete-button" data-html="true"><i class="lni-close text-white"></i></a>
@@ -118,7 +125,7 @@ function loadUsers(favorites) {
             userCard.find('#favorite').popover({
                 trigger: 'hover',
                 placement: 'top',
-                delay: { "show": 1100, "hide": 100 },
+                delay: { "show": 1000, "hide": 100 },
                 content: 'Добавить или удалить из избранного'
             });
 
