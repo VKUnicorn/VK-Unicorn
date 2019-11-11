@@ -250,6 +250,33 @@ namespace VK_Unicorn
             }
         }
 
+        // Класс для поддержки дополнительных полей в UserActivity
+        // Используется для отправки содержимого записей и комментариев в API ответах
+        public class UserActivityWithContent
+        {
+            public UserActivity Activity;
+
+            // Дополнительное поле с содержимым записи
+            public Post Post;
+
+            // Группа, в которой была активность
+            public Group Group;
+
+            public UserActivityWithContent(UserActivity activity)
+            {
+                Activity = activity;
+
+                // Заполняем дополнительные поля
+                Instance.ForDatabaseUnlocked((db) =>
+                {
+                    Post = db.Find<Post>(Post.MakeId(activity.GroupId, activity.PostId));
+                    Group = db.Find<Group>(activity.GroupId);
+
+                    // TODO добавить для комментариев
+                });
+            }
+        }
+
         // Таблица с id тех пользователей, которых мы уже просканировали.
         // Эта таблица нужна чтобы не сканировать сто раз одного и того же пользователя, а
         // следовательно будет отправляться значительно меньше запросов на серверы

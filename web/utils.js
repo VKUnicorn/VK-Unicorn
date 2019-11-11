@@ -107,40 +107,40 @@ function updateBadgeRelative(category, value) {
 
 // Функция для добавления кнопке срабатывания по зажатию
 (function($) {
-    var defaults = {
+    var defaultSettings = {
         NS: 'jquery.longclick-',
         delay: 380
     };
 
-    $.fn.mayTriggerLongClicks = function(options) {
-        var settings = $.extend(defaults, options);
+    $.fn.mayTriggerLongClicks = function(userSettings) {
+        var settings = $.extend(defaultSettings, userSettings);
         var timer;
         var haveLongClick;
 
         return $(this).on('mousedown', function() {
             haveLongClick = false;
 
-            timer = setTimeout(function(elm) {
+            timer = setTimeout(function(element) {
                 haveLongClick = true;
 
-                $(elm).trigger('longClick');
+                $(element).trigger('longClick');
 
                 // Отключаем возможность любого выделения пока пользователь не отожмёт кнопку мыши
                 toggleAllSelection(false);
             }, settings.delay, this);
         }).on('mouseup', function() {
             clearTimeout(timer);
-        }).on('click', function(evt) {
+        }).on('click', function(event) {
             if (haveLongClick) {
-                evt.stopImmediatePropagation();
+                event.stopImmediatePropagation();
             }
         });
     }
 })(jQuery);
 
 // Функция для добавления своих классов к popover
-function getPopoverTemplateWithClass(customClass) {
-    return '<div class="popover ' + customClass + '" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>';
+function getPopoverTemplateWithClass(customClass, bodyClass) {
+    return '<div class="popover ' + customClass + '" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body ' + bodyClass + '"></div></div>';
 }
 
 // Отключает возможность любого выделения в документе

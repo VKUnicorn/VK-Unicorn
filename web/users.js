@@ -24,9 +24,10 @@ function loadUsers(favorites) {
 
         for (let userExtraInfo of result) {
             let user = userExtraInfo.data;
-
-            let lastActivityToLocalDaysDelta = isoTimeToLocalDaysDelta(user.LastActivity);
-            let isUserNew = (lastActivityToLocalDaysDelta >= 0) && (lastActivityToLocalDaysDelta < 5);
+            let recentPosts = userExtraInfo.RecentPosts;
+            let recentLikes = userExtraInfo.RecentLikes;
+            let whenAddedToLocalDaysDelta = isoTimeToLocalDaysDelta(user.WhenAdded);
+            let isUserNew = (whenAddedToLocalDaysDelta >= 0) && (whenAddedToLocalDaysDelta < 5);
 
             // Подготавливаем блоки с информацией
             let fullName = user.FirstName + ' ' + user.LastName;
@@ -61,7 +62,7 @@ function loadUsers(favorites) {
                             ${!user.IsDeactivated ? '<a class="btn btn-success float-left px-1 py-1" id="hide-button" data-html="true"><i class="lni-check-mark-circle size-sm text-white"></i></a>' : ''}
                             <a class="btn btn-danger float-right px-2 py-2" id="delete-button" data-html="true"><i class="lni-close text-white"></i></a>
                         </div>
-                        <a href="${userExtraInfo.URL}" target="_blank">
+                        <a href="${userExtraInfo.URL}" target="_blank" id="user" data-html="true">
                             <img class="card-img-top" src="${user.PhotoURL}">
                         </a>
                         ${ageElement}
@@ -83,6 +84,107 @@ function loadUsers(favorites) {
                     </div>
                 </div>
             `).appendTo($('#users-new-' + isUserNew));
+
+            // Основной тултип с недавними действиями пользователя
+            function fillUserRecentActionsCard() {
+                function fillStatus() {
+                    let result = '';
+
+                    if (user.Status) {
+                        let status = user.Status.trim();
+                        if (status != '') {
+                            if (actionsCard != '') {
+                                result += '<div class="mt-2"></div>';
+                            }
+
+                            result += `
+                                <h6 class="mx-2 mb-1 mt-0">Статус:</h6>
+                                <div class="mx-2">
+                                    <span class="text-muted block-with-text-2"><i class="lni-chevron-right mr-1 text-dark"></i>${status}</span>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    return result;
+                };
+
+                function fillRecentPosts() {
+                    let result = '';
+
+                    if (recentPosts.length > 0) {
+                        if (actionsCard != '') {
+                            result += '<div class="mt-2"></div>';
+                        }
+
+                        result += `
+                            <h6 class="mx-2 mb-1 mt-0">Написала:</h6>
+                        `;
+
+                        result += `<div class="mx-2">`
+                        let index = 0;
+                        for (let recentPost of recentPosts) {
+                            result += `
+                                ${index > 0 ? '<hr class="mx-0 my-1">' : ''}
+                                <span class="text-muted block-with-text-1"><i class="lni-popup mr-1 text-dark"></i>${isoTimeToLocalDeltaAsString(recentPost.Activity.WhenHappened)} назад в сообществе "${recentPost.Group.Name}"</span>
+                                <div class="block-with-text-4">
+                                    ${recentPost.Post.Content}
+                                </div>
+                            `;
+                            ++index;
+                        }
+
+                        result += `</div>`
+                    }
+
+                    return result;
+                };
+
+                function fillRecentLikes() {
+                    let result = '';
+
+                    if (recentLikes.length > 0) {
+                        if (actionsCard != '') {
+                            result += '<div class="mt-2"></div>';
+                        }
+
+                        result += `
+                            <h6 class="mx-2 mb-1 mt-0">Поставила лайк:</h6>
+                        `;
+
+                        result += `<div class="mx-2">`
+                        let index = 0;
+                        for (let recentLike of recentLikes) {
+                            result += `
+                                ${index > 0 ? '<hr class="mx-0 my-1">' : ''}
+                                <span class="text-muted block-with-text-1"><i class="lni-heart mr-1 text-dark"></i>${isoTimeToLocalDeltaAsString(recentLike.Activity.WhenHappened)} назад в сообществе "${recentLike.Group.Name}"</span>
+                                <div class="block-with-text-4">
+                                    ${recentLike.Post.Content}
+                                </div>
+                            `;
+                            ++index;
+                        }
+
+                        result += `</div>`
+                    }
+
+                    return result;
+                };
+
+                var actionsCard = '';
+                actionsCard += fillStatus();
+                actionsCard += fillRecentPosts();
+                actionsCard += fillRecentLikes();
+                return actionsCard;
+            }
+
+            userCard.find('#user').popover({
+                template: getPopoverTemplateWithClass("user-short-info nofade", "px-0"),
+                trigger: 'hover',
+                placement: 'right',
+                delay: { "show": 50, "hide": 25 },
+                content: fillUserRecentActionsCard()
+            });
 
             // Тултипы
             userCard.find('#delete-button').popover({

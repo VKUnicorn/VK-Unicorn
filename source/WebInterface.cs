@@ -4,7 +4,6 @@ using System.Text;
 using System.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Collections.Specialized;
 
 namespace VK_Unicorn
@@ -203,16 +202,19 @@ namespace VK_Unicorn
                                     }
                                 }
 
-                                // Не показывать скрытых по каким-либо причинам пользователей
-                                if (user.IsHidden != Database.HiddenStatus.NOT_HIDDEN)
+                                if (!onlyFavorites)
                                 {
-                                    return;
-                                }
+                                    // Не показывать скрытых по каким-либо причинам пользователей
+                                    if (user.IsHidden != Database.HiddenStatus.NOT_HIDDEN)
+                                    {
+                                        return;
+                                    }
 
-                                // Не показываем старых пользователей
-                                if (DateTime.Now - user.LastActivity > Constants.MAX_SCANNING_DEPTH_IN_TIME)
-                                {
-                                    return;
+                                    // Не показываем старых пользователей
+                                    if (DateTime.Now - user.LastActivity > Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                    {
+                                        return;
+                                    }
                                 }
 
                                 // Заменяем ссылку на фото, если нужно
@@ -220,6 +222,30 @@ namespace VK_Unicorn
 
                                 // Получаем список активностей пользователя
                                 var userActivites = Database.Instance.GetAllRecords<Database.UserActivity>(_ => _.UserId == user.Id);
+
+                                // Получаем список недавних записей пользователя
+                                var recentPostActivities = userActivites
+                                    // Ищем только посты
+                                    .Where(_ => _.Type.IsOneOf(Database.UserActivity.ActivityType.POST, Database.UserActivity.ActivityType.COMMENT))
+                                    // Сортируем по давности
+                                    .OrderByDescending(_ => _.WhenHappened)
+                                    // Берём несколько
+                                    .Take(5)
+                                    // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
+                                    .Select(_ => new Database.UserActivityWithContent(_))
+                                ;
+
+                                // Получаем список недавних лайков пользователя
+                                var recentLikeActivities = userActivites
+                                    // Ищем только посты
+                                    .Where(_ => _.IsLikeToSomething())
+                                    // Сортируем по давности
+                                    .OrderByDescending(_ => _.WhenHappened)
+                                    // Берём несколько
+                                    .Take(3)
+                                    // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
+                                    .Select(_ => new Database.UserActivityWithContent(_))
+                                ;
 
                                 // Добавляем пользователя в ответ
                                 resultObjects.Add(new Dictionary<string, object>()
@@ -230,6 +256,8 @@ namespace VK_Unicorn
                                     { "CommentLikes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT_LIKE) },
                                     { "Posts", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.POST) },
                                     { "Comments", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT) },
+                                    { "RecentPosts", recentPostActivities },
+                                    { "RecentLikes", recentLikeActivities },
                                 });
                             });
 

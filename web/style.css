@@ -115,6 +115,33 @@ body {
     min-height: 200px;
 }
 
+.block-with-text-1 {
+    display: block;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.block-with-text-2 {
+    display: block;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.block-with-text-4 {
+    display: block;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .opaque-1 {
     opacity: 0.1;
 }
@@ -145,6 +172,11 @@ body {
 
 .popover.no-weight-limit {
     max-width: unset !important;
+}
+
+.popover.user-short-info {
+    max-width: 35rem !important;
+    min-width: 35rem !important;
 }
 
 /*
@@ -197,7 +229,6 @@ body {
 /*
  * Вспомогательные CSS блоки для попиксельной подгонки
  */
-
 .pt-p-1 {
     padding-top: 1px;
 }
@@ -267,6 +298,9 @@ body {
  */
 .fade {
     transition:opacity 0.15s linear !important;
+}
+.nofade {
+    transition:opacity 0s linear !important;
 }
 .collapsing {
     transition:height 0.35s ease !important;
