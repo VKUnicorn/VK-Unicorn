@@ -51,8 +51,8 @@ function loadUsers(favorites) {
                 <div class="col-sm-2 px-1 py-1">
                     <div class="card ${warningElement}">
                         <div class="card-img-overlay px-1 py-1">
-                            <a class="btn btn-success float-left px-1 py-1" id="hide-button"><i class="lni-check-mark-circle size-sm text-white"></i></a>
-                            <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close text-white"></i></a>
+                            ${!user.IsDeactivated ? '<a class="btn btn-success float-left px-1 py-1" id="hide-button" data-html="true"><i class="lni-check-mark-circle size-sm text-white"></i></a>' : ''}
+                            <a class="btn btn-danger float-right px-2 py-2" id="delete-button" data-html="true"><i class="lni-close text-white"></i></a>
                         </div>
                         <a href="${userExtraInfo.URL}" target="_blank">
                             <img class="card-img-top" src="${user.PhotoURL}">
@@ -70,7 +70,7 @@ function loadUsers(favorites) {
                                 </small>
                             </div>
                             <div class="float-right pt-p-3">
-                                <i class="lni-star text-muted" id="favorite"></i>
+                                <i class="lni-star text-muted opaque-4" id="favorite"></i>
                             </div>
                         </div>
                     </div>
@@ -82,15 +82,17 @@ function loadUsers(favorites) {
                 trigger: 'hover',
                 placement: 'bottom',
                 delay: { "show": 450, "hide": 100 },
-                content: 'Удалить пользователя навсегда'
+                content: 'Удалить пользователя навсегда<br /><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
             });
 
-            userCard.find('#hide-button').popover({
-                trigger: 'hover',
-                placement: 'bottom',
-                delay: { "show": 450, "hide": 100 },
-                content: 'Временно скрыть пользователя пока не появится любая новая активность'
-            });
+            if (!user.IsDeactivated) {
+                userCard.find('#hide-button').popover({
+                    trigger: 'hover',
+                    placement: 'bottom',
+                    delay: { "show": 450, "hide": 100 },
+                    content: 'Временно скрыть пользователя пока не появится любая новая активность<br /><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
+                });
+            }
 
             userCard.find('#likes-counter').popover({
                 trigger: 'hover',
@@ -122,7 +124,7 @@ function loadUsers(favorites) {
 
             if (isUnderage) {
                 userCard.find('#age').popover({
-                    template: '<div class="popover no-weight-limit" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>',
+                    template: getPopoverTemplateWithClass("no-weight-limit"),
                     trigger: 'hover',
                     placement: 'top',
                     delay: { "show": 450, "hide": 100 },
@@ -133,66 +135,58 @@ function loadUsers(favorites) {
             }
 
             // Оработчики событий
-            userCard.find('#hide-button').click(function(){
-                bootbox.confirm({
-                    title: "Скрыть?",
-                    message: "Вы действительно хотите скрыть пользователя \"" + fullName + "\"?",
-                    backdrop: true,
-                    callback: function(result) {
-                        if (result) {
-                            // Отправляем запрос на удаление
-                            $.post("hide_user",
-                            {
-                                id: user.Id
-                            },
-                            function(data, status) {
-                                if (status) {
-                                    // Удаляем пользователя из UI
-                                    updateBadgeRelative('#users-header-new-' + isUserNew, -1);
-                                    userCard.fadeOut();
+            if (!user.IsDeactivated) {
+                userCard.find('#hide-button').mayTriggerLongClicks().on('longClick', function(data) {
+                    // Отправляем запрос на скрытие
+                    $.post("hide_user",
+                    {
+                        id: user.Id
+                    },
+                    function(data, status) {
+                        if (status) {
+                            // Удаляем пользователя из UI
+                            userCard.fadeOut();
 
-                                    $.hulla.send("Пользователь \"" + fullName + "\" скрыт", "danger");
-                                }
-                                else {
-                                    $.hulla.send("Не удалось скрыть пользователя \"" + fullName + "\"", "danger");
-                                }
-                            }).fail(function(result) {
-                                $.hulla.send("Не удалось скрыть пользователя \"" + fullName + "\"", "danger");
-                            });
+                            // Обновляем счётчик в бадже
+                            updateBadgeRelative('#users-header-new-' + isUserNew, -1);
+
+                            $.hulla.send("Пользователь \"" + fullName + "\" скрыт", "danger");
                         }
+                        else {
+                            $.hulla.send("Не удалось скрыть пользователя \"" + fullName + "\"", "danger");
+                        }
+                    }).fail(function(result) {
+                        $.hulla.send("Не удалось скрыть пользователя \"" + fullName + "\"", "danger");
+                    });
+                });
+            }
+
+            userCard.find('#delete-button').mayTriggerLongClicks().on('longClick', function(data) {
+                // Отправляем запрос на удаление
+                $.post("delete_user",
+                {
+                    id: user.Id
+                },
+                function(data, status) {
+                    if (status) {
+                        // Удаляем пользователя из UI
+                        userCard.fadeOut();
+
+                        // Обновляем счётчик в бадже
+                        updateBadgeRelative('#users-header-new-' + isUserNew, -1);
+
+                        $.hulla.send("Пользователь \"" + fullName + "\" удалён", "danger");
                     }
+                    else {
+                        $.hulla.send("Не удалось удалить пользователя \"" + fullName + "\"", "danger");
+                    }
+                }).fail(function(result) {
+                    $.hulla.send("Не удалось удалить пользователя \"" + fullName + "\"", "danger");
                 });
             });
 
-            userCard.find('#delete-button').click(function(){
-                bootbox.confirm({
-                    title: "Удалить?",
-                    message: "Вы действительно хотите навсегда удалить пользователя \"" + fullName + "\"?",
-                    backdrop: true,
-                    callback: function(result) {
-                        if (result) {
-                            // Отправляем запрос на удаление
-                            $.post("delete_user",
-                            {
-                                id: user.Id
-                            },
-                            function(data, status) {
-                                if (status) {
-                                    // Удаляем пользователя из UI
-                                    updateBadgeRelative('#users-header-new-' + isUserNew, -1);
-                                    userCard.fadeOut();
-
-                                    $.hulla.send("Пользователь \"" + fullName + "\" удалён", "danger");
-                                }
-                                else {
-                                    $.hulla.send("Не удалось удалить пользователя \"" + fullName + "\"", "danger");
-                                }
-                            }).fail(function(result) {
-                                $.hulla.send("Не удалось удалить пользователя \"" + fullName + "\"", "danger");
-                            });
-                        }
-                    }
-                });
+            userCard.find('#favorite').mayTriggerLongClicks().on('longClick', function(data) {
+                $.hulla.send("Ура", "danger");
             });
 
             // Увеличиваем счётчики

@@ -611,7 +611,7 @@ namespace VK_Unicorn
                                     foreach (var userId in userIds)
                                     {
                                         // Ищем активность по этому Id записи
-                                        var activity = chunkOfActivities.Where(_ => _.PostId == postId).FirstOrDefault();
+                                        var activity = chunkOfActivities.Find(_ => _.PostId == postId);
                                         if (activity != null)
                                         {
                                             // Активность найдена, клонируем её и заполняем userId поле
@@ -709,7 +709,7 @@ namespace VK_Unicorn
                 // Вызывает callback для полученной информации о пользователе, если она есть
                 Callback<long, Callback<User>> ForReceivedInfoAboutUser = (userId, callback) =>
                 {
-                    var userInfo = usersInfo.Where(_ => _.Id == userId).FirstOrDefault();
+                    var userInfo = usersInfo.Find(_ => _.Id == userId);
                     if (userInfo != null)
                     {
                         callback(userInfo);
@@ -717,7 +717,7 @@ namespace VK_Unicorn
                 };
 
                 // Сортируем активности. Лайки нас интересуют в последнюю очередь т.к. если удалённый
-                // или деактивированный пользователь не написал никаких постов и комментариев, то его
+                // или деактивированный пользователь не написал никаких записей и комментариев, то его
                 // лайки не нужно сохранять в базу
                 userActivitiesToProcess.Sort((left, right) =>
                 {
@@ -756,11 +756,15 @@ namespace VK_Unicorn
                                 userActivitiesToProcess.RemoveAll(_ => _.UserId == userActivityToProcess.UserId);
                             };
 
+                            // Проверяем не деактивирован ли пользователь
+                            var isDeactivated = false;
                             if (userInfo.Deactivated != null)
                             {
                                 // Пользователь деактивирован или удалён?
                                 if (userInfo.Deactivated != Deactivated.Activated)
                                 {
+                                    isDeactivated = true;
+
                                     // Не сохраняем лайки от деактивированных или удалённых пользователей т.к.
                                     // в них не содержится никакой полезной информации
                                     if (userActivityToProcess.IsLikeToSomething())
@@ -869,6 +873,7 @@ namespace VK_Unicorn
                                 LastActivity = userActivityToProcess.WhenHappened,
                                 WhenAdded = DateTime.Now,
                                 FromGroupId = group.Id,
+                                IsDeactivated = isDeactivated,
                             });
 
                             // Помечаем сообщество как только что активное

@@ -195,6 +195,9 @@ namespace VK_Unicorn
             // Добавлен ли этот пользователь в избранное
             public bool IsFavorite { get; set; }
 
+            // Был ли этот пользователь деактивирован (удалён\забанен и т.п.)
+            public bool IsDeactivated { get; set; }
+
             /// <summary>
             /// Возвращает ссылку на пользователя
             /// </summary>
@@ -661,7 +664,7 @@ namespace VK_Unicorn
             Utils.Log("Статистика:", LogLevel.SUCCESS);
             Utils.Log("    Полезных пользователей: " + GetCount<User>(), LogLevel.NOTIFY);
             Utils.Log("    Количество сообществ для сканирования: " + GetCount<Group>(), LogLevel.NOTIFY);
-            Utils.Log("    Сохранено пользователей: " + GetCount<ScannedUser>(), LogLevel.NOTIFY);
+            Utils.Log("    Просканировано пользователей: " + GetCount<ScannedUser>(), LogLevel.NOTIFY);
             Utils.Log("    Сохранено записей: " + GetCount<Post>(), LogLevel.NOTIFY);
         }
 
@@ -741,17 +744,6 @@ namespace VK_Unicorn
             });
 
             return result;
-        }
-
-        /// <summary>
-        /// Удаляет все активности пользователя
-        /// </summary>
-        public void DeleteAllUserActivities(long userId)
-        {
-            ForDatabaseLocked((db) =>
-            {
-                db.Execute("DELETE FROM " + typeof(UserActivity).Name + " WHERE UserId = ?", userId);
-            });
         }
     }
 }

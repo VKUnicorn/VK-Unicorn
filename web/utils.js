@@ -87,3 +87,38 @@ function updateBadgeRelative(category, value) {
         categoryElement.hide();
     }
 }
+
+// Функция для добавления кнопке срабатывания по зажатию
+(function($) {
+    var defaults = {
+        NS: 'jquery.longclick-',
+        delay: 500
+    };
+
+    $.fn.mayTriggerLongClicks = function(options) {
+        var settings = $.extend(defaults, options);
+        var timer;
+        var haveLongClick;
+
+        return $(this).on('mousedown', function() {
+            haveLongClick = false;
+
+            timer = setTimeout(function(elm) {
+                haveLongClick = true;
+
+                $(elm).trigger('longClick');
+            }, settings.delay, this);
+        }).on('mouseup', function() {
+            clearTimeout(timer);
+        }).on('click', function(evt) {
+            if (haveLongClick) {
+                evt.stopImmediatePropagation();
+            }
+        });
+    }
+})(jQuery);
+
+// Функция для добавления своих классов к popover
+function getPopoverTemplateWithClass(customClass) {
+    return '<div class="popover ' + customClass + '" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>';
+}

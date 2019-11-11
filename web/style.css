@@ -1,6 +1,15 @@
 /*
  * Основная секция CSS
  */
+body {
+    overflow-y: scroll;
+}
+
+.modal-open{
+  padding:0 !important;
+  overflow-y: auto;
+ }
+
 .activity-counter {
     position: relative;
     left: -1px;
@@ -17,11 +26,7 @@
 .lni-cog {
     color: #8a61d1;
 }
-.lni-star {
-    margin-top: -2px !important;
-    color: Mediumslateblue;
-    opacity: 0.4;
-}
+
 .bg-success {
     background-color: #ccffcc !important;
 }

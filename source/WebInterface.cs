@@ -92,7 +92,7 @@ namespace VK_Unicorn
                             Database.Instance.Delete<Database.User>(userId);
 
                             // Удаляем всю связанную с ним активность
-                            Database.Instance.DeleteAllUserActivities(userId);
+                            Database.Instance.Delete<Database.UserActivity>(userId);
 
                             handled = true;
                         }
