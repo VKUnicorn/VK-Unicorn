@@ -67,10 +67,13 @@ namespace VK_Unicorn
 
                     ProcessContext(context);
                 }
+                catch (HttpListenerException)
+                {
+                    // Игнорируем сетевые ошибки
+                }
                 catch (Exception e)
                 {
-                    Utils.Log("веб сервер не смог обработать запрос. Причина: " + e.Message, LogLevel.ERROR);
-                    threadActive = false;
+                    Utils.Log("веб сервер не смог обработать запрос. Причина: " + e.Message + " " + e.ToString(), LogLevel.ERROR);
                 }
             }
         }
