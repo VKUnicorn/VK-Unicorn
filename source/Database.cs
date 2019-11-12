@@ -168,6 +168,9 @@ namespace VK_Unicorn
             // Id города
             public long CityId { get; set; }
 
+            // Название города
+            public string CityName { get; set; }
+
             // Что было написано в статусе
             public string Status { get; set; }
 

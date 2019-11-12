@@ -788,6 +788,7 @@ namespace VK_Unicorn
 
                             // Определяем Id города
                             var cityId = userInfo.City != null ? userInfo.City.Id.GetValueOrDefault(0) : 0;
+                            var cityName = userInfo.City != null ? userInfo.City.Title : "";
 
                             // Проверяем город учитывая настройки пользователя
                             switch (settings.SearchMethod)
@@ -852,6 +853,7 @@ namespace VK_Unicorn
                             Utils.Log(" DEBUG userInfo.LastName " + userInfo.LastName, LogLevel.NOTIFY);
                             Utils.Log(" DEBUG birthDateSet " + birthDateSet, LogLevel.NOTIFY);
                             Utils.Log(" DEBUG CityId " + cityId, LogLevel.NOTIFY);
+                            Utils.Log(" DEBUG CityName " + cityName, LogLevel.NOTIFY);
                             Utils.Log(" DEBUG userInfo.Status " + userInfo.Status, LogLevel.NOTIFY);
                             Utils.Log(" DEBUG userInfo.Contacts.MobilePhone " + mobilePhone + " isnull" + (userInfo.Contacts == null), LogLevel.NOTIFY);
                             Utils.Log(" DEBUG userInfo.Contacts.HomePhone " + homePhone + " isnull" + (userInfo.Contacts == null), LogLevel.NOTIFY);
@@ -866,6 +868,7 @@ namespace VK_Unicorn
                                 LastName = userInfo.LastName,
                                 BirthDate = birthDateSet ? birthDate : default(DateTime),
                                 CityId = cityId,
+                                CityName = cityName,
                                 Status = userInfo.Status,
                                 MobilePhone = mobilePhone,
                                 HomePhone = homePhone,

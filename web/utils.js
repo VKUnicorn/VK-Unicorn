@@ -36,9 +36,11 @@ function isoTimeToAge(isoTimeAsString) {
     var birthDate = new Date(isoTime);
     var age = today.getFullYear() - birthDate.getFullYear();
     var m = today.getMonth() - birthDate.getMonth();
+
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
         age--;
     }
+
     return age;
 }
 
@@ -109,7 +111,7 @@ function updateBadgeRelative(category, value) {
 (function($) {
     var defaultSettings = {
         NS: 'jquery.longclick-',
-        delay: 380
+        delay: 350
     };
 
     $.fn.mayTriggerLongClicks = function(userSettings) {

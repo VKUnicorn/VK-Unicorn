@@ -142,6 +142,10 @@ body {
     text-overflow: ellipsis;
 }
 
+.text-like {
+    color: #6699ff;
+}
+
 .opaque-1 {
     opacity: 0.1;
 }

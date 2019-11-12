@@ -101,6 +101,26 @@ function loadUsers(favorites) {
                     }
                 };
 
+                function fillCity() {
+                    if (userExtraInfo.IsDifferentCity) {
+                        if (user.CityName) {
+                            let cityName = user.CityName.trim();
+                            if (cityName != '') {
+                                if (result != '') {
+                                    result += '<div class="mt-2"></div>';
+                                }
+
+                                result += `
+                                    <h6 class="mx-2 mb-1 mt-0">Город:</h6>
+                                    <div class="mx-2">
+                                        <span class="block-with-text-1"><i class="lni-map-marker mr-1 text-dark"></i>${cityName}</span>
+                                    </div>
+                                `;
+                            }
+                        }
+                    }
+                }
+
                 function fillSite() {
                     if (user.Site) {
                         let site = user.Site.trim();
@@ -162,10 +182,10 @@ function loadUsers(favorites) {
                         for (let recentPost of recentPosts) {
                             result += `
                                 ${index > 0 ? '<hr class="mx-0 my-1">' : ''}
-                                <span class="text-muted block-with-text-1"><i class="lni-popup mr-1 text-dark"></i>${isoTimeToLocalDeltaAsString(recentPost.Activity.WhenHappened)} назад в сообществе "${recentPost.Group.Name}"</span>
                                 <div class="block-with-text-4">
                                     ${recentPost.Post.Content}
                                 </div>
+                                <span class="text-muted block-with-text-1 opaque-5"><i class="lni-popup mr-1 text-dark"></i>${isoTimeToLocalDeltaAsString(recentPost.Activity.WhenHappened)} назад в сообществе "${recentPost.Group.Name}"</span>
                             `;
                             ++index;
                         }
@@ -189,10 +209,10 @@ function loadUsers(favorites) {
                         for (let recentLike of recentLikes) {
                             result += `
                                 ${index > 0 ? '<hr class="mx-0 my-1">' : ''}
-                                <span class="text-muted block-with-text-1"><i class="lni-heart mr-1 text-dark"></i>${isoTimeToLocalDeltaAsString(recentLike.Activity.WhenHappened)} назад в сообществе "${recentLike.Group.Name}"</span>
-                                <div class="block-with-text-4">
+                                <div class="block-with-text-4 text-like">
                                     ${recentLike.Post.Content}
                                 </div>
+                                <span class="text-muted block-with-text-1 opaque-5"><i class="lni-heart mr-1 text-like"></i>${isoTimeToLocalDeltaAsString(recentLike.Activity.WhenHappened)} назад в сообществе "${recentLike.Group.Name}"</span>
                             `;
                             ++index;
                         }
@@ -203,6 +223,7 @@ function loadUsers(favorites) {
 
                 var result = '';
                 fillStatus();
+                fillCity();
                 fillSite();
                 fillPhone();
                 fillRecentPosts();
@@ -216,6 +237,7 @@ function loadUsers(favorites) {
                 placement: 'right',
                 animation: false,
                 html: true,
+                offset: '50%p - 50% - 2px',
                 delay: { "show": 50, "hide": 25 },
                 content: fillUserRecentActionsCard()
             });

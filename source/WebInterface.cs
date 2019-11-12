@@ -191,73 +191,79 @@ namespace VK_Unicorn
                         case "users":
                             var onlyFavorites = query.Get("favorites") == "true";
 
-                            Database.Instance.ForEach<Database.User>((user) =>
+                            // Получаем настройки для того чтобы проверять город в дальнейшем
+                            Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
                             {
-                                // Не показывать пользователей не в избранном, если загружаем только избранных
-                                if (onlyFavorites)
+                                // Обходим всех пользователей
+                                Database.Instance.ForEach<Database.User>((user) =>
                                 {
-                                    if (!user.IsFavorite)
+                                    // Не показывать пользователей не в избранном, если загружаем только избранных
+                                    if (onlyFavorites)
                                     {
-                                        return;
-                                    }
-                                }
-
-                                if (!onlyFavorites)
-                                {
-                                    // Не показывать скрытых по каким-либо причинам пользователей
-                                    if (user.IsHidden != Database.HiddenStatus.NOT_HIDDEN)
-                                    {
-                                        return;
+                                        if (!user.IsFavorite)
+                                        {
+                                            return;
+                                        }
                                     }
 
-                                    // Не показываем старых пользователей
-                                    if (DateTime.Now - user.LastActivity > Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                    if (!onlyFavorites)
                                     {
-                                        return;
+                                        // Не показывать скрытых по каким-либо причинам пользователей
+                                        if (user.IsHidden != Database.HiddenStatus.NOT_HIDDEN)
+                                        {
+                                            return;
+                                        }
+
+                                        // Не показываем старых пользователей
+                                        if (DateTime.Now - user.LastActivity > Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                        {
+                                            return;
+                                        }
                                     }
-                                }
 
-                                // Заменяем ссылку на фото, если нужно
-                                user.PhotoURL = Utils.FixPhotoURL(user.PhotoURL);
+                                    // Заменяем ссылку на фото, если нужно
+                                    user.PhotoURL = Utils.FixPhotoURL(user.PhotoURL);
 
-                                // Получаем список активностей пользователя
-                                var userActivites = Database.Instance.GetAllRecords<Database.UserActivity>(_ => _.UserId == user.Id);
+                                    // Получаем список активностей пользователя
+                                    var userActivites = Database.Instance.GetAllRecords<Database.UserActivity>(_ => _.UserId == user.Id);
 
-                                // Получаем список недавних записей пользователя
-                                var recentPostActivities = userActivites
-                                    // Ищем только посты
-                                    .Where(_ => _.Type.IsOneOf(Database.UserActivity.ActivityType.POST, Database.UserActivity.ActivityType.COMMENT))
-                                    // Сортируем по давности
-                                    .OrderByDescending(_ => _.WhenHappened)
-                                    // Берём несколько
-                                    .Take(5)
-                                    // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
-                                    .Select(_ => new Database.UserActivityWithContent(_))
-                                ;
+                                    // Получаем список недавних записей пользователя
+                                    var recentPostActivities = userActivites
+                                        // Ищем только посты
+                                        .Where(_ => _.Type.IsOneOf(Database.UserActivity.ActivityType.POST, Database.UserActivity.ActivityType.COMMENT))
+                                        // Сортируем по давности
+                                        .OrderByDescending(_ => _.WhenHappened)
+                                        // Берём несколько
+                                        .Take(5)
+                                        // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
+                                        .Select(_ => new Database.UserActivityWithContent(_))
+                                    ;
 
-                                // Получаем список недавних лайков пользователя
-                                var recentLikeActivities = userActivites
-                                    // Ищем только посты
-                                    .Where(_ => _.IsLikeToSomething())
-                                    // Сортируем по давности
-                                    .OrderByDescending(_ => _.WhenHappened)
-                                    // Берём несколько
-                                    .Take(3)
-                                    // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
-                                    .Select(_ => new Database.UserActivityWithContent(_))
-                                ;
+                                    // Получаем список недавних лайков пользователя
+                                    var recentLikeActivities = userActivites
+                                        // Ищем только посты
+                                        .Where(_ => _.IsLikeToSomething())
+                                        // Сортируем по давности
+                                        .OrderByDescending(_ => _.WhenHappened)
+                                        // Берём несколько
+                                        .Take(3)
+                                        // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
+                                        .Select(_ => new Database.UserActivityWithContent(_))
+                                    ;
 
-                                // Добавляем пользователя в ответ
-                                resultObjects.Add(new Dictionary<string, object>()
-                                {
-                                    { "data", user },
-                                    { "URL", user.GetURL() },
-                                    { "Likes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.LIKE) },
-                                    { "CommentLikes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT_LIKE) },
-                                    { "Posts", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.POST) },
-                                    { "Comments", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT) },
-                                    { "RecentPosts", recentPostActivities },
-                                    { "RecentLikes", recentLikeActivities },
+                                    // Добавляем пользователя в ответ
+                                    resultObjects.Add(new Dictionary<string, object>()
+                                    {
+                                        { "data", user },
+                                        { "URL", user.GetURL() },
+                                        { "Likes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.LIKE) },
+                                        { "CommentLikes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT_LIKE) },
+                                        { "Posts", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.POST) },
+                                        { "Comments", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT) },
+                                        { "RecentPosts", recentPostActivities },
+                                        { "RecentLikes", recentLikeActivities },
+                                        { "IsDifferentCity", (user.CityId != Constants.UNKNOWN_CITY_ID) && (user.CityId != settings.CityId)},
+                                    });
                                 });
                             });
 
