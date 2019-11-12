@@ -16,17 +16,6 @@ body {
     bottom: 1px;
 }
 
-.col-sm-2 {
-    display: flex;
-}
-
-.lni-user {
-    color: Mediumslateblue;
-}
-.lni-cog {
-    color: #8a61d1;
-}
-
 .bg-success {
     background-color: #ccffcc !important;
 }
@@ -45,6 +34,7 @@ body {
 .stroke-red {
     -webkit-text-stroke: 1px red;
 }
+
 .small-info-box {
     background-color: rgba(87, 87, 87, 0.5);
     color: rgba(255, 255, 255, 0.8);
@@ -56,8 +46,29 @@ body {
     position: relative;
     bottom: 1px;
 }
+
+.user-card {
+    width: 11rem;
+    height: 14rem;
+}
+.card-img-top {
+    object-fit: cover;
+    max-height: 11rem;
+}
+.group-card {
+    width: 16.8rem;
+    height: 19.8rem;
+}
+.card-img-top.group {
+    object-fit: cover;
+    max-height: 16.8rem;
+}
+
 .card-img-overlay {
     height: 0;
+}
+.card-img-overlay .btn {
+    display: none;
 }
 .card-img-overlay.small-info {
     position: relative;
@@ -72,19 +83,6 @@ body {
     top: -28px !important;
     left: 2% !important;
     height: 0;
-}
-.card-img-top {
-    object-fit: cover;
-}
-.col-sm-2 .card-img-top {
-    width: calc(11rem - 1px);
-    height: 11rem;
-}
-.col-sm-3 .card-img-top {
-    height: 16rem;
-}
-.card-img-overlay .btn {
-    display: none;
 }
 .card:hover .btn {
     display: block;

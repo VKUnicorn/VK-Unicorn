@@ -62,8 +62,8 @@ function loadUsers(favorites) {
 
             // Заполняем карточку пользователя
             let userCard = $(`
-                <div class="col-sm-2 px-1 py-1">
-                    <div class="card ${cardUnderlayClass}">
+                <div class="col-auto px-1 py-1">
+                    <div class="card ${cardUnderlayClass} user-card">
                         <div class="card-img-overlay px-1 py-1">
                             ${!user.IsDeactivated ? '<a class="btn btn-success float-left px-1 py-1" id="hide-button"><i class="lni-check-mark-circle size-sm text-white"></i></a>' : ''}
                             <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close text-white"></i></a>

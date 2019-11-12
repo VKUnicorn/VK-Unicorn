@@ -38,13 +38,13 @@ function loadGroups() {
 
             // Заполняем карточку сообщества
             let groupCard = $(`
-                <div class="col-sm-3 px-1 py-1">
-                    <div class="card ${warningElement}">
+                <div class="col-auto px-1 py-1">
+                    <div class="card ${warningElement} group-card">
                         <div class="card-img-overlay px-1 py-1">
                             <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close text-white"></i></a>
                         </div>
                         <a href="${groupExtraInfo.URL}" target="_blank">
-                            <img class="card-img-top" src="${group.PhotoURL}">
+                            <img class="card-img-top group" src="${group.PhotoURL}">
                         </a>
                         <div class="card-img-overlay medium-info">
                             <span class="small-info-box group-results" id="efficiency">${groupExtraInfo.Efficiency}</span>
