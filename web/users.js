@@ -5,6 +5,12 @@ function loadUsers(favorites) {
     $.getJSON('users', {
         favorites: favorites
     }, function(result) {
+        // Позиция тултипа с информацией о пользователе. По умолчанию - справа
+        // Если ширина окна браузера слишком маленькая, то будем отображать тултип с информацией о пользователе снизу, а не справа
+        let smallWindow = $(window).width() < 1200;
+        let userShortInfoPopoverOffset = smallWindow ? 0 : '50%p - 50% - 2px';
+        let userShortInfoPopoverPlecement = smallWindow ? 'bottom' : 'right';
+
         // Добавляем отдельные категории для пользователей
         function addUserCategory(isForNew) {
             $(`
@@ -234,10 +240,10 @@ function loadUsers(favorites) {
             userCard.find('#user').popover({
                 template: getPopoverTemplateWithClass("user-short-info", "px-0"),
                 trigger: 'hover',
-                placement: 'right',
+                placement: userShortInfoPopoverPlecement,
                 animation: false,
                 html: true,
-                offset: '50%p - 50% - 2px',
+                offset: userShortInfoPopoverOffset,
                 delay: { "show": 50, "hide": 25 },
                 content: fillUserRecentActionsCard()
             });
