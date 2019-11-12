@@ -125,5 +125,22 @@ namespace VK_Unicorn
                 StatusLabel.ForeColor = color;
             });
         }
+
+        void MainForm_Resize(object sender, EventArgs e)
+        {
+            if (WindowState == FormWindowState.Minimized)
+            {
+                TrayNotifyIcon.Visible = true;
+                ShowInTaskbar = false;
+            }
+        }
+
+        void TrayNotifyIcon_MouseClick(object sender, MouseEventArgs e)
+        {
+            WindowState = FormWindowState.Normal;
+            ShowInTaskbar = true;
+
+            TrayNotifyIcon.Visible = false;
+        }
     }
 }
