@@ -7,7 +7,7 @@ body {
 
 .modal-open {
     padding: 0 !important;
-    overflow-y: auto;
+    overflow-y: scroll;
 }
 .modal-xl {
     max-width: 1100px;

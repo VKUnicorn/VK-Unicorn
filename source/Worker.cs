@@ -904,7 +904,7 @@ namespace VK_Unicorn
                             Database.Instance.ModifyFields<Database.User>(userActivityToProcess.UserId, (user) =>
                             {
                                 // Найденная активность была раньше той, которую мы уже сохранили?
-                                if (user.LastActivity < userActivityToProcess.WhenHappened)
+                                if (userActivityToProcess.WhenHappened < user.LastActivity)
                                 {
                                     // Показываем пользователя снова, если он был скрыт нами
                                     if (user.IsHidden == Database.HiddenStatus.HIDDEN_UNTIL_ACTIVITY)

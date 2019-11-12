@@ -138,7 +138,6 @@
             // TrayNotifyIcon
             // 
             this.TrayNotifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("TrayNotifyIcon.Icon")));
-            this.TrayNotifyIcon.Visible = true;
             this.TrayNotifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.TrayNotifyIcon_MouseClick);
             // 
             // MainForm
