@@ -271,7 +271,7 @@ namespace VK_Unicorn
             // Дополнительное поле с содержимым записи
             public Post Post;
 
-            // Группа, в которой была активность
+            // Сообщество, в котором была активность
             public Group Group;
 
             // Ссылка на запись или комментарий
@@ -286,6 +286,7 @@ namespace VK_Unicorn
                 {
                     Post = db.Find<Post>(Post.MakeId(activity.GroupId, activity.PostId));
                     Group = db.Find<Group>(activity.GroupId);
+
                     URL = Post.GetURL();
 
                     // TODO добавить для комментариев

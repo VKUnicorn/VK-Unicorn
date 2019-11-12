@@ -72,6 +72,11 @@ body {
     max-height: 16.8rem;
 }
 
+.user-full-info-photo {
+    object-fit: cover;
+    width: 100%;
+}
+
 .card-img-overlay {
     height: 0;
 }

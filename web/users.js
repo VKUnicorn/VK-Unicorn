@@ -368,9 +368,25 @@ function loadUsers(favorites) {
 
                 // Открываем модальное окно с подробной информацией о пользователе
                 let userFullInfoModal = $('#user-full-info-modal');
+                let userFullInfoModalContent = userFullInfoModal.find("#user-full-info");
 
-                userFullInfoModal.find("#user-full-info").empty();
-                userFullInfoModal.find("#user-full-info").append(fillUserRecentActionsCard());
+                userFullInfoModalContent.empty();
+
+                // Заполняем информацию с фотографией и общими данными
+                userFullInfoModalContent.append(`
+                    <div class="row">
+                        <div class="col-3 pr-0">
+                            <a href="${userExtraInfo.URL}" target="_blank">
+                                <img src="${user.PhotoURL}" class="user-full-info-photo">
+                            </a>
+                        </div>
+                        <div class="col-9 pl-1" id="all-actions">
+                            <h5 class="mx-2 mb-1 mt-0 block-with-text-1">${fullName}${ageAsString != '' ? (', ' + ageAsString) : ''}</h5>
+                            <hr class="ml-2 my-2">
+                            ${fillUserRecentActionsCard()}
+                        </div>
+                    </div>
+                `);
 
                 userFullInfoModal.modal();
             });

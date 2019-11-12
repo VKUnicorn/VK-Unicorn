@@ -222,8 +222,7 @@ namespace VK_Unicorn
                                             return;
                                         }
                                     }
-
-                                    if (!onlyFavorites)
+                                    else
                                     {
                                         // Не показывать скрытых по каким-либо причинам пользователей
                                         if (user.IsHidden != Database.HiddenStatus.NOT_HIDDEN)
@@ -241,13 +240,16 @@ namespace VK_Unicorn
                                     // Заменяем ссылку на фото, если нужно
                                     user.PhotoURL = Utils.FixPhotoURL(user.PhotoURL);
 
-                                    // Получаем список активностей пользователя
+                                    // Получаем список активностей пользователя за последнее время
                                     var userActivites = Database.Instance.GetAllWhere<Database.UserActivity>(_ => _.UserId == user.Id);
 
-                                    // Получаем список недавних записей пользователя
+                                    // Удаляем слишком старые активности
+                                    userActivites.RemoveAll(_ => DateTime.Now - _.WhenHappened > Constants.MAX_SCANNING_DEPTH_IN_TIME);
+
+                                    // Соcтавляем список недавних записей пользователя
                                     var recentPostActivities = userActivites
-                                        // Ищем только посты
-                                        .Where(_ => _.Type.IsOneOf(Database.UserActivity.ActivityType.POST, Database.UserActivity.ActivityType.COMMENT))
+                                        // Ищем только записи или комментарии
+                                        .Where(_ => _.IsPostOrComment())
                                         // Сортируем по давности
                                         .OrderByDescending(_ => _.WhenHappened)
                                         // Берём несколько
@@ -256,9 +258,9 @@ namespace VK_Unicorn
                                         .Select(_ => new Database.UserActivityWithContent(_))
                                     ;
 
-                                    // Получаем список недавних лайков пользователя
+                                    // Соcтавляем список недавних лайков пользователя
                                     var recentLikeActivities = userActivites
-                                        // Ищем только посты
+                                        // Ищем только лайки
                                         .Where(_ => _.IsLikeToSomething())
                                         // Сортируем по давности
                                         .OrderByDescending(_ => _.WhenHappened)
@@ -304,6 +306,45 @@ namespace VK_Unicorn
                             ;
 
                             handled = true;
+                            break;
+
+                        case "user_activities":
+                            {
+                                var userId = long.Parse(query.Get("id"));
+
+                                // Получаем список активностей пользователя
+                                var userActivites = Database.Instance.GetAllWhere<Database.UserActivity>(_ => _.UserId == userId);
+
+                                // Удаляем слишком старые активности
+                                userActivites.RemoveAll(_ => DateTime.Now - _.WhenHappened > Constants.MAX_SCANNING_DEPTH_IN_TIME);
+
+                                // Соcтавляем список недавних записей пользователя
+                                var postActivities = userActivites
+                                    // Ищем только записи или комментарии
+                                    .Where(_ => _.IsPostOrComment())
+                                    // Сортируем по давности
+                                    .OrderByDescending(_ => _.WhenHappened)
+                                    // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
+                                    .Select(_ => new Database.UserActivityWithContent(_))
+                                ;
+
+                                // Соcтавляем список недавних лайков пользователя
+                                var likeActivities = userActivites
+                                    // Ищем только лайки
+                                    .Where(_ => _.IsLikeToSomething())
+                                    // Сортируем по давности
+                                    .OrderByDescending(_ => _.WhenHappened)
+                                    // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
+                                    .Select(_ => new Database.UserActivityWithContent(_))
+                                ;
+
+                                // Добавляем пользователя в ответ
+                                resultObjects.Add(new Dictionary<string, object>()
+                                {
+                                    { "Posts", postActivities },
+                                    { "Likes", likeActivities },
+                                });
+                            }
                             break;
                     }
 
