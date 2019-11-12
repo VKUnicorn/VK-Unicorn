@@ -307,7 +307,7 @@ body {
  * Bootstrap анимация
  */
 .fade {
-    transition:opacity 0.15s linear !important;
+    transition:opacity 0.1s linear !important;
 }
 .collapsing {
     transition:height 0.35s ease !important;
@@ -340,9 +340,9 @@ body {
     animation:progress-bar-stripes 1s linear infinite !important;
 }
 .modal.fade .modal-dialog {
-    transition:-webkit-transform 0.3s ease-out !important;
-    transition:transform 0.3s ease-out !important;
-    transition:transform 0.3s ease-out,-webkit-transform 0.3s ease-out !important;
+    transition:-webkit-transform 0.1s ease-out !important;
+    transition:transform 0.1s ease-out !important;
+    transition:transform 0.1s ease-out,-webkit-transform 0.1s ease-out !important;
 }
 .carousel-item {
     transition:-webkit-transform 0.6s ease-in-out !important;
