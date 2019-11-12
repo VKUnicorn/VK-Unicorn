@@ -5,10 +5,13 @@ body {
     overflow-y: scroll;
 }
 
-.modal-open{
-  padding: 0 !important;
-  overflow-y: auto;
- }
+.modal-open {
+    padding: 0 !important;
+    overflow-y: auto;
+}
+.modal-xl {
+    max-width: 1100px;
+}
 
 .activity-counter {
     position: relative;

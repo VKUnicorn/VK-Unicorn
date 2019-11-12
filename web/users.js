@@ -392,6 +392,12 @@ function loadUsers(favorites) {
                 e.preventDefault();
 
                 // Открываем модальное окно с подробной информацией о пользователе
+                let userFullInfoModal = $('#user-full-info-modal');
+
+                userFullInfoModal.find("#user-full-info").empty();
+                userFullInfoModal.find("#user-full-info").append(fillUserRecentActionsCard());
+
+                userFullInfoModal.modal();
             });
 
             // Увеличиваем счётчики
@@ -422,6 +428,18 @@ function loadUsers(favorites) {
                 $.hulla.send("Не было загружено ни одного пользователя. Пользователей можно добавлять в избранное по клику на иконку звёздочки", "success");
             }
         }
+
+        // Добавляем модальное окно с подробной информацией о пользователе
+        $(`
+            <div class="modal fade" id="user-full-info-modal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content ml-1">
+                        <div class="modal-body" id="user-full-info">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).appendTo($('#workspace'));
     }).fail(function(result) {
         finish_loading();
 

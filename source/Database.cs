@@ -657,14 +657,13 @@ namespace VK_Unicorn
         /// <summary>
         /// Возвращает все записи, которые удовлетворяют критерию
         /// </summary>
-        public List<T> GetAllRecords<T>(Expression<Func<T, bool>> where) where T : new()
+        public List<T> GetAllWhere<T>(Expression<Func<T, bool>> predicate) where T : new()
         {
             var result = new List<T>();
-
             ForDatabaseUnlocked((db) =>
             {
                 result = db.Table<T>()
-                    .Where(where)
+                    .Where(predicate)
                     .ToList();
             });
 

@@ -30,7 +30,7 @@ function loadGroups() {
             let warningElement = '';
             if (group.IsClosed) {
                 lockElement = '<i class="lni-' + (group.IsMember ? 'un' : '') + 'lock mr-1"></i>';
-                lockHintElement = '<br /><font color=' + (group.IsMember ? 'green' : 'red') + '>Сообщество закрыто и вы ' + (group.IsMember ? '' : 'не ') + 'являетесь его участником</font>';
+                lockHintElement = '<br><font color=' + (group.IsMember ? 'green' : 'red') + '>Сообщество закрыто и вы ' + (group.IsMember ? '' : 'не ') + 'являетесь его участником</font>';
                 if (!group.IsMember) {
                     warningElement = 'bg-error';
                 }
@@ -53,7 +53,7 @@ function loadGroups() {
                             <p class="card-text my-0 text-truncate" id="group-name">${group.Name}</p>
                         </div>
                         <div class="card-footer pt-0 px-2 pb-p-1">
-                            <div class="float-left" id="last-activity" data-html="true"><small class="text-muted">${lockElement}<i class="lni-pulse mr-1"></i><span class="activity-counter">${isoTimeToLocalDeltaAsString(group.LastActivity)}</span></small></div>
+                            <div class="float-left" id="last-activity"><small class="text-muted">${lockElement}<i class="lni-pulse mr-1"></i><span class="activity-counter">${isoTimeToLocalDeltaAsString(group.LastActivity)}</span></small></div>
                             <div class="float-right" id="last-scanned"><small class="text-muted"><i class="lni-reload pr-p-4"></i><span class="activity-counter">${isoTimeToLocalDeltaAsString(group.LastScanned)}</span></small></div>
                         </div>
                     </div>
@@ -78,6 +78,7 @@ function loadGroups() {
             groupCard.find('#last-activity').popover({
                 trigger: 'hover',
                 placement: 'top',
+                html: true,
                 delay: { "show": 450, "hide": 100 },
                 content: 'Как давно было найдено что-нибудь полезное в этом сообществе' + lockHintElement
             });

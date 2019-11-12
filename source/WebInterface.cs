@@ -242,7 +242,7 @@ namespace VK_Unicorn
                                     user.PhotoURL = Utils.FixPhotoURL(user.PhotoURL);
 
                                     // Получаем список активностей пользователя
-                                    var userActivites = Database.Instance.GetAllRecords<Database.UserActivity>(_ => _.UserId == user.Id);
+                                    var userActivites = Database.Instance.GetAllWhere<Database.UserActivity>(_ => _.UserId == user.Id);
 
                                     // Получаем список недавних записей пользователя
                                     var recentPostActivities = userActivites
