@@ -53,6 +53,7 @@ body {
 }
 .card-img-top {
     object-fit: cover;
+    height: 11rem;
     max-height: 11rem;
 }
 .group-card {
@@ -61,6 +62,7 @@ body {
 }
 .card-img-top.group {
     object-fit: cover;
+    height: 16.8rem;
     max-height: 16.8rem;
 }
 

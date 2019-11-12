@@ -126,13 +126,17 @@ namespace VK_Unicorn
             }
 
             // Отправляем ответ
-            context.Response.ContentLength64 = data.Length;
-            using (var memoryStream = new MemoryStream(data))
+            if (data != null)
             {
-                memoryStream.CopyTo(context.Response.OutputStream);
-                memoryStream.Flush();
+                context.Response.ContentLength64 = data.Length;
+                using (var memoryStream = new MemoryStream(data))
+                {
+                    memoryStream.CopyTo(context.Response.OutputStream);
+                    memoryStream.Flush();
+                }
+
+                context.Response.OutputStream.Flush();
             }
-            context.Response.OutputStream.Flush();
             context.Response.StatusCode = (int)statusCode;
             context.Response.OutputStream.Close();
         }
