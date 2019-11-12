@@ -194,7 +194,12 @@ function loadUsers(favorites) {
                                 <div class="block-with-text-4">
                                     ${recentPost.Post.Content}
                                 </div>
-                                <span class="text-muted block-with-text-1 opaque-5"><i class="lni-popup mr-1 text-dark"></i>${isoTimeToLocalDeltaAsString(recentPost.Activity.WhenHappened)} назад в сообществе "${recentPost.Group.Name}"</span>
+                                <span class="text-muted block-with-text-1 opaque-5">
+                                    <i class="lni-popup mr-1 text-dark"></i>
+                                    <a href="${recentPost.URL}" target="_blank" class="text-dark">
+                                        ${isoTimeToLocalDeltaAsString(recentPost.Activity.WhenHappened)} назад в сообществе "${recentPost.Group.Name}"
+                                    </a>
+                                </span>
                             `;
                             ++index;
                         }
@@ -221,7 +226,12 @@ function loadUsers(favorites) {
                                 <div class="block-with-text-4 text-like">
                                     ${recentLike.Post.Content}
                                 </div>
-                                <span class="text-muted block-with-text-1 opaque-5"><i class="lni-heart mr-1 text-like"></i>${isoTimeToLocalDeltaAsString(recentLike.Activity.WhenHappened)} назад в сообществе "${recentLike.Group.Name}"</span>
+                                <span class="text-muted block-with-text-1 opaque-5">
+                                    <i class="lni-heart mr-1 text-like"></i>
+                                    <a href="${recentLike.URL}" target="_blank" class="text-dark">
+                                        ${isoTimeToLocalDeltaAsString(recentLike.Activity.WhenHappened)} назад в сообществе "${recentLike.Group.Name}"
+                                    </a>
+                                </span>
                             `;
                             ++index;
                         }

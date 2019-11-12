@@ -274,6 +274,9 @@ namespace VK_Unicorn
             // Группа, в которой была активность
             public Group Group;
 
+            // Ссылка на запись или комментарий
+            public string URL;
+
             public UserActivityWithContent(UserActivity activity)
             {
                 Activity = activity;
@@ -283,6 +286,7 @@ namespace VK_Unicorn
                 {
                     Post = db.Find<Post>(Post.MakeId(activity.GroupId, activity.PostId));
                     Group = db.Find<Group>(activity.GroupId);
+                    URL = Post.GetURL();
 
                     // TODO добавить для комментариев
                 });
@@ -332,6 +336,14 @@ namespace VK_Unicorn
 
             // Что было в содержимом
             public string Content { get; set; }
+
+            /// <summary>
+            /// Возвращает ссылку на запись
+            /// </summary>
+            public string GetURL()
+            {
+                return Constants.VK_WEB_PAGE + "wall-" + Id;
+            }
         }
 
         // Маркер для служебного использования. Менять не нужно
