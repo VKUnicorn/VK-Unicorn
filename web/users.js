@@ -250,6 +250,7 @@ function loadUsers(favorites) {
                 return result;
             }
 
+            // Превью нескольких последних действий пользователя
             userCard.find('#user').popover({
                 template: getPopoverTemplateWithClass("user-short-info", "px-0"),
                 trigger: 'hover',
@@ -261,52 +262,16 @@ function loadUsers(favorites) {
                 content: fillUserRecentActionsCard()
             });
 
-            // Тултипы
-            userCard.find('#delete-button').popover({
-                trigger: 'hover',
-                placement: 'bottom',
-                html: true,
-                delay: { "show": 1100, "hide": 100 },
-                content: 'Удалить пользователя навсегда<br /><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
-            });
-
+            // Тултипы в зависимости от контекста
             if (!user.IsDeactivated) {
                 userCard.find('#hide-button').popover({
                     trigger: 'hover',
                     placement: 'bottom',
                     html: true,
                     delay: { "show": 1100, "hide": 100 },
-                    content: 'Временно скрыть пользователя пока не появится любая новая активность<br /><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
+                    content: 'Временно скрыть пользователя пока не появится любая новая активность<br><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
                 });
             }
-
-            userCard.find('#likes-counter').popover({
-                trigger: 'hover',
-                placement: 'top',
-                delay: { "show": 450, "hide": 100 },
-                content: 'Общее количество лайков к записям и комментариям'
-            });
-
-            userCard.find('#posts-counter').popover({
-                trigger: 'hover',
-                placement: 'top',
-                delay: { "show": 450, "hide": 100 },
-                content: 'Количество записей'
-            });
-
-            userCard.find('#comments-counter').popover({
-                trigger: 'hover',
-                placement: 'top',
-                delay: { "show": 450, "hide": 100 },
-                content: 'Количество комментариев'
-            });
-
-            userCard.find('#favorite').popover({
-                trigger: 'hover',
-                placement: 'top',
-                delay: { "show": 1000, "hide": 100 },
-                content: 'Добавить или удалить из избранного'
-            });
 
             if (isUnderage) {
                 userCard.find('#age').popover({
@@ -316,8 +281,8 @@ function loadUsers(favorites) {
                     html: true,
                     delay: { "show": 450, "hide": 100 },
                     content:
-                        isNotInConsentAge ? 'Пользователь не достиг возраста сексуального согласия<br /><font color=red>УК РФ Статья 134. Половое сношение и иные действия сексуального характера с лицом, не достигшим шестнадцатилетнего возраста<br />УК РФ Статья 135. Развратные действия</font>'
-                                          : 'Пользователь не достиг совершеннолетия<br /><font color=red>УК РФ Статья 240.1. Получение сексуальных услуг несовершеннолетнего</font>'
+                        isNotInConsentAge ? 'Пользователь не достиг возраста сексуального согласия<br><font color=red>УК РФ Статья 134. Половое сношение и иные действия сексуального характера с лицом, не достигшим шестнадцатилетнего возраста<br>УК РФ Статья 135. Развратные действия</font>'
+                                          : 'Пользователь не достиг совершеннолетия<br><font color=red>УК РФ Статья 240.1. Получение сексуальных услуг несовершеннолетнего</font>'
                 });
             }
 
@@ -418,6 +383,43 @@ function loadUsers(favorites) {
                 ++notNewUsersCount;
             }
         }
+
+        // Общие тултипы на все элементы
+        $('*[id=delete-button]').popover({
+            trigger: 'hover',
+            placement: 'bottom',
+            html: true,
+            delay: { "show": 1100, "hide": 100 },
+            content: 'Удалить пользователя навсегда<br><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
+        });
+
+        $('*[id=likes-counter]').popover({
+            trigger: 'hover',
+            placement: 'top',
+            delay: { "show": 450, "hide": 100 },
+            content: 'Общее количество лайков к записям и комментариям'
+        });
+
+        $('*[id=posts-counter]').popover({
+            trigger: 'hover',
+            placement: 'top',
+            delay: { "show": 450, "hide": 100 },
+            content: 'Количество записей'
+        });
+
+        $('*[id=comments-counter]').popover({
+            trigger: 'hover',
+            placement: 'top',
+            delay: { "show": 450, "hide": 100 },
+            content: 'Количество комментариев'
+        });
+
+        $('*[id=favorite]').popover({
+            trigger: 'hover',
+            placement: 'top',
+            delay: { "show": 1000, "hide": 100 },
+            content: 'Добавить или удалить из избранного'
+        });
 
         // Заполняем баджи с количеством пользователей
         updateBadgeRelative('#users-header-new-true', newUsersCount);
