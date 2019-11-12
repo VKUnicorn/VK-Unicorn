@@ -7,9 +7,9 @@ function loadUsers(favorites) {
     }, function(result) {
         // Позиция тултипа с информацией о пользователе. По умолчанию - справа
         // Если ширина окна браузера слишком маленькая, то будем отображать тултип с информацией о пользователе снизу, а не справа
-        let smallWindow = $(window).width() < 1200;
-        let userShortInfoPopoverOffset = smallWindow ? 0 : '50%p - 50% - 2px';
-        let userShortInfoPopoverPlecement = smallWindow ? 'bottom' : 'right';
+        let isSmallWindow = $(window).width() < 1200;
+        let userShortInfoPopoverOffset = isSmallWindow ? 0 : '50%p - 50% - 2px';
+        let userShortInfoPopoverPlecement = isSmallWindow ? 'bottom' : 'right';
 
         // Добавляем отдельные категории для пользователей
         function addUserCategory(isForNew) {
@@ -51,6 +51,9 @@ function loadUsers(favorites) {
             let cardUnderlayClass = '';
             if (isUserNew) {
                 cardUnderlayClass = 'bg-new-user';
+            }
+            if (userExtraInfo.IsStopWordsFound) {
+                cardUnderlayClass = 'bg-stop-words';
             }
             if (isUnderage) {
                 cardUnderlayClass = 'bg-error';
@@ -383,6 +386,12 @@ function loadUsers(favorites) {
                 }).fail(function(result) {
                     $.hulla.send("Не удалось изменить статус избранного у пользователя \"" + fullName + "\"", "danger");
                 });
+            });
+
+            userCard.find('#user').click(function(e) {
+                e.preventDefault();
+
+                // Открываем модальное окно с подробной информацией о пользователе
             });
 
             // Увеличиваем счётчики

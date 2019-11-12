@@ -22,11 +22,14 @@ body {
 .bg-warning {
     background-color: #ffffcc !important;
 }
-.bg-error {
-    background-color: rgb(255, 204, 204, 0.7) !important;
-}
 .bg-new-user {
     background-color: rgb(0, 255, 0, 0.08) !important;
+}
+.bg-stop-words {
+    background-color: rgb(255, 255, 0, 0.15) !important;
+}
+.bg-error {
+    background-color: rgb(255, 204, 204, 0.7) !important;
 }
 .color-error {
     color: red !important;

@@ -194,6 +194,23 @@ namespace VK_Unicorn
                             // Получаем настройки для того чтобы проверять город в дальнейшем
                             Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
                             {
+                                // Составляем список стоп слов
+                                var stopWords = settings.StopWords.Split(';');
+
+                                // Функция для проверки было ли найдено какое-то стоп слово в строке
+                                CallbackWithReturn<bool, string> IsAnyOfStopWordsFound = (target) =>
+                                {
+                                    foreach (var stopWord in stopWords)
+                                    {
+                                        if (target.Contains(stopWord))
+                                        {
+                                            return true;
+                                        }
+                                    }
+
+                                    return false;
+                                };
+
                                 // Обходим всех пользователей
                                 Database.Instance.ForEach<Database.User>((user) =>
                                 {
@@ -251,6 +268,18 @@ namespace VK_Unicorn
                                         .Select(_ => new Database.UserActivityWithContent(_))
                                     ;
 
+                                    // Проверяем не было ли в записях и комментариях слов из стоп листа
+                                    var isStopWordsFound = userActivites
+                                        // Ищем только записи или комментарии
+                                        .Where(_ => _.IsPostOrComment())
+                                        // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
+                                        .Select(_ => new Database.UserActivityWithContent(_))
+                                        // Проверяем на вхождение стоп слов
+                                        .FirstOrDefault(_ => IsAnyOfStopWordsFound(_.Post.Content))
+                                        // Была ли найдена хотя бы одна такая активность?
+                                        != null
+                                    ;
+
                                     // Добавляем пользователя в ответ
                                     resultObjects.Add(new Dictionary<string, object>()
                                     {
@@ -262,7 +291,8 @@ namespace VK_Unicorn
                                         { "Comments", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT) },
                                         { "RecentPosts", recentPostActivities },
                                         { "RecentLikes", recentLikeActivities },
-                                        { "IsDifferentCity", (user.CityId != Constants.UNKNOWN_CITY_ID) && (user.CityId != settings.CityId)},
+                                        { "IsDifferentCity", (user.CityId != Constants.UNKNOWN_CITY_ID) && (user.CityId != settings.CityId) },
+                                        { "IsStopWordsFound", isStopWordsFound },
                                     });
                                 });
                             });

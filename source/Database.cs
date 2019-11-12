@@ -249,6 +249,12 @@ namespace VK_Unicorn
                 return Type.IsOneOf(ActivityType.LIKE, ActivityType.COMMENT_LIKE);
             }
 
+            // Эта активность - запись или комментарий?
+            public bool IsPostOrComment()
+            {
+                return Type.IsOneOf(ActivityType.POST, ActivityType.COMMENT);
+            }
+
             // Возвращает клон активности
             public UserActivity ShallowCopy()
             {
