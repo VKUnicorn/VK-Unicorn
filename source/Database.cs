@@ -280,6 +280,9 @@ namespace VK_Unicorn
             {
                 Activity = activity;
 
+                // Конвертируем время в локальное
+                Activity.WhenHappened = Activity.WhenHappened.ToLocalTime();
+
                 // Заполняем дополнительные поля
                 Instance.ForDatabaseUnlocked((db) =>
                 {
@@ -790,6 +793,17 @@ namespace VK_Unicorn
             });
 
             return result;
+        }
+
+        /// <summary>
+        /// Удаляет все активности пользователя
+        /// </summary>
+        public void DeleteAllUserActivities(long userId)
+        {
+            ForDatabaseLocked((db) =>
+            {
+                db.Execute("DELETE FROM " + typeof(UserActivity).Name + " WHERE UserId = ?", userId);
+            });
         }
     }
 }
