@@ -499,29 +499,22 @@ namespace VK_Unicorn
         void ForDatabaseLocked(Callback<SQLiteConnection> callback)
         {
             var db = GetConnection();
-            if (db != null)
+            db.RunInTransaction(() =>
             {
-                db.RunInTransaction(() =>
+                try
                 {
-                    try
-                    {
-                        callback(db);
-                    }
-                    catch (Exception ex)
-                    {
-                        Utils.Log("во время блокирующего обращения к базе была поймана ошибка: " + ex.Message, LogLevel.ERROR);
-                    }
-                });
-            }
+                    callback(db);
+                }
+                catch (Exception ex)
+                {
+                    Utils.Log("во время блокирующего обращения к базе была поймана ошибка: " + ex.Message, LogLevel.ERROR);
+                }
+            });
         }
 
         void ForDatabaseUnlocked(Callback<SQLiteConnection> callback)
         {
-            var db = GetConnection();
-            if (db != null)
-            {
-                callback(db);
-            }
+            callback(GetConnection());
         }
 
         SQLiteConnection GetConnection()

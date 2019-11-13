@@ -285,53 +285,50 @@ namespace VK_Unicorn
                     if (groupInfoAsResponse != null)
                     {
                         var groupInfo = (VkNet.Model.Group)groupInfoAsResponse;
-                        if (groupInfo != null)
+                        Utils.Log("Статус участия в сообществе: " + groupInfo.MemberStatus, LogLevel.NOTIFY);
+
+                        // Обновляем данные о закрытости и членстве в сообществе
+                        group.IsClosed = groupInfo.IsClosed.HasValue ? groupInfo.IsClosed == VkNet.Enums.GroupPublicity.Closed : group.IsClosed;
+                        group.IsMember = groupInfo.IsMember.GetValueOrDefault(group.IsMember);
+
+                        // Обновляем новую информацию о сообществе в базе данных
+                        Database.Instance.InsertOrReplace(group);
+
+                        // Всё ещё закрытое сообщество и не вступили?
+                        if (group.IsWantToJoin())
                         {
-                            Utils.Log("Статус участия в сообществе: " + groupInfo.MemberStatus, LogLevel.NOTIFY);
-
-                            // Обновляем данные о закрытости и членстве в сообществе
-                            group.IsClosed = groupInfo.IsClosed.HasValue ? groupInfo.IsClosed == VkNet.Enums.GroupPublicity.Closed : group.IsClosed;
-                            group.IsMember = groupInfo.IsMember.GetValueOrDefault(group.IsMember);
-
-                            // Обновляем новую информацию о сообществе в базе данных
-                            Database.Instance.InsertOrReplace(group);
-
-                            // Всё ещё закрытое сообщество и не вступили?
-                            if (group.IsWantToJoin())
+                            switch (groupInfo.MemberStatus)
                             {
-                                switch (groupInfo.MemberStatus)
-                                {
-                                    case VkNet.Enums.MemberStatus.SendRequest:
-                                        // За прошлые пять минут заявку всё ещё не приняли. Похоже заявки принимает человек, а не бот
-                                        Utils.Log("Заявка на вступление в сообщество " + group.Name + " была уже отправлена, но ещё не принята. Ждём значительно дольше", LogLevel.NOTIFY);
+                                case VkNet.Enums.MemberStatus.SendRequest:
+                                    // За прошлые пять минут заявку всё ещё не приняли. Похоже заявки принимает человек, а не бот
+                                    Utils.Log("Заявка на вступление в сообщество " + group.Name + " была уже отправлена, но ещё не принята. Ждём значительно дольше", LogLevel.NOTIFY);
 
-                                        // Ждём значительно дольше прежде чем проверять это сообщество снова
-                                        group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_NOT_ACCEPTED);
-                                        break;
+                                    // Ждём значительно дольше прежде чем проверять это сообщество снова
+                                    group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_NOT_ACCEPTED);
+                                    break;
 
-                                    case VkNet.Enums.MemberStatus.Rejected:
-                                        // Заявку на вступление отклонили? Удаляем сообщество из списка для оработки
-                                        Utils.Log("Заявка на вступление в сообщество " + group.Name + " " + group.GetURL() + " была отклонена. Удаляем сообщество", LogLevel.WARNING);
+                                case VkNet.Enums.MemberStatus.Rejected:
+                                    // Заявку на вступление отклонили? Удаляем сообщество из списка для оработки
+                                    Utils.Log("Заявка на вступление в сообщество " + group.Name + " " + group.GetURL() + " была отклонена. Удаляем сообщество", LogLevel.WARNING);
 
-                                        Database.Instance.Delete(group);
-                                        break;
+                                    Database.Instance.Delete(group);
+                                    break;
 
-                                    default:
-                                        Utils.Log("Отправляем заявку на вступление в " + group.Name, LogLevel.GENERAL);
+                                default:
+                                    Utils.Log("Отправляем заявку на вступление в " + group.Name, LogLevel.GENERAL);
 
-                                        // Добавляем таймаут в пять минут для взаимодействия с сообществом
-                                        // обычно за это время бот автоматически принимает заявку на вступление
-                                        group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_SENT);
+                                    // Добавляем таймаут в пять минут для взаимодействия с сообществом
+                                    // обычно за это время бот автоматически принимает заявку на вступление
+                                    group.SetInteractTimeout(Timeouts.AFTER_GROUP_JOIN_REQUEST_SENT);
 
-                                        // Отправляем заявку на вступление
-                                        var result = await api.Groups.JoinAsync(group.Id);
-                                        break;
-                                }
+                                    // Отправляем заявку на вступление
+                                    var result = await api.Groups.JoinAsync(group.Id);
+                                    break;
                             }
-                            else
-                            {
-                                Utils.Log("Присоединяться не нужно", LogLevel.NOTIFY);
-                            }
+                        }
+                        else
+                        {
+                            Utils.Log("Присоединяться не нужно", LogLevel.NOTIFY);
                         }
                     }
                 }
@@ -623,27 +620,24 @@ namespace VK_Unicorn
                         if (response != null)
                         {
                             var likesAsResponseList = ((VkResponseArray)response).ToList();
-                            if (likesAsResponseList != null)
+                            foreach (var likesAsResponse in likesAsResponseList)
                             {
-                                foreach (var likesAsResponse in likesAsResponseList)
+                                var postId = (long)likesAsResponse["item_id"];
+                                var userIds = likesAsResponse.ToVkCollectionOf<long>(_ => _);
+
+                                // Добавляем активности от этих пользователей
+                                foreach (var userId in userIds)
                                 {
-                                    var postId = (long)likesAsResponse["item_id"];
-                                    var userIds = likesAsResponse.ToVkCollectionOf<long>(_ => _);
-
-                                    // Добавляем активности от этих пользователей
-                                    foreach (var userId in userIds)
+                                    // Ищем активность по этому Id записи
+                                    var activity = chunkOfActivities.Find(_ => _.PostId == postId);
+                                    if (activity != null)
                                     {
-                                        // Ищем активность по этому Id записи
-                                        var activity = chunkOfActivities.Find(_ => _.PostId == postId);
-                                        if (activity != null)
-                                        {
-                                            // Активность найдена, клонируем её и заполняем userId поле
-                                            var activityClone = activity.ShallowCopy();
-                                            activityClone.UserId = userId;
+                                        // Активность найдена, клонируем её и заполняем userId поле
+                                        var activityClone = activity.ShallowCopy();
+                                        activityClone.UserId = userId;
 
-                                            // Добавляем её к дальнейшей обработке
-                                            userActivitiesToProcess.Add(activityClone);
-                                        }
+                                        // Добавляем её к дальнейшей обработке
+                                        userActivitiesToProcess.Add(activityClone);
                                     }
                                 }
                             }
@@ -704,21 +698,18 @@ namespace VK_Unicorn
                         if (response != null)
                         {
                             var usersAsResponseList = ((VkResponseArray)response).ToList();
-                            if (usersAsResponseList != null)
+                            foreach (var userAsResponse in usersAsResponseList)
                             {
-                                foreach (var userAsResponse in usersAsResponseList)
+                                var user = (User)userAsResponse;
+
+                                // Заполняем контакты пользователя
+                                user.Contacts = new Contacts()
                                 {
-                                    var user = (User)userAsResponse;
+                                    MobilePhone = userAsResponse.ContainsKey("mobile_phone") ? userAsResponse["mobile_phone"] : "",
+                                    HomePhone = userAsResponse.ContainsKey("home_phone") ? userAsResponse["home_phone"] : "",
+                                };
 
-                                    // Заполняем контакты пользователя
-                                    user.Contacts = new Contacts()
-                                    {
-                                        MobilePhone = userAsResponse.ContainsKey("mobile_phone") ? userAsResponse["mobile_phone"] : "",
-                                        HomePhone = userAsResponse.ContainsKey("home_phone") ? userAsResponse["home_phone"] : "",
-                                    };
-
-                                    usersInfo.Add(user);
-                                }
+                                usersInfo.Add(user);
                             }
                         }
                     }
@@ -958,6 +949,9 @@ namespace VK_Unicorn
 
                 // Устанавливаем время ожидания перед следующим сканированием сообщества
                 group.SetInteractTimeout(Timeouts.AFTER_GROUP_WAS_SCANNED);
+
+                // Сообщество просканировано
+                Utils.Log("Сообщество " + group.Name + " успешно просканировано", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
