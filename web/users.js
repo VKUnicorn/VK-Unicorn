@@ -48,6 +48,10 @@ function loadUsers(favorites) {
                     </div>
                 </small>
             ` : '';
+            let ageWarning = '';
+            if (isUnderage) {
+                ageWarning = isNotInConsentAge ? getNotInConsentAgeWarning() : getUnderageWarning();
+            }
             let cardUnderlayClass = '';
             if (isUserNew) {
                 cardUnderlayClass = 'bg-new-user';
@@ -95,7 +99,7 @@ function loadUsers(favorites) {
             `).appendTo($('#users-new-' + isUserNew));
 
             // Основной тултип с недавними действиями пользователя
-            function fillUserRecentActionsCard() {
+            function fillUserActionsCard(paramPosts, paramLikes) {
                 function fillStatus() {
                     if (user.Status) {
                         let status = user.Status.trim();
@@ -176,8 +180,8 @@ function loadUsers(favorites) {
                     }
                 };
 
-                function fillRecentPosts() {
-                    if (recentPosts.length > 0) {
+                function fillPosts() {
+                    if (paramPosts.length > 0) {
                         if (result != '') {
                             result += '<div class="mt-2"></div>';
                         }
@@ -188,16 +192,16 @@ function loadUsers(favorites) {
 
                         result += `<div class="mx-2">`
                         let index = 0;
-                        for (let recentPost of recentPosts) {
+                        for (let paramPost of paramPosts) {
                             result += `
                                 ${index > 0 ? '<hr class="mx-0 my-1">' : ''}
                                 <div class="block-with-text-4">
-                                    ${recentPost.Post.Content}
+                                    ${paramPost.Post.Content}
                                 </div>
                                 <span class="text-muted block-with-text-1 opaque-5">
-                                    <i class="lni-popup mr-1 text-dark"></i>
-                                    <a href="${recentPost.URL}" target="_blank" class="text-dark">
-                                        ${isoTimeToLocalDeltaAsString(recentPost.Activity.WhenHappened)} назад в сообществе "${recentPost.Group.Name}"
+                                    <i class="lni-popup mr-0 text-dark"></i>
+                                    <a href="${paramPost.URL}" target="_blank" class="text-dark">
+                                        ${isoTimeToLocalDeltaAsString(paramPost.Activity.WhenHappened)} назад в сообществе "${paramPost.Group.Name}"
                                     </a>
                                 </span>
                             `;
@@ -208,8 +212,8 @@ function loadUsers(favorites) {
                     }
                 };
 
-                function fillRecentLikes() {
-                    if (recentLikes.length > 0) {
+                function fillLikes() {
+                    if (paramLikes.length > 0) {
                         if (result != '') {
                             result += '<div class="mt-2"></div>';
                         }
@@ -220,16 +224,16 @@ function loadUsers(favorites) {
 
                         result += `<div class="mx-2">`
                         let index = 0;
-                        for (let recentLike of recentLikes) {
+                        for (let paramLike of paramLikes) {
                             result += `
                                 ${index > 0 ? '<hr class="mx-0 my-1">' : ''}
                                 <div class="block-with-text-4 text-like">
-                                    ${recentLike.Post.Content}
+                                    ${paramLike.Post.Content}
                                 </div>
                                 <span class="text-muted block-with-text-1 opaque-5">
-                                    <i class="lni-heart mr-1 text-like"></i>
-                                    <a href="${recentLike.URL}" target="_blank" class="text-dark">
-                                        ${isoTimeToLocalDeltaAsString(recentLike.Activity.WhenHappened)} назад в сообществе "${recentLike.Group.Name}"
+                                    <i class="lni-heart mr-0"></i>
+                                    <a href="${paramLike.URL}" target="_blank" class="text-dark">
+                                        ${isoTimeToLocalDeltaAsString(paramLike.Activity.WhenHappened)} назад в сообществе "${paramLike.Group.Name}"
                                     </a>
                                 </span>
                             `;
@@ -245,8 +249,8 @@ function loadUsers(favorites) {
                 fillCity();
                 fillSite();
                 fillPhone();
-                fillRecentPosts();
-                fillRecentLikes();
+                fillPosts();
+                fillLikes();
                 return result;
             }
 
@@ -259,7 +263,7 @@ function loadUsers(favorites) {
                 html: true,
                 offset: userShortInfoPopoverOffset,
                 delay: { "show": 50, "hide": 25 },
-                content: fillUserRecentActionsCard()
+                content: fillUserActionsCard(recentPosts, recentLikes)
             });
 
             // Тултипы в зависимости от контекста
@@ -280,9 +284,7 @@ function loadUsers(favorites) {
                     placement: 'top',
                     html: true,
                     delay: { "show": 450, "hide": 100 },
-                    content:
-                        isNotInConsentAge ? 'Пользователь не достиг возраста сексуального согласия<br><font color=red>УК РФ Статья 134. Половое сношение и иные действия сексуального характера с лицом, не достигшим шестнадцатилетнего возраста<br>УК РФ Статья 135. Развратные действия</font>'
-                                          : 'Пользователь не достиг совершеннолетия<br><font color=red>УК РФ Статья 240.1. Получение сексуальных услуг несовершеннолетнего</font>'
+                    content: isNotInConsentAge ? getNotInConsentAgeWarning() : getUnderageWarning()
                 });
             }
 
@@ -366,29 +368,41 @@ function loadUsers(favorites) {
             userCard.find('#user').click(function(e) {
                 e.preventDefault();
 
-                // Открываем модальное окно с подробной информацией о пользователе
-                let userFullInfoModal = $('#user-full-info-modal');
-                let userFullInfoModalContent = userFullInfoModal.find("#user-full-info");
+                $.getJSON('user_activities', {
+                    id: user.Id
+                }, function(result) {
+                    let allPosts = result[0].Posts;
+                    let allLikes = result[0].Likes;
 
-                userFullInfoModalContent.empty();
+                    // Подготавливаем модальное окно с подробной информацией о пользователе
+                    let userFullInfoModal = $('#user-full-info-modal');
+                    let userFullInfoModalContent = userFullInfoModal.find("#user-full-info");
 
-                // Заполняем информацию с фотографией и общими данными
-                userFullInfoModalContent.append(`
-                    <div class="row">
-                        <div class="col-3 pr-0">
-                            <a href="${userExtraInfo.URL}" target="_blank">
-                                <img src="${user.PhotoURL}" class="user-full-info-photo">
-                            </a>
+                    userFullInfoModalContent.empty();
+
+                    // Заполняем информацию с фотографией и общими данными
+                    userFullInfoModalContent.append(`
+                        <div class="row">
+                            <div class="col-3 pr-0">
+                                <a href="${userExtraInfo.URL}" target="_blank">
+                                    <img src="${user.PhotoURL}" class="user-full-info-photo">
+                                </a>
+                            </div>
+                            <div class="col-9 pl-1">
+                                <h5 class="mx-2 mb-1 mt-0 block-with-text-1">${fullName}${ageAsString != '' ? (', ' + ageAsString) : ''}</h5>
+                                <hr class="ml-2 my-2">
+                                <div class="mx-2">${ageWarning}</div>
+                                ${ageWarning != '' ? '<hr class="ml-2 my-2">' : ''}
+                                ${fillUserActionsCard(allPosts, allLikes)}
+                            </div>
                         </div>
-                        <div class="col-9 pl-1" id="all-actions">
-                            <h5 class="mx-2 mb-1 mt-0 block-with-text-1">${fullName}${ageAsString != '' ? (', ' + ageAsString) : ''}</h5>
-                            <hr class="ml-2 my-2">
-                            ${fillUserRecentActionsCard()}
-                        </div>
-                    </div>
-                `);
+                    `);
 
-                userFullInfoModal.modal();
+                    // Открываем модальное окно
+                    userFullInfoModal.modal();
+                }).fail(function(result) {
+                    $.hulla.send("Ошибка при загрузке полной информации о пользователе. Главный модуль программы не запущен или пользователь был удалён", "danger");
+                })
             });
 
             // Увеличиваем счётчики
@@ -457,7 +471,7 @@ function loadUsers(favorites) {
             }
         }
 
-        // Добавляем модальное окно с подробной информацией о пользователе
+        // Добавляем пока скрытое модальное окно с подробной информацией о пользователе
         $(`
             <div class="modal fade" id="user-full-info-modal" tabindex="-1">
                 <div class="modal-dialog modal-xl">

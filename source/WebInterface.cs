@@ -344,6 +344,8 @@ namespace VK_Unicorn
                                     { "Posts", postActivities },
                                     { "Likes", likeActivities },
                                 });
+
+                                handled = true;
                             }
                             break;
                     }

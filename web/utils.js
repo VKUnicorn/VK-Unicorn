@@ -25,6 +25,7 @@ function oneFewMany(number, one, few, many, appendNumber)
     return result + many;
 }
 
+// Возвращает время переведённое в год как число
 function isoTimeToAge(isoTimeAsString) {
     var isoTime = Date.parse(isoTimeAsString);
     if (isoTime < 0)
@@ -44,6 +45,7 @@ function isoTimeToAge(isoTimeAsString) {
     return age;
 }
 
+// Возвращает разницу во времени с датой как число
 function isoTimeToLocalDaysDelta(isoTimeAsString) {
     if (isoTimeAsString === undefined) {
         return -1;
@@ -61,6 +63,7 @@ function isoTimeToLocalDaysDelta(isoTimeAsString) {
     return differenceInTime / (1000 * 3600 * 24);
 }
 
+// Возвращает разницу во времени с датой как текст
 function isoTimeToLocalDeltaAsString(isoTimeAsString) {
     if (isoTimeAsString === undefined) {
         return 'никогда';
@@ -105,6 +108,38 @@ function updateBadgeRelative(category, value) {
     } else {
         categoryElement.hide();
     }
+}
+
+// Возвращает предупреждение о том, что пользователь ещё не достиг возраста сексуального согласия
+function getNotInConsentAgeWarning() {
+    return `
+        Пользователь не достиг возраста сексуального согласия
+        <br>
+        <a href="https://ru.wikisource.org/wiki/Уголовный_кодекс_Российской_Федерации/Глава_18#Статья_134" target="_blank">
+            <font color=red>
+                УК РФ Статья 134. Половое сношение и иные действия сексуального характера с лицом, не достигшим шестнадцатилетнего возраста
+            </font>
+        </a>
+        <br>
+        <a href="https://ru.wikisource.org/wiki/Уголовный_кодекс_Российской_Федерации/Глава_18#Статья_135" target="_blank">
+            <font color=red>
+                УК РФ Статья 135. Развратные действия
+            </font>
+        </a>
+    `;
+}
+
+// Возвращает предупреждение о том, что пользователь ещё не достиг совершеннолетия
+function getUnderageWarning() {
+    return `
+        Пользователь не достиг совершеннолетия
+        <br>
+        <a href="https://ru.wikisource.org/wiki/Уголовный_кодекс_Российской_Федерации/Глава_25#Статья_240.1" target="_blank">
+            <font color=red>
+                УК РФ Статья 240.1. Получение сексуальных услуг несовершеннолетнего
+            </font>
+        </a>
+    `;
 }
 
 // Функция для добавления кнопке срабатывания по зажатию
