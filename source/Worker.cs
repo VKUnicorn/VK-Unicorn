@@ -583,16 +583,11 @@ namespace VK_Unicorn
                     }
                 }
 
-                // Нужно получить какую-то информацию о лайках?
-                if (activitiesToReceiveLikesByExecute.Count > 0)
-                {
-                    // Оповещаем об этом в лог
-                    Utils.Log("Получаем информацию о лайках через упакованные execute запросы. Количество для обработки: " + activitiesToReceiveLikesByExecute.Count, LogLevel.GENERAL);
-                }
-
                 // Получаем лайки к активностям через упакованные execute запросы
                 while (activitiesToReceiveLikesByExecute.Count > 0)
                 {
+                    Utils.Log("Получаем информацию о лайках. Осталось: " + activitiesToReceiveLikesByExecute.Count, LogLevel.GENERAL);
+
                     // Берём из очереди максимальное количество активностей, которое мы можем просканировать за один запрос
                     var chunkOfActivities = activitiesToReceiveLikesByExecute.Take(VkLimits.EXECUTE_VK_API_METHODS_COUNT).ToList();
 
@@ -665,17 +660,12 @@ namespace VK_Unicorn
                 // Удаляем тех пользователей, которых мы уже просканировали
                 userIdsToReceiveInfo.RemoveAll(_ => Database.Instance.IsAlreadyExists<Database.ScannedUser>(_));
 
-                // Нужно получить какую-то информацию о пользователях?
-                if (userIdsToReceiveInfo.Count > 0)
-                {
-                    // Оповещаем об этом в лог
-                    Utils.Log("Получаем информацию о пользователях. Количество для обработки: " + userIdsToReceiveInfo.Count, LogLevel.GENERAL);
-                }
-
                 // Загружаем информацию о нужных пользователях
                 var usersInfo = new List<User>();
                 while (userIdsToReceiveInfo.Count > 0)
                 {
+                    Utils.Log("Получаем информацию о пользователях. Осталось: " + userIdsToReceiveInfo.Count, LogLevel.GENERAL);
+
                     // Берём максимальное количество Id, которое мы можем просканировать за один запрос
                     var chunkOfUserIdsToReceiveInfo = userIdsToReceiveInfo.Take(VkLimits.USERS_GET_USER_IDS).ToList();
 

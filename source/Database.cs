@@ -228,7 +228,6 @@ namespace VK_Unicorn
             public ActivityType Type { get; set; }
 
             // Id пользователя, который что-то сделал
-            [PrimaryKey]
             public long UserId { get; set; }
 
             // Id сообщества в которой была запись
