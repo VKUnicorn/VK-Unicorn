@@ -399,6 +399,8 @@ namespace VK_Unicorn
                             // Нужно ли вообще сканировать запись?
                             var needToScanPost = true;
                             var isPostNotSeenBefore = true;
+                            var savedPostContent = string.Empty;
+                            var savedPostAttachments = string.Empty;
 
                             // Ищем запись в нашей базе
                             Database.Instance.For<Database.Post>(Database.Post.MakeId(group.Id, post.Id.GetValueOrDefault()), (scannedPost) =>
@@ -406,6 +408,11 @@ namespace VK_Unicorn
                                 // Уже видели эту запись когда-то
                                 isLastPostNotSeenBefore = false;
                                 isPostNotSeenBefore = false;
+
+                                // Сохраняем содержимое и вложения записи, чтобы потом их не перезатереть.
+                                // Нас интересует первоначальный вариант, до любых редактирований или удалений
+                                savedPostContent = scannedPost.Content;
+                                savedPostAttachments = scannedPost.Attachments;
 
                                 // Нужно сканировать запись повторно?
                                 needToScanPost = (post.Comments.Count > scannedPost.CommentsCount) || (post.Likes.Count > scannedPost.LikesCount);
@@ -532,12 +539,19 @@ namespace VK_Unicorn
                                             // Нужно ли вообще сканировать комментарий?
                                             var needToScanComment = true;
                                             var isCommentNotSeenBefore = true;
+                                            var savedCommentContent = string.Empty;
+                                            var savedCommentAttachments = string.Empty;
 
                                             // Ищем комментарий в нашей базе
                                             Database.Instance.For<Database.Comment>(Database.Comment.MakeId(group.Id, post.Id.GetValueOrDefault(), comment.Id), (scannedComment) =>
                                             {
                                                 // Уже видели этот комментарий когда-то
                                                 isCommentNotSeenBefore = false;
+
+                                                // Сохраняем содержимое и вложения записи, чтобы потом их не перезатереть.
+                                                // Нас интересует первоначальный вариант, до любых редактирований или удалений
+                                                savedCommentContent = scannedComment.Content;
+                                                savedCommentAttachments = scannedComment.Attachments;
 
                                                 // Нужно сканировать комментарий повторно?
                                                 needToScanComment = (comment.Likes.Count > scannedComment.LikesCount);
@@ -594,8 +608,10 @@ namespace VK_Unicorn
                                                     PostId = post.Id.GetValueOrDefault(),
                                                     СommentId = comment.Id,
                                                     LikesCount = comment.Likes.Count,
-                                                    Content = comment.Text,
-                                                    Attachments = JsonConvert.SerializeObject(commentPhotoAttachments),
+                                                    // Не сохраняем какое-то новое содержимое или вложения т.к. комментарий могли отредактировать
+                                                    // в худшую сторону - удалить что-то или зацензурить
+                                                    Content = savedCommentContent != string.Empty ? savedCommentContent : comment.Text,
+                                                    Attachments = savedCommentAttachments != string.Empty ? savedCommentAttachments : JsonConvert.SerializeObject(commentPhotoAttachments),
                                                 });
 
                                                 // Сканируем лайки к комментарию
@@ -651,8 +667,10 @@ namespace VK_Unicorn
                                     PostId = post.Id.GetValueOrDefault(),
                                     LikesCount = post.Likes.Count,
                                     CommentsCount = post.Comments.Count,
-                                    Content = post.Text,
-                                    Attachments = JsonConvert.SerializeObject(photoAttachments),
+                                    // Не сохраняем какое-то новое содержимое или вложения т.к. запись могли отредактировать
+                                    // в худшую сторону - удалить что-то или зацензурить
+                                    Content = savedPostContent != string.Empty ? savedPostContent : post.Text,
+                                    Attachments = savedPostAttachments != string.Empty ? savedPostAttachments : JsonConvert.SerializeObject(photoAttachments),
                                 });
                             }
                         }
