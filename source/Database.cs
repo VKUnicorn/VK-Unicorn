@@ -338,6 +338,9 @@ namespace VK_Unicorn
             // Что было в содержимом
             public string Content { get; set; }
 
+            // Прикреплённые вложения в виде JSON строки. Сохраняются только фотографии в максимальном размере
+            public string Attachments { get; set; }
+
             /// <summary>
             /// Возвращает ссылку на запись
             /// </summary>

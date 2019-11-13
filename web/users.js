@@ -99,7 +99,29 @@ function loadUsers(favorites) {
             `).appendTo($('#users-new-' + isUserNew));
 
             // Основной тултип с недавними действиями пользователя
-            function fillUserActionsCard(paramPosts, paramLikes) {
+            function fillUserActionsCard(paramPosts, paramLikes, isBigMode) {
+                function addAttachmentsFromPost(post) {
+                    let result = '';
+                    let attachments = JSON.parse(post.Attachments);
+                    if (attachments) {
+                        let count = 0;
+                        for (let attachment of attachments) {
+                            result += `
+                                <a href="${attachment}" target="_blank"><img src="${attachment}" class="${isBigMode ? 'attachment-big' : 'attachment'}"></a>
+                            `;
+
+                            ++count;
+
+                            // Максимум пять фотографий
+                            if (count >= 5) {
+                                break;
+                            }
+                        }
+                    }
+
+                    return result;
+                }
+
                 function fillStatus() {
                     if (user.Status) {
                         let status = user.Status.trim();
@@ -198,6 +220,7 @@ function loadUsers(favorites) {
                                 <div class="block-with-text-4">
                                     ${paramPost.Post.Content}
                                 </div>
+                                ${addAttachmentsFromPost(paramPost.Post)}
                                 <span class="text-muted block-with-text-1 opaque-5">
                                     <i class="lni-popup mr-0 text-dark"></i>
                                     <a href="${paramPost.URL}" target="_blank" class="text-dark">
@@ -230,6 +253,7 @@ function loadUsers(favorites) {
                                 <div class="block-with-text-4 text-like">
                                     ${paramLike.Post.Content}
                                 </div>
+                                ${addAttachmentsFromPost(paramLike.Post)}
                                 <span class="text-muted block-with-text-1 opaque-5">
                                     <i class="lni-heart mr-0"></i>
                                     <a href="${paramLike.URL}" target="_blank" class="text-dark">
@@ -263,7 +287,7 @@ function loadUsers(favorites) {
                 html: true,
                 offset: userShortInfoPopoverOffset,
                 delay: { "show": 50, "hide": 25 },
-                content: fillUserActionsCard(recentPosts, recentLikes)
+                content: fillUserActionsCard(recentPosts, recentLikes, false)
             });
 
             // Тултипы в зависимости от контекста
@@ -365,6 +389,8 @@ function loadUsers(favorites) {
                 });
             });
 
+            // Событие клика на карточку пользователя. Если кликаем левой кнопкой мыши - открываем полную инорфмацию.
+            // Если кликаем средней кнопкой, то открываем сразу профиль пользователя в новой вкладке
             userCard.find('#user').click(function(e) {
                 e.preventDefault();
 
@@ -393,7 +419,7 @@ function loadUsers(favorites) {
                                 <hr class="ml-2 my-2">
                                 <div class="mx-2">${ageWarning}</div>
                                 ${ageWarning != '' ? '<hr class="ml-2 my-2">' : ''}
-                                ${fillUserActionsCard(allPosts, allLikes)}
+                                ${fillUserActionsCard(allPosts, allLikes, true)}
                             </div>
                         </div>
                     `);

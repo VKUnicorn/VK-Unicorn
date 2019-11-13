@@ -113,6 +113,22 @@ body {
     box-shadow: 2px 2px 3px #999;
 }
 
+.attachment {
+    object-fit: cover;
+    min-width: 4rem;
+    max-width: 4rem;
+    min-height: 4rem;
+    max-height: 4rem;
+}
+
+.attachment-big {
+    object-fit: cover;
+    min-width: 9rem;
+    max-width: 9rem;
+    min-height: 9rem;
+    max-height: 9rem;
+}
+
 .lni-plus {
     color: white;
 }

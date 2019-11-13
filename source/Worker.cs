@@ -9,6 +9,7 @@ using VkNet.Model;
 using VkNet.Enums.Filters;
 using VkNet.Enums.SafetyEnums;
 using VkNet.Model.RequestParams;
+using Newtonsoft.Json;
 
 namespace VK_Unicorn
 {
@@ -452,10 +453,10 @@ namespace VK_Unicorn
                                         // Мало лайков, сохраняем активность для execute запроса
                                         activitiesToReceiveLikesByExecute.Add(new Database.UserActivity()
                                         {
-                                            // UserId пока нам неизвестен и будет получен в результате execute запроса
                                             Type = Database.UserActivity.ActivityType.LIKE,
-                                            PostId = post.Id.GetValueOrDefault(),
+                                            // UserId пока нам неизвестен и будет получен в результате execute запроса
                                             GroupId = group.Id,
+                                            PostId = post.Id.GetValueOrDefault(),
                                             // Мы не можем узнать время лайка, поэтому будем считать что пользователь
                                             // проявил эту активность во время последнего сканирования, если запись уже
                                             // была просканирована ранее. В другом случае считаем что лайк был поставлен
@@ -489,10 +490,10 @@ namespace VK_Unicorn
                                                     // Добавляем автора лайка для дальнейшей обработки
                                                     userActivitiesToProcess.Add(new Database.UserActivity()
                                                     {
-                                                        UserId = likeUserId,
                                                         Type = Database.UserActivity.ActivityType.LIKE,
-                                                        PostId = post.Id.GetValueOrDefault(),
+                                                        UserId = likeUserId,
                                                         GroupId = group.Id,
+                                                        PostId = post.Id.GetValueOrDefault(),
                                                         // Мы не можем узнать время лайка, поэтому будем считать что пользователь
                                                         // проявил эту активность во время последнего сканирования, если запись уже
                                                         // была просканирована ранее. В другом случае считаем что лайк был поставлен
@@ -524,6 +525,27 @@ namespace VK_Unicorn
                                     // Сканируем лайки к комментариям
                                 }
 
+                                // В записи есть вложения? Сохраняем их
+                                var photoAttachments = new List<string>();
+                                if (post.Attachments != null)
+                                {
+                                    foreach (var attachment in post.Attachments)
+                                    {
+                                        if (attachment.Instance is VkNet.Model.Attachments.Photo)
+                                        {
+                                            var attachmentAsPhoto = attachment.Instance as VkNet.Model.Attachments.Photo;
+                                            if (attachmentAsPhoto.Sizes != null)
+                                            {
+                                                var lastSizePhoto = attachmentAsPhoto.Sizes.Last();
+                                                if (lastSizePhoto != null)
+                                                {
+                                                    photoAttachments.Add(lastSizePhoto.Url.ToString());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
                                 // Запись нужно было просканировать. Сохраняем новую информацию о ней или обновляем старую
                                 Database.Instance.InsertOrReplace(new Database.Post()
                                 {
@@ -533,6 +555,7 @@ namespace VK_Unicorn
                                     LikesCount = post.Likes.Count,
                                     CommentsCount = post.Comments.Count,
                                     Content = post.Text,
+                                    Attachments = JsonConvert.SerializeObject(photoAttachments),
                                 });
                             }
                         }

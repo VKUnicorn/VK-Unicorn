@@ -243,13 +243,12 @@ namespace VK_Unicorn
                                     // Получаем список активностей пользователя за последнее время
                                     var userActivites = Database.Instance.GetAllWhere<Database.UserActivity>(_ => _.UserId == user.Id);
 
-                                    // Удаляем слишком старые активности
-                                    userActivites.RemoveAll(_ => DateTime.Now - _.WhenHappened > Constants.MAX_SCANNING_DEPTH_IN_TIME);
-
                                     // Соcтавляем список недавних записей пользователя
                                     var recentPostActivities = userActivites
                                         // Ищем только записи или комментарии
                                         .Where(_ => _.IsPostOrComment())
+                                        // Недавние
+                                        .Where(_ => DateTime.Now - _.WhenHappened <= Constants.MAX_SCANNING_DEPTH_IN_TIME)
                                         // Сортируем по давности
                                         .OrderByDescending(_ => _.WhenHappened)
                                         // Берём несколько
@@ -262,6 +261,8 @@ namespace VK_Unicorn
                                     var recentLikeActivities = userActivites
                                         // Ищем только лайки
                                         .Where(_ => _.IsLikeToSomething())
+                                        // Недавние
+                                        .Where(_ => DateTime.Now - _.WhenHappened <= Constants.MAX_SCANNING_DEPTH_IN_TIME)
                                         // Сортируем по давности
                                         .OrderByDescending(_ => _.WhenHappened)
                                         // Берём несколько
