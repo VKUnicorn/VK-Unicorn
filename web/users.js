@@ -330,7 +330,7 @@ function loadUsers(favorites) {
                             // Обновляем счётчик в бадже
                             updateBadgeRelative('#users-header-new-' + isUserNew, -1);
 
-                            $.hulla.send("Пользователь \"" + fullName + "\" скрыт", "danger");
+                            $.hulla.send("Пользователь \"" + fullName + "\" скрыт", "success");
                         }
                         else {
                             $.hulla.send("Не удалось скрыть пользователя \"" + fullName + "\"", "danger");
@@ -355,7 +355,7 @@ function loadUsers(favorites) {
                         // Обновляем счётчик в бадже
                         updateBadgeRelative('#users-header-new-' + isUserNew, -1);
 
-                        $.hulla.send("Пользователь \"" + fullName + "\" удалён", "danger");
+                        $.hulla.send("Пользователь \"" + fullName + "\" удалён", "success");
                     }
                     else {
                         $.hulla.send("Не удалось удалить пользователя \"" + fullName + "\"", "danger");
