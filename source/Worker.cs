@@ -701,7 +701,10 @@ namespace VK_Unicorn
                         foreach (var activity in chunkOfActivities)
                         {
                             var isCommentLike = activity.Type == Database.UserActivity.ActivityType.COMMENT_LIKE;
-                            listOfAPICalls.Add("{\"item_id\":" + (isCommentLike ? activity.CommentId : activity.PostId) + "}+API.likes.getList({\"type\":\"" + (isCommentLike ? "comment" : "post") + "\",\"owner_id\":" + group.GetNegativeIdForAPI() + ",\"item_id\":" + (isCommentLike ? activity.CommentId : activity.PostId) + "})");
+                            var type = isCommentLike ? "comment" : "post";
+                            var itemId = isCommentLike ? activity.CommentId : activity.PostId;
+
+                            listOfAPICalls.Add("{\"item_id\":" + itemId + "}+API.likes.getList({\"type\":\"" + type + "\",\"owner_id\":" + group.GetNegativeIdForAPI() + ",\"item_id\":" + itemId + "})");
                         }
 
                         // Вызываем execute запрос
@@ -717,19 +720,20 @@ namespace VK_Unicorn
                             var likesAsResponseList = ((VkResponseArray)response).ToList();
                             foreach (var likesAsResponse in likesAsResponseList)
                             {
-                                var postId = (long)likesAsResponse["item_id"];
+                                var itemId = (long)likesAsResponse["item_id"];
                                 var userIds = likesAsResponse.ToVkCollectionOf<long>(_ => _);
 
                                 // Добавляем активности от этих пользователей
                                 foreach (var userId in userIds)
                                 {
-                                    // Ищем активность по этому Id записи. Сначала ищем как комментарий
-                                    var activity = chunkOfActivities.Find(_ => _.CommentId == postId);
+                                    // Ищем активность по этому itemId
+                                    // Сначала ищем как комментарий
+                                    var activity = chunkOfActivities.Find(_ => _.CommentId == itemId);
 
-                                    // Если не нашли, то как пост
+                                    // Если не нашли, то как запись
                                     if (activity == null)
                                     {
-                                        activity = chunkOfActivities.Find(_ => _.PostId == postId);
+                                        activity = chunkOfActivities.Find(_ => _.PostId == itemId);
                                     }
 
                                     if (activity != null)
@@ -841,14 +845,6 @@ namespace VK_Unicorn
                     // Берём первую же активность из списка для обработки
                     var userActivityToProcess = userActivitiesToProcess.First();
 
-                    // DEBUG Выводим отладочную информацию об активности
-                    /*
-                    Utils.Log("Активность: " + userActivityToProcess.Type, LogLevel.ERROR);
-                    Utils.Log("    userId: " + Constants.VK_WEB_PAGE + "id" + userActivityToProcess.UserId, LogLevel.NOTIFY);
-                    Utils.Log("    postId: " + userActivityToProcess.PostId, LogLevel.NOTIFY);
-                    Utils.Log("    whenHappened: " + userActivityToProcess.WhenHappened, LogLevel.NOTIFY);
-                    */
-
                     // Нужно ли будет сохранить данные об активности?
                     var needToSaveActivity = false;
 
@@ -958,19 +954,6 @@ namespace VK_Unicorn
                             var mobilePhone = userInfo.Contacts != null ? userInfo.Contacts.MobilePhone : "";
                             var homePhone = userInfo.Contacts != null ? userInfo.Contacts.HomePhone : "";
 
-                            /*
-                            Utils.Log(" DEBUG userActivityToProcess.UserId " + userActivityToProcess.UserId, LogLevel.NOTIFY);
-                            Utils.Log(" DEBUG userInfo.FirstName " + userInfo.FirstName, LogLevel.NOTIFY);
-                            Utils.Log(" DEBUG userInfo.LastName " + userInfo.LastName, LogLevel.NOTIFY);
-                            Utils.Log(" DEBUG birthDateSet " + birthDateSet, LogLevel.NOTIFY);
-                            Utils.Log(" DEBUG CityId " + cityId, LogLevel.NOTIFY);
-                            Utils.Log(" DEBUG CityName " + cityName, LogLevel.NOTIFY);
-                            Utils.Log(" DEBUG userInfo.Status " + userInfo.Status, LogLevel.NOTIFY);
-                            Utils.Log(" DEBUG userInfo.Contacts.MobilePhone " + mobilePhone + " isnull" + (userInfo.Contacts == null), LogLevel.NOTIFY);
-                            Utils.Log(" DEBUG userInfo.Contacts.HomePhone " + homePhone + " isnull" + (userInfo.Contacts == null), LogLevel.NOTIFY);
-                            Utils.Log(" DEBUG userInfo.PhotoMaxOrig.ToString() " + userInfo.PhotoMaxOrig.ToString(), LogLevel.NOTIFY);
-                            */
-
                             // Всё нормально, все условия и тесты пройдены, сохраняем пользователя
                             Database.Instance.InsertOrReplace(new Database.User()
                             {
@@ -998,9 +981,6 @@ namespace VK_Unicorn
                             needToSaveActivity = true;
                         });
                     }
-
-                    // DEBUG
-                    //Utils.Log("    needToSave: " + needToSaveActivity, LogLevel.WARNING);
 
                     // Нужно ли сохранить данные о активности?
                     if (needToSaveActivity)

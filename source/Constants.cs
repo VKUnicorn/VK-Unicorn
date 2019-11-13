@@ -15,7 +15,7 @@ namespace VK_Unicorn
 
         public const string DATABASE_FILENAME = "database.db";
 
-        public const string DEFAULT_STOP_WORDS = "выберу;лайкам;репост;прогноз;ставк;http;.com;.ru;фотограф;свинг;подработ;проездом;архив;видео;порно;прон;вирт;бесплатно;куни";
+        public const string DEFAULT_STOP_WORDS = "выберу;лайкам;репост;прогноз;ставк;http;.com;.ru;фотограф;свинг;подработ;проездом;архив;видео;порно;прон;вирт;бесплатно";
         public const char STOP_WORDS_SEPARATOR = ';';
 
         /// <summary>

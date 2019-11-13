@@ -28,7 +28,7 @@ namespace VK_Unicorn
     {
         public static void Log(string text, LogLevel logLevel = LogLevel.GENERAL)
         {
-            Color? color = null;
+            var color = Color.Black;
             var prefix = string.Empty;
 
             switch (logLevel)

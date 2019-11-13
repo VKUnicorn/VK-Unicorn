@@ -62,6 +62,7 @@
             this.CityIdLinkLabel = new System.Windows.Forms.LinkLabel();
             this.CityIdLabel = new System.Windows.Forms.Label();
             this.CityIdNumericUpDown = new System.Windows.Forms.NumericUpDown();
+            this.PasswordWarningLabel = new System.Windows.Forms.Label();
             this.ApplicationIdGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ApplicationIdUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.CopyApplicationIdPictureBox)).BeginInit();
@@ -221,6 +222,7 @@
             // 
             this.AccountCredentialsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.AccountCredentialsGroupBox.Controls.Add(this.PasswordWarningLabel);
             this.AccountCredentialsGroupBox.Controls.Add(this.PasswordLabel);
             this.AccountCredentialsGroupBox.Controls.Add(this.PasswordTextBox);
             this.AccountCredentialsGroupBox.Controls.Add(this.LoginLabel);
@@ -487,6 +489,16 @@
             0,
             0});
             // 
+            // PasswordWarningLabel
+            // 
+            this.PasswordWarningLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.PasswordWarningLabel.ForeColor = System.Drawing.Color.Red;
+            this.PasswordWarningLabel.Location = new System.Drawing.Point(474, 67);
+            this.PasswordWarningLabel.Name = "PasswordWarningLabel";
+            this.PasswordWarningLabel.Size = new System.Drawing.Size(196, 35);
+            this.PasswordWarningLabel.TabIndex = 12;
+            this.PasswordWarningLabel.Text = "будет сохранён в открытом виде в";
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -557,5 +569,6 @@
         private System.Windows.Forms.RadioButton SearchAllRadioButton;
         private System.Windows.Forms.Label CityIdHelperLabel5;
         private System.Windows.Forms.NumericUpDown ApplicationIdUpDown;
+        private System.Windows.Forms.Label PasswordWarningLabel;
     }
 }

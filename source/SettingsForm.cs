@@ -16,6 +16,8 @@ namespace VK_Unicorn
 
         void SettingsForm_Shown(object sender, EventArgs e)
         {
+            PasswordWarningLabel.Text += " " + Constants.DATABASE_FILENAME;
+
             // Значения по умолчанию для некоторых полей
             StopWordsTextBox.Text = Constants.DEFAULT_STOP_WORDS;
             SearchByCityRadioButton.Checked = true;
