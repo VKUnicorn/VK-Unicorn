@@ -393,6 +393,8 @@ namespace VK_Unicorn
                         {
                             // Ограничиваем количество лайков которые "видны" нам в дальнейшем
                             post.Likes.Count = Math.Min(post.Likes.Count, Constants.MAX_LIKES_TO_SCAN);
+                            // Ограничиваем количество комментариев которые "видны" нам в дальнейшем
+                            post.Comments.Count = Math.Min(post.Comments.Count, Constants.MAX_COMMENTS_TO_SCAN);
 
                             // Нужно ли вообще сканировать запись?
                             var needToScanPost = true;
@@ -407,14 +409,6 @@ namespace VK_Unicorn
 
                                 // Нужно сканировать запись повторно?
                                 needToScanPost = (post.Comments.Count > scannedPost.CommentsCount) || (post.Likes.Count > scannedPost.LikesCount);
-
-                                // DEBUG
-                                if (needToScanPost)
-                                {
-                                    Utils.Log("DEBUG нужно сканировать запись заново", LogLevel.ERROR);
-                                    Utils.Log("DEBUG       к " + post.Comments.Count + " >= " + scannedPost.CommentsCount, LogLevel.ERROR);
-                                    Utils.Log("DEBUG       л " + post.Likes.Count + " >= " + scannedPost.LikesCount, LogLevel.ERROR);
-                                }
                             });
 
                             if (needToScanPost)
@@ -518,11 +512,117 @@ namespace VK_Unicorn
                                 // Сканируем комментарии
                                 if (post.Comments.Count > 0)
                                 {
+                                    try
+                                    {
+                                        // Отправляем запрос к API ВКонтакте
+                                        var commentsResult = await api.Wall.GetCommentsAsync(new WallGetCommentsParams()
+                                        {
+                                            OwnerId = group.GetNegativeIdForAPI(),
+                                            PostId = post.Id.GetValueOrDefault(),
+                                            NeedLikes = true,
+                                            Count = VkLimits.WALL_GET_COMMENTS_COUNT,
+                                        });
+                                        await WaitMinimumTimeout();
 
-                                    // Сканируем лайки к комментариям
+                                        foreach (var comment in commentsResult.Items)
+                                        {
+                                            // Ограничиваем количество лайков которые "видны" нам в дальнейшем
+                                            comment.Likes.Count = Math.Min(comment.Likes.Count, Constants.MAX_COMMENT_LIKES_TO_SCAN);
+
+                                            // Нужно ли вообще сканировать комментарий?
+                                            var needToScanComment = true;
+                                            var isCommentNotSeenBefore = true;
+
+                                            // Ищем комментарий в нашей базе
+                                            Database.Instance.For<Database.Comment>(Database.Comment.MakeId(group.Id, post.Id.GetValueOrDefault(), comment.Id), (scannedComment) =>
+                                            {
+                                                // Уже видели этот комментарий когда-то
+                                                isCommentNotSeenBefore = false;
+
+                                                // Нужно сканировать комментарий повторно?
+                                                needToScanComment = (comment.Likes.Count > scannedComment.LikesCount);
+                                            });
+
+                                            // Комментарий нужно было просканировать. Сохраняем новую информацию о нём или обновляем старую
+                                            if (needToScanComment)
+                                            {
+                                                // Добавляем автора комментария для дальнейшей обработки
+                                                var commentAuthorId = comment.FromId.GetValueOrDefault();
+                                                if (Utils.IsProfileIdNotGroupId(commentAuthorId))
+                                                {
+                                                    // Не видели этот комментарий раньше?
+                                                    if (isCommentNotSeenBefore)
+                                                    {
+                                                        userActivitiesToProcess.Add(new Database.UserActivity()
+                                                        {
+                                                            Type = Database.UserActivity.ActivityType.COMMENT,
+                                                            UserId = commentAuthorId,
+                                                            GroupId = group.Id,
+                                                            PostId = post.Id.GetValueOrDefault(),
+                                                            CommentId = comment.Id,
+                                                            WhenHappened = comment.Date.GetValueOrDefault(),
+                                                        });
+                                                    }
+                                                }
+
+                                                // В комментарии есть фото вложения? Сохраняем их
+                                                var commentPhotoAttachments = new List<string>();
+                                                if (comment.Attachments != null)
+                                                {
+                                                    foreach (var attachment in comment.Attachments)
+                                                    {
+                                                        if (attachment.Instance is VkNet.Model.Attachments.Photo)
+                                                        {
+                                                            var attachmentAsPhoto = attachment.Instance as VkNet.Model.Attachments.Photo;
+                                                            if (attachmentAsPhoto.Sizes != null)
+                                                            {
+                                                                var lastSizePhoto = attachmentAsPhoto.Sizes.Last();
+                                                                if (lastSizePhoto != null)
+                                                                {
+                                                                    commentPhotoAttachments.Add(lastSizePhoto.Url.ToString());
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                // Комментарий нужно было просканировать. Сохраняем новую информацию о нём или обновляем старую
+                                                Database.Instance.InsertOrReplace(new Database.Comment()
+                                                {
+                                                    Id = Database.Comment.MakeId(group.Id, post.Id.GetValueOrDefault(), comment.Id),
+                                                    GroupId = group.Id,
+                                                    PostId = post.Id.GetValueOrDefault(),
+                                                    СommentId = comment.Id,
+                                                    LikesCount = comment.Likes.Count,
+                                                    Content = comment.Text,
+                                                    Attachments = JsonConvert.SerializeObject(commentPhotoAttachments),
+                                                });
+
+                                                // Сканируем лайки к комментарию
+                                                activitiesToReceiveLikesByExecute.Add(new Database.UserActivity()
+                                                {
+                                                    Type = Database.UserActivity.ActivityType.COMMENT_LIKE,
+                                                    // UserId пока нам неизвестен и будет получен в результате execute запроса
+                                                    GroupId = group.Id,
+                                                    PostId = post.Id.GetValueOrDefault(),
+                                                    CommentId = comment.Id,
+                                                    // Мы не можем узнать время лайка, поэтому будем считать что пользователь
+                                                    // проявил эту активность во время последнего сканирования, если комментарий уже
+                                                    // был просканирован ранее. В другом случае считаем что лайк был поставлен
+                                                    // в то же время, что и написан комментарий
+                                                    WhenHappened = isCommentNotSeenBefore ? comment.Date.GetValueOrDefault() : DateTime.Now,
+                                                });
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Utils.Log("не удалось получить информацию о комментариях к записи " + post.Id.GetValueOrDefault() + ". Причина: " + ex.Message, LogLevel.ERROR);
+                                        await WaitAlotAfterError();
+                                    }
                                 }
 
-                                // В записи есть вложения? Сохраняем их
+                                // В записи есть фото вложения? Сохраняем их
                                 var photoAttachments = new List<string>();
                                 if (post.Attachments != null)
                                 {
@@ -600,8 +700,8 @@ namespace VK_Unicorn
                         var listOfAPICalls = new List<string>();
                         foreach (var activity in chunkOfActivities)
                         {
-                            var isComment = activity.Type == Database.UserActivity.ActivityType.COMMENT;
-                            listOfAPICalls.Add("{\"item_id\":" + activity.PostId + "}+API.likes.getList({\"type\":\"" + (isComment ? "comment" : "post") + "\",\"owner_id\":" + group.GetNegativeIdForAPI() + ",\"item_id\":" + (isComment ? activity.CommentId : activity.PostId) + "})");
+                            var isCommentLike = activity.Type == Database.UserActivity.ActivityType.COMMENT_LIKE;
+                            listOfAPICalls.Add("{\"item_id\":" + (isCommentLike ? activity.CommentId : activity.PostId) + "}+API.likes.getList({\"type\":\"" + (isCommentLike ? "comment" : "post") + "\",\"owner_id\":" + group.GetNegativeIdForAPI() + ",\"item_id\":" + (isCommentLike ? activity.CommentId : activity.PostId) + "})");
                         }
 
                         // Вызываем execute запрос
@@ -623,8 +723,15 @@ namespace VK_Unicorn
                                 // Добавляем активности от этих пользователей
                                 foreach (var userId in userIds)
                                 {
-                                    // Ищем активность по этому Id записи
-                                    var activity = chunkOfActivities.Find(_ => _.PostId == postId);
+                                    // Ищем активность по этому Id записи. Сначала ищем как комментарий
+                                    var activity = chunkOfActivities.Find(_ => _.CommentId == postId);
+
+                                    // Если не нашли, то как пост
+                                    if (activity == null)
+                                    {
+                                        activity = chunkOfActivities.Find(_ => _.PostId == postId);
+                                    }
+
                                     if (activity != null)
                                     {
                                         // Активность найдена, клонируем её и заполняем userId поле

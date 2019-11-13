@@ -18,5 +18,8 @@
 
         // https://vk.com/dev/execute
         public const int EXECUTE_VK_API_METHODS_COUNT = 25;
+
+        // https://vk.com/dev/wall.getComments
+        public const int WALL_GET_COMMENTS_COUNT = 100;
     }
 }

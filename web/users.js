@@ -99,7 +99,7 @@ function loadUsers(favorites) {
             `).appendTo($('#users-new-' + isUserNew));
 
             // Основной тултип с недавними действиями пользователя
-            function fillUserActionsCard(paramPosts, paramLikes, isBigMode) {
+            function fillUserActionsCard(paramPostsOrComments, paramLikes, isBigMode) {
                 function addAttachmentsFromPost(post) {
                     let result = '';
                     let attachments = JSON.parse(post.Attachments);
@@ -204,8 +204,8 @@ function loadUsers(favorites) {
                     }
                 };
 
-                function fillPosts() {
-                    if (paramPosts.length > 0) {
+                function fillPostsAndComments() {
+                    if (paramPostsOrComments.length > 0) {
                         if (result != '') {
                             result += '<div class="mt-2"></div>';
                         }
@@ -216,17 +216,18 @@ function loadUsers(favorites) {
 
                         result += `<div class="mx-2">`
                         let index = 0;
-                        for (let paramPost of paramPosts) {
+                        for (let paramPostOrComment of paramPostsOrComments) {
+                            let isPost = paramPostOrComment.Activity.Type == 0;
                             result += `
                                 ${index > 0 ? '<hr class="mx-0 my-1">' : ''}
                                 <div class="block-with-text-4">
-                                    ${paramPost.Post.Content}
+                                    ${isPost ? paramPostOrComment.Post.Content : paramPostOrComment.Comment.Content}
                                 </div>
-                                ${addAttachmentsFromPost(paramPost.Post)}
+                                ${addAttachmentsFromPost(isPost ? paramPostOrComment.Post : paramPostOrComment.Comment)}
                                 <span class="text-muted block-with-text-1 opaque-5">
-                                    <i class="lni-popup mr-0 text-dark"></i>
-                                    <a href="${paramPost.URL}" target="_blank" class="text-dark">
-                                        ${isoTimeToLocalDeltaAsString(paramPost.Activity.WhenHappened)} назад в сообществе "${paramPost.Group.Name}"
+                                    <i class="${isPost ? "lni-popup" : "lni-comment-reply"} mr-0 text-dark"></i>
+                                    <a href="${paramPostOrComment.URL}" target="_blank" class="text-dark">
+                                        ${isoTimeToLocalDeltaAsString(paramPostOrComment.Activity.WhenHappened)} назад в сообществе "${paramPostOrComment.Group.Name}"
                                     </a>
                                 </span>
                             `;
@@ -250,12 +251,13 @@ function loadUsers(favorites) {
                         result += `<div class="mx-2">`
                         let index = 0;
                         for (let paramLike of paramLikes) {
+                            let isLikeToPost = paramLike.Activity.Type == 1;
                             result += `
                                 ${index > 0 ? '<hr class="mx-0 my-1">' : ''}
                                 <div class="block-with-text-4 text-like">
-                                    ${paramLike.Post.Content}
+                                    ${isLikeToPost ? paramLike.Post.Content : paramLike.Comment.Content}
                                 </div>
-                                ${addAttachmentsFromPost(paramLike.Post)}
+                                ${addAttachmentsFromPost(isLikeToPost ? paramLike.Post : paramLike.Comment)}
                                 <span class="text-muted block-with-text-1 opaque-5">
                                     <i class="lni-heart mr-0"></i>
                                     <a href="${paramLike.URL}" target="_blank" class="text-dark">
@@ -275,7 +277,7 @@ function loadUsers(favorites) {
                 fillCity();
                 fillSite();
                 fillPhone();
-                fillPosts();
+                fillPostsAndComments();
                 fillLikes();
                 return result;
             }

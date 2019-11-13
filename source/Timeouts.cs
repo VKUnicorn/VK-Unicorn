@@ -13,7 +13,7 @@ namespace VK_Unicorn
         /// Тем более мы сканируем некоторые элементы через execute запросы, которые позволяют упаковать множество
         /// обращений в одно в виде скрипта на языке VKScript
         /// </summary>
-        public static TimeSpan AFTER_ANY_REQUEST_TO_API = TimeSpan.FromSeconds(0.7d);
+        public static TimeSpan AFTER_ANY_REQUEST_TO_API = TimeSpan.FromSeconds(0.6d);
 
         /// <summary>
         /// Таймаут для взаимодействия с сообществом после отправки заявки на вступление.

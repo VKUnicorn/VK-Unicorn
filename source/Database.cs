@@ -254,6 +254,12 @@ namespace VK_Unicorn
                 return Type.IsOneOf(ActivityType.POST, ActivityType.COMMENT);
             }
 
+            // Эта активность связана с комментарием?
+            public bool IsRelatedToComment()
+            {
+                return Type.IsOneOf(UserActivity.ActivityType.COMMENT, UserActivity.ActivityType.COMMENT_LIKE);
+            }
+
             // Возвращает клон активности
             public UserActivity ShallowCopy()
             {
@@ -267,11 +273,14 @@ namespace VK_Unicorn
         {
             public UserActivity Activity;
 
-            // Дополнительное поле с содержимым записи
-            public Post Post;
-
             // Сообщество, в котором была активность
             public Group Group;
+
+            // Содержимое записи
+            public Post Post;
+
+            // Содержимое комментария
+            public Comment Comment;
 
             // Ссылка на запись или комментарий
             public string URL;
@@ -286,12 +295,19 @@ namespace VK_Unicorn
                 // Заполняем дополнительные поля
                 Instance.ForDatabaseUnlocked((db) =>
                 {
-                    Post = db.Find<Post>(Post.MakeId(activity.GroupId, activity.PostId));
                     Group = db.Find<Group>(activity.GroupId);
+                    Post = db.Find<Post>(Post.MakeId(activity.GroupId, activity.PostId));
 
-                    URL = Post.GetURL();
+                    if (Activity.IsRelatedToComment())
+                    {
+                        Comment = db.Find<Comment>(Comment.MakeId(activity.GroupId, activity.PostId, activity.CommentId));
 
-                    // TODO добавить для комментариев
+                        URL = Comment.GetURL();
+                    }
+                    else
+                    {
+                        URL = Post.GetURL();
+                    }
                 });
             }
         }
@@ -349,6 +365,49 @@ namespace VK_Unicorn
             public string GetURL()
             {
                 return Constants.VK_WEB_PAGE + "wall-" + Id;
+            }
+        }
+
+        // Таблица просканированных комментариев.
+        // Запоминается так же количество лайков к этому комментарию чтобы
+        // потом повторно сканировать комментарий где что-то изменилось в большую сторону
+        public class Comment
+        {
+            // Id комментария, записи и сообщества вместе
+            [PrimaryKey, Unique]
+            public string Id { get; set; }
+
+            // Создаём скомбинированный Id сообщества, записи и комментария
+            public static string MakeId(long groupId, long postId, long commentId)
+            {
+                return groupId + "_" + postId + "_" + commentId;
+            }
+
+            // Id сообщества, в котором был написан комментарий
+            public long GroupId { get; set; }
+
+            // Id записи в этом сообществе
+            public long PostId { get; set; }
+
+            // Id комментария к этой записи
+            public long СommentId { get; set; }
+
+            // Счётчик лайков. Если он изменится в большую сторону, то будем
+            // сканировать комментарий повторно
+            public int LikesCount { get; set; }
+
+            // Что было в содержимом
+            public string Content { get; set; }
+
+            // Прикреплённые вложения в виде JSON строки. Сохраняются только фотографии в максимальном размере
+            public string Attachments { get; set; }
+
+            /// <summary>
+            /// Возвращает ссылку на запись
+            /// </summary>
+            public string GetURL()
+            {
+                return Constants.VK_WEB_PAGE + "wall-" + GroupId + "_" + PostId + "?reply=" + СommentId;
             }
         }
 
@@ -465,7 +524,7 @@ namespace VK_Unicorn
                 // Создаём все остальные таблицы
                 db.CreateTables<User, ScannedUser, UserActivity>();
                 db.CreateTables<GroupToReceiveInfo, Group>();
-                db.CreateTable<Post>();
+                db.CreateTables<Post, Comment>();
             });
         }
 
@@ -715,6 +774,7 @@ namespace VK_Unicorn
             Utils.Log("    Количество сообществ для сканирования: " + GetCount<Group>(), LogLevel.NOTIFY);
             Utils.Log("    Просканировано пользователей: " + GetCount<ScannedUser>(), LogLevel.NOTIFY);
             Utils.Log("    Сохранено записей: " + GetCount<Post>(), LogLevel.NOTIFY);
+            Utils.Log("    Сохранено комментариев: " + GetCount<Comment>(), LogLevel.NOTIFY);
         }
 
         /// <summary>
