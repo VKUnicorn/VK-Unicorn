@@ -312,12 +312,16 @@ namespace VK_Unicorn
                         case "user_activities":
                             {
                                 var userId = long.Parse(query.Get("id"));
+                                var noTimeLimit = bool.Parse(query.Get("noTimeLimit"));
 
                                 // Получаем список активностей пользователя
                                 var userActivites = Database.Instance.GetAllWhere<Database.UserActivity>(_ => _.UserId == userId);
 
-                                // Удаляем слишком старые активности
-                                userActivites.RemoveAll(_ => Utils.GetNowAsUniversalTime() - _.WhenHappened > Constants.MAX_SCANNING_DEPTH_IN_TIME);
+                                if (!noTimeLimit)
+                                {
+                                    // Удаляем слишком старые активности
+                                    userActivites.RemoveAll(_ => Utils.GetNowAsUniversalTime() - _.WhenHappened > Constants.MAX_SCANNING_DEPTH_IN_TIME);
+                                }
 
                                 // Соcтавляем список недавних записей пользователя
                                 var postActivities = userActivites

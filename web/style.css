@@ -172,6 +172,9 @@ body {
 .text-like {
     color: #6699ff;
 }
+.text-notes {
+    color: #6600cc;
+}
 
 .opaque-1 {
     opacity: 0.1;

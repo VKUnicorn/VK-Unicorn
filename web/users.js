@@ -124,10 +124,27 @@ function loadUsers(favorites) {
                     return result;
                 }
 
+                function fillNotes() {
+                    if (user.Notes) {
+                        if (user.Notes != '') {
+                            result += `
+                                <h6 class="mx-2 mb-1 mt-0">Заметка:</h6>
+                                <div class="mx-2">
+                                    <span class="block-with-text-2 text-notes"><i class="lni-pencil-alt mr-1 text-dark"></i>${user.Notes}</span>
+                                </div>
+                            `;
+                        }
+                    }
+                };
+
                 function fillStatus() {
                     if (user.Status) {
                         let status = user.Status.trim();
                         if (status != '') {
+                            if (result != '') {
+                                result += '<div class="mt-2"></div>';
+                            }
+
                             result += `
                                 <h6 class="mx-2 mb-1 mt-0">Статус:</h6>
                                 <div class="mx-2">
@@ -169,7 +186,7 @@ function loadUsers(favorites) {
                             result += `
                                 <h6 class="mx-2 mb-1 mt-0">Сайт:</h6>
                                 <div class="mx-2">
-                                    <span class="block-with-text-1"><i class="lni-link mr-1 text-dark"></i><a href="${site}">${site}</a></span>
+                                    <span class="block-with-text-1"><i class="lni-link mr-1 text-dark"></i><a href="${site}" target="_blank">${site}</a></span>
                                 </div>
                             `;
                         }
@@ -273,6 +290,7 @@ function loadUsers(favorites) {
                 };
 
                 var result = '';
+                fillNotes();
                 fillStatus();
                 fillCity();
                 fillSite();
@@ -399,7 +417,9 @@ function loadUsers(favorites) {
                 e.preventDefault();
 
                 $.getJSON('user_activities', {
-                    id: user.Id
+                    id: user.Id,
+                    // Если зажат shift, то загружаем вообще всю активность, без лимита по времени
+                    noTimeLimit: event.shiftKey
                 }, function(result) {
                     let allPosts = result[0].Posts;
                     let allLikes = result[0].Likes;
