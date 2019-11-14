@@ -189,6 +189,11 @@ namespace VK_Unicorn
 
             return url;
         }
+
+        public static DateTime GetNowAsUniversalTime()
+        {
+            return DateTime.Now.ToUniversalTime();
+        }
     }
 
     public delegate void Callback();

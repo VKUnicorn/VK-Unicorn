@@ -459,7 +459,7 @@ namespace VK_Unicorn
                                             // проявил эту активность во время последнего сканирования, если запись уже
                                             // была просканирована ранее. В другом случае считаем что лайк был поставлен
                                             // в то же время, что и написана запись
-                                            WhenHappened = isPostNotSeenBefore ? post.Date.GetValueOrDefault() : DateTime.Now,
+                                            WhenHappened = isPostNotSeenBefore ? post.Date.GetValueOrDefault() : Utils.GetNowAsUniversalTime(),
                                         });
                                     }
                                     else
@@ -496,7 +496,7 @@ namespace VK_Unicorn
                                                         // проявил эту активность во время последнего сканирования, если запись уже
                                                         // была просканирована ранее. В другом случае считаем что лайк был поставлен
                                                         // в то же время, что и написана запись
-                                                        WhenHappened = isPostNotSeenBefore ? post.Date.GetValueOrDefault() : DateTime.Now,
+                                                        WhenHappened = isPostNotSeenBefore ? post.Date.GetValueOrDefault() : Utils.GetNowAsUniversalTime(),
                                                     });
                                                 }
                                             }
@@ -626,7 +626,7 @@ namespace VK_Unicorn
                                                     // проявил эту активность во время последнего сканирования, если комментарий уже
                                                     // был просканирован ранее. В другом случае считаем что лайк был поставлен
                                                     // в то же время, что и написан комментарий
-                                                    WhenHappened = isCommentNotSeenBefore ? comment.Date.GetValueOrDefault() : DateTime.Now,
+                                                    WhenHappened = isCommentNotSeenBefore ? comment.Date.GetValueOrDefault() : Utils.GetNowAsUniversalTime(),
                                                 });
                                             }
                                         }
@@ -683,7 +683,7 @@ namespace VK_Unicorn
                             if (isLastPostNotSeenBefore)
                             {
                                 // Последняя запись не слишком старая?
-                                if ((DateTime.Now - posts.Last().Date.GetValueOrDefault()) < Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                if ((Utils.GetNowAsUniversalTime() - posts.Last().Date.GetValueOrDefault()) < Constants.MAX_SCANNING_DEPTH_IN_TIME)
                                 {
                                     // Увеличиваем отступ с которого будем продолжать сканирование
                                     scanOffset += postsLimit;

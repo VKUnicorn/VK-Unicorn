@@ -78,10 +78,10 @@ function isoTimeToLocalDeltaAsString(isoTimeAsString) {
     var delta = parseInt((new Date().getTime() - isoTime) / 1000 / 60);
     if (delta < 60) {
         if (delta == 0) {
-            return 'только что';
+            return 'меньше минуты';
         }
 
-        return oneFewMany(delta, 'минута', 'минуты', 'минут', true);
+        return oneFewMany(delta, 'минуту', 'минуты', 'минут', true);
     }
 
     delta = parseInt(delta / 60)

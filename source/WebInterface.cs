@@ -231,7 +231,7 @@ namespace VK_Unicorn
                                         }
 
                                         // Не показываем старых пользователей
-                                        if (DateTime.Now - user.LastActivity > Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                        if (Utils.GetNowAsUniversalTime() - user.LastActivity > Constants.MAX_SCANNING_DEPTH_IN_TIME)
                                         {
                                             return;
                                         }
@@ -248,7 +248,7 @@ namespace VK_Unicorn
                                         // Ищем только записи или комментарии
                                         .Where(_ => _.IsPostOrComment())
                                         // Недавние
-                                        .Where(_ => DateTime.Now - _.WhenHappened <= Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                        .Where(_ => Utils.GetNowAsUniversalTime() - _.WhenHappened <= Constants.MAX_SCANNING_DEPTH_IN_TIME)
                                         // Сортируем по давности
                                         .OrderByDescending(_ => _.WhenHappened)
                                         // Берём несколько
@@ -262,7 +262,7 @@ namespace VK_Unicorn
                                         // Ищем только лайки
                                         .Where(_ => _.IsLikeToSomething())
                                         // Недавние
-                                        .Where(_ => DateTime.Now - _.WhenHappened <= Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                        .Where(_ => Utils.GetNowAsUniversalTime() - _.WhenHappened <= Constants.MAX_SCANNING_DEPTH_IN_TIME)
                                         // Сортируем по давности
                                         .OrderByDescending(_ => _.WhenHappened)
                                         // Берём несколько
@@ -317,7 +317,7 @@ namespace VK_Unicorn
                                 var userActivites = Database.Instance.GetAllWhere<Database.UserActivity>(_ => _.UserId == userId);
 
                                 // Удаляем слишком старые активности
-                                userActivites.RemoveAll(_ => DateTime.Now - _.WhenHappened > Constants.MAX_SCANNING_DEPTH_IN_TIME);
+                                userActivites.RemoveAll(_ => Utils.GetNowAsUniversalTime() - _.WhenHappened > Constants.MAX_SCANNING_DEPTH_IN_TIME);
 
                                 // Соcтавляем список недавних записей пользователя
                                 var postActivities = userActivites

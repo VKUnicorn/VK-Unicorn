@@ -204,6 +204,9 @@ namespace VK_Unicorn
             // Был ли этот пользователь деактивирован (удалён\забанен и т.п.)
             public bool IsDeactivated { get; set; }
 
+            // Заметки о пользователе
+            public string Notes { get; set; }
+
             /// <summary>
             /// Возвращает ссылку на пользователя
             /// </summary>
