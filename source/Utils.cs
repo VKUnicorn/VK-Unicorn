@@ -113,6 +113,11 @@ namespace VK_Unicorn
             return Constants.VK_WEB_PAGE + self.ScreenName;
         }
 
+        public static string GetURL(this VkNet.Model.User self)
+        {
+            return Constants.VK_WEB_PAGE + "id" + self.Id;
+        }
+
         public static bool IsOneOf<T>(this T valueToFind, params T[] valuesToCheck)
         {
             foreach (var value in valuesToCheck)

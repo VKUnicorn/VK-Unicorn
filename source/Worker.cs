@@ -846,8 +846,6 @@ namespace VK_Unicorn
                     }
                 }
 
-                Utils.Log("Обработка результатов. Это может занять какое-то время", LogLevel.GENERAL);
-
                 // Вызывает callback для полученной информации о пользователе, если она есть
                 Callback<long, Callback<User>> ForReceivedInfoAboutUser = (userId, callback) =>
                 {
@@ -869,6 +867,14 @@ namespace VK_Unicorn
                 // Счётчик сколько нашли новых полезных пользователей и ботов
                 var newUsersCount = 0;
                 var botsCount = 0;
+
+                // Счётчик активностей. Если накопилось некоторое количество, то обновляем статус приложения о том что ещё что-то делается
+                var activitiesLogCounter = 0;
+
+                if (userActivitiesToProcess.Count > 0)
+                {
+                    Utils.Log("Обработка результатов. Осталось обработать: " + userActivitiesToProcess.Count, LogLevel.GENERAL);
+                }
 
                 // Обрабатываем интересующие нас активности: записи, лайки, комментарии и т.п.
                 while (userActivitiesToProcess.Count > 0)
@@ -952,13 +958,17 @@ namespace VK_Unicorn
                             }
 
                             // Это анкета бота? Эвристический анализ
-                            if (false)
+                            var botReason = string.Empty;
+                            if (BotHeuristicDetector.Process(userInfo, out botReason))
                             {
                                 // Похоже что это бот. Удаляем всю активность бота из очереди на проверку
                                 DeleteAllActivitiesToProcessFromThisUser();
 
                                 // Увеличиваем счётчик найденных ботов
                                 ++botsCount;
+
+                                // Выводим причину в лог
+                                Utils.Log("Отсеян бот: " + userInfo.GetURL() + " причина - " + botReason, LogLevel.NOTIFY);
 
                                 // Завершаем сканирование активности
                                 return;
@@ -1051,6 +1061,16 @@ namespace VK_Unicorn
 
                     // Удаляем обработанную активность из списка обработки
                     userActivitiesToProcess.Remove(userActivityToProcess);
+
+                    // Счётчик активностей. Если накопилось некоторое количество, то обновляем статус приложения о том что ещё что-то делается
+                    ++activitiesLogCounter;
+                    if (activitiesLogCounter > 500)
+                    {
+                        activitiesLogCounter = 0;
+
+                        Utils.Log("Осталось обработать: " + userActivitiesToProcess.Count, LogLevel.GENERAL);
+                        await Task.Delay(TimeSpan.FromSeconds(0.1d));
+                    }
                 }
 
                 // Помечаем всех пользователей о которых мы получили информацию как просканированных
