@@ -174,7 +174,7 @@ namespace VK_Unicorn
                     ApplicationId = (ulong)settings.ApplicationId,
                     Login = settings.Login.Trim(),
                     Password = settings.Password.Trim(),
-                    Settings = Settings.Groups
+                    Settings = Settings.Groups | Settings.Wall
                 });
 
                 isAuthorized = true;
