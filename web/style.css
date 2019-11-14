@@ -3,6 +3,7 @@
  */
 body {
     overflow-y: scroll;
+    padding-right: 0 !important;
 }
 
 .modal-open {
@@ -175,7 +176,18 @@ body {
 .text-notes {
     color: #6600cc;
 }
-
+.btn-notes {
+    color: white;
+    outline-color: #6600cc;
+    background-color: #6600cc;
+    border-color: #6600cc;
+}
+.btn-notes:hover {
+    background-color: #400080;
+}
+.btn-notes:focus {
+    box-shadow: 0 0 0 0.2rem rgba(102, 0, 204, 0.35) !important;
+}
 .opaque-1 {
     opacity: 0.1;
 }

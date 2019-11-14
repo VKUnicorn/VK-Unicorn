@@ -47,7 +47,7 @@ namespace VK_Unicorn
         public static int MAX_COMMENT_LIKES_TO_SCAN = VkLimits.LIKES_GET_LIST_COUNT;
 
         /// <summary>
-        /// Id города, когда он незивестен
+        /// Id города, когда он неизвестен
         /// </summary>
         public static int UNKNOWN_CITY_ID = 0;
     }

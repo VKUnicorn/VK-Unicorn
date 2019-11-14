@@ -11,6 +11,23 @@ function loadUsers(favorites) {
         let userShortInfoPopoverOffset = isSmallWindow ? 0 : '50%p - 50% - 2px';
         let userShortInfoPopoverPlecement = isSmallWindow ? 'bottom' : 'right';
 
+        // Тултипы. Здесь объявлены те, которые используются в нескольких местах
+        let deletePopover = {
+            trigger: 'hover',
+            placement: 'bottom',
+            html: true,
+            delay: { "show": 1100, "hide": 100 },
+            content: 'Удалить пользователя навсегда<br><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
+        };
+
+        let hidePopover = {
+            trigger: 'hover',
+            placement: 'bottom',
+            html: true,
+            delay: { "show": 1100, "hide": 100 },
+            content: 'Временно скрыть пользователя пока не появится любая новая активность<br><small class="text-muted">Удерживайте кнопку нажатой для скрытия</small>'
+        };
+
         // Добавляем отдельные категории для пользователей
         function addUserCategory(isForNew) {
             $(`
@@ -98,7 +115,7 @@ function loadUsers(favorites) {
                 </div>
             `).appendTo($('#users-new-' + isUserNew));
 
-            // Основной тултип с недавними действиями пользователя
+            // Основной тултип с действиями пользователя
             function fillUserActionsCard(paramPostsOrComments, paramLikes, isBigMode) {
                 function addAttachmentsFromPost(post) {
                     let result = '';
@@ -309,18 +326,14 @@ function loadUsers(favorites) {
                 html: true,
                 offset: userShortInfoPopoverOffset,
                 delay: { "show": 50, "hide": 25 },
-                content: fillUserActionsCard(recentPosts, recentLikes, false)
+                content: function() {
+                    return fillUserActionsCard(recentPosts, recentLikes, false);
+                }
             });
 
             // Тултипы в зависимости от контекста
             if (!user.IsDeactivated) {
-                userCard.find('#hide-button').popover({
-                    trigger: 'hover',
-                    placement: 'bottom',
-                    html: true,
-                    delay: { "show": 1100, "hide": 100 },
-                    content: 'Временно скрыть пользователя пока не появится любая новая активность<br><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
-                });
+                userCard.find('#hide-button').popover(hidePopover);
             }
 
             if (isUnderage) {
@@ -350,6 +363,9 @@ function loadUsers(favorites) {
                             // Обновляем счётчик в бадже
                             updateBadgeRelative('#users-header-new-' + isUserNew, -1);
 
+                            // Закрываем модальное окно, если было открыто
+                            $('#user-full-info-modal').modal('hide');
+
                             $.hulla.send("Пользователь \"" + fullName + "\" скрыт", "success");
                         }
                         else {
@@ -374,6 +390,9 @@ function loadUsers(favorites) {
 
                         // Обновляем счётчик в бадже
                         updateBadgeRelative('#users-header-new-' + isUserNew, -1);
+
+                        // Закрываем модальное окно, если было открыто
+                        $('#user-full-info-modal').modal('hide');
 
                         $.hulla.send("Пользователь \"" + fullName + "\" удалён", "success");
                     }
@@ -428,25 +447,101 @@ function loadUsers(favorites) {
                     let userFullInfoModal = $('#user-full-info-modal');
                     let userFullInfoModalContent = userFullInfoModal.find("#user-full-info");
 
-                    userFullInfoModalContent.empty();
+                    function RebuildFullInfoModalContent() {
+                        userFullInfoModalContent.empty();
 
-                    // Заполняем информацию с фотографией и общими данными
-                    userFullInfoModalContent.append(`
-                        <div class="row">
-                            <div class="col-3 pr-0">
-                                <a href="${userExtraInfo.URL}" target="_blank">
-                                    <img src="${user.PhotoURL}" class="user-full-info-photo">
-                                </a>
+                        // Заполняем информацию с фотографией и общими данными
+                        userFullInfoModalContent.append(`
+                            <div class="row">
+                                <div class="col-3 pr-0">
+                                    <a href="${userExtraInfo.URL}" target="_blank">
+                                        <img src="${user.PhotoURL}" class="user-full-info-photo">
+                                    </a>
+                                </div>
+                                <div class="col-9 pl-1">
+                                    <h5 class="mx-2 mb-1 mt-0 block-with-text-1">${fullName}${ageAsString != '' ? (', ' + ageAsString) : ''}</h5>
+                                    <hr class="ml-2 my-2">
+                                    <div class="mx-2">${ageWarning}</div>
+                                    ${ageWarning != '' ? '<hr class="ml-2 my-2">' : ''}
+                                    ${fillUserActionsCard(allPosts, allLikes, true)}
+                                </div>
                             </div>
-                            <div class="col-9 pl-1">
-                                <h5 class="mx-2 mb-1 mt-0 block-with-text-1">${fullName}${ageAsString != '' ? (', ' + ageAsString) : ''}</h5>
-                                <hr class="ml-2 my-2">
-                                <div class="mx-2">${ageWarning}</div>
-                                ${ageWarning != '' ? '<hr class="ml-2 my-2">' : ''}
-                                ${fillUserActionsCard(allPosts, allLikes, true)}
+                            <div class="row">
+                                <div class="col-3 pr-0">
+                                </div>
+                                <div class="col-9 pl-1">
+                                    <hr class="ml-2 my-2">
+                                    <div class="mr-0 float-right">
+                                        ${user.IsDeactivated ? '' : '<button type="button" class="btn btn-success opaque-8" id="hide-button">Скрыть</button>'}
+                                        <button type="button" class="btn btn-danger opaque-8" id="delete-button">Удалить</button>
+                                        <button type="button" class="btn btn-notes opaque-6" id="notes-button">Заметка</button>
+                                        <button type="button" class="btn btn-light" data-dismiss="modal">Закрыть</button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    `);
+                        `);
+
+                        // Тултип и действие на кнопку "Скрыть"
+                        if (!user.IsDeactivated) {
+                            let hideButton = userFullInfoModalContent.find('#hide-button');
+                            hideButton.popover(hidePopover);
+                            hideButton.mayTriggerLongClicks().on('longClick', function(data) {
+                                userCard.find('#hide-button').trigger('longClick');
+                            });
+                        }
+
+                        // Тултип и действие на кнопку "Заметка"
+                        let notesButton = userFullInfoModalContent.find('#notes-button');
+                        notesButton.popover({
+                            template: getPopoverTemplateWithClass("no-weight-limit"),
+                            trigger: 'hover',
+                            placement: 'bottom',
+                            html: true,
+                            delay: { "show": 500, "hide": 100 },
+                            content: 'Редактировать заметку о пользователе'
+                        });
+                        notesButton.click(function() {
+                            bootbox.prompt({
+                                title: "Добавить заметку",
+                                message: "Введите заметку о пользователе:",
+                                inputType: 'textarea',
+                                placeholder: "Заметка о пользователе",
+                                value: user.Notes,
+                                backdrop: true,
+                                callback: function(result) {
+                                    if (result != null) {
+                                        // Отправляем запрос на изменение заметки
+                                        $.post("user_notes",
+                                        {
+                                            id: user.Id,
+                                            notes: result,
+                                        },
+                                        function(data, status) {
+                                            if (status) {
+                                                user.Notes = result;
+                                                RebuildFullInfoModalContent();
+                                            }
+                                            else {
+                                                $.hulla.send("Не удалось изменить заметку у пользователя \"" + fullName + "\"", "danger");
+                                            }
+                                        }).fail(function(result) {
+                                            $.hulla.send("Не удалось изменить заметку у пользователя \"" + fullName + "\"", "danger");
+                                        });
+                                    }
+                                }
+                            });
+                        });
+
+                        // Тултип и действие на кнопку "Удалить"
+                        let deleteButton = userFullInfoModalContent.find('#delete-button');
+                        deleteButton.popover(deletePopover);
+                        deleteButton.mayTriggerLongClicks().on('longClick', function(data) {
+                            userCard.find('#delete-button').trigger('longClick');
+                        });
+                    }
+
+                    // Обновляем содержимое окна
+                    RebuildFullInfoModalContent();
 
                     // Открываем модальное окно
                     userFullInfoModal.modal();
@@ -465,13 +560,7 @@ function loadUsers(favorites) {
         }
 
         // Общие тултипы на все элементы
-        $('*[id=delete-button]').popover({
-            trigger: 'hover',
-            placement: 'bottom',
-            html: true,
-            delay: { "show": 1100, "hide": 100 },
-            content: 'Удалить пользователя навсегда<br><small class="text-muted">Удерживайте кнопку нажатой для удаления</small>'
-        });
+        $('*[id=delete-button]').popover(deletePopover);
 
         $('*[id=likes-counter]').popover({
             trigger: 'hover',

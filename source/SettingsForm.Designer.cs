@@ -42,6 +42,7 @@
             this.ApplicationIdHelperLabel = new System.Windows.Forms.Label();
             this.WelcomeLabel = new System.Windows.Forms.Label();
             this.AccountCredentialsGroupBox = new System.Windows.Forms.GroupBox();
+            this.PasswordWarningLabel = new System.Windows.Forms.Label();
             this.PasswordLabel = new System.Windows.Forms.Label();
             this.PasswordTextBox = new System.Windows.Forms.TextBox();
             this.LoginLabel = new System.Windows.Forms.Label();
@@ -62,7 +63,6 @@
             this.CityIdLinkLabel = new System.Windows.Forms.LinkLabel();
             this.CityIdLabel = new System.Windows.Forms.Label();
             this.CityIdNumericUpDown = new System.Windows.Forms.NumericUpDown();
-            this.PasswordWarningLabel = new System.Windows.Forms.Label();
             this.ApplicationIdGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ApplicationIdUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.CopyApplicationIdPictureBox)).BeginInit();
@@ -235,6 +235,16 @@
             this.AccountCredentialsGroupBox.TabIndex = 5;
             this.AccountCredentialsGroupBox.TabStop = false;
             this.AccountCredentialsGroupBox.Text = "Данные аккаунта";
+            // 
+            // PasswordWarningLabel
+            // 
+            this.PasswordWarningLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.PasswordWarningLabel.ForeColor = System.Drawing.Color.Red;
+            this.PasswordWarningLabel.Location = new System.Drawing.Point(474, 67);
+            this.PasswordWarningLabel.Name = "PasswordWarningLabel";
+            this.PasswordWarningLabel.Size = new System.Drawing.Size(231, 35);
+            this.PasswordWarningLabel.TabIndex = 12;
+            this.PasswordWarningLabel.Text = "пароль будет сохранён в открытом виде в";
             // 
             // PasswordLabel
             // 
@@ -488,16 +498,6 @@
             0,
             0,
             0});
-            // 
-            // PasswordWarningLabel
-            // 
-            this.PasswordWarningLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.PasswordWarningLabel.ForeColor = System.Drawing.Color.Red;
-            this.PasswordWarningLabel.Location = new System.Drawing.Point(474, 67);
-            this.PasswordWarningLabel.Name = "PasswordWarningLabel";
-            this.PasswordWarningLabel.Size = new System.Drawing.Size(196, 35);
-            this.PasswordWarningLabel.TabIndex = 12;
-            this.PasswordWarningLabel.Text = "будет сохранён в открытом виде в";
             // 
             // SettingsForm
             // 

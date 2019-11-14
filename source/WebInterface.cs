@@ -112,6 +112,22 @@ namespace VK_Unicorn
                             handled = true;
                         }
                         break;
+
+                    // Изменение заметки о пользователе
+                    case "user_notes":
+                        {
+                            var userId = long.Parse(parametersDictionary["id"]);
+                            var notes = WebUtility.UrlDecode(parametersDictionary["notes"]);
+
+                            // Изменяем статус избранного
+                            Database.Instance.ModifyFields<Database.User>(userId, (user) =>
+                            {
+                                user.Notes = notes;
+                            });
+
+                            handled = true;
+                        }
+                        break;
                 }
 
                 // Запрос обработан?
