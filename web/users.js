@@ -203,7 +203,7 @@ function loadUsers(favorites) {
                             result += `
                                 <h6 class="mx-2 mb-1 mt-0">Сайт:</h6>
                                 <div class="mx-2">
-                                    <span class="block-with-text-1"><i class="lni-link mr-1 text-dark"></i><a href="${site}" target="_blank">${site}</a></span>
+                                    <span class="block-with-text-1"><i class="lni-link mr-1 text-dark"></i><a href="${fixExternalUrl(site)}" target="_blank">${site}</a></span>
                                 </div>
                             `;
                         }
@@ -438,7 +438,7 @@ function loadUsers(favorites) {
                 $.getJSON('user_activities', {
                     id: user.Id,
                     // Если зажат shift, то загружаем вообще всю активность, без лимита по времени
-                    noTimeLimit: event.shiftKey
+                    noLimit: event.shiftKey
                 }, function(result) {
                     let allPosts = result[0].Posts;
                     let allLikes = result[0].Likes;

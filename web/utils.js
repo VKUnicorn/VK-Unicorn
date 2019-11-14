@@ -142,6 +142,15 @@ function getUnderageWarning() {
     `;
 }
 
+// Чинит внешние ссылки без http
+function fixExternalUrl(url) {
+    if (!url.startsWith("http")) {
+        url = "http://" + url;
+    }
+
+    return url;
+}
+
 // Функция для добавления кнопке срабатывания по зажатию
 (function($) {
     var defaultSettings = {

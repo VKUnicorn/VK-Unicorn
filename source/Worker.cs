@@ -77,7 +77,7 @@ namespace VK_Unicorn
                         // Готовим список задач, которые вообще можно делать. Задачи будут проверяться в порядке их объявления
                         var possibleTaskConditions = new List<Callback>()
                         {
-                            // Временный таск для разработки. Мешает выполнению методов, требующих авторизацию
+                            // Временная задача-заглушка для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
                                 currentTask = async () => { await WaitAndSlack(); };
@@ -261,6 +261,13 @@ namespace VK_Unicorn
             catch (Exception ex)
             {
                 Utils.Log("не удалось получить информацию о сообществах. Причина: " + ex.Message, LogLevel.ERROR);
+
+                // Удаляем все сообщества из очереди на обработку потому что там есть какая-то ошибка
+                foreach (var group in groupsToReceiveInfo)
+                {
+                    Database.Instance.Delete(group);
+                }
+
                 await WaitAlotAfterError();
             }
         }
@@ -839,6 +846,8 @@ namespace VK_Unicorn
                     }
                 }
 
+                Utils.Log("Обработка результатов. Это может занять какое-то время", LogLevel.GENERAL);
+
                 // Вызывает callback для полученной информации о пользователе, если она есть
                 Callback<long, Callback<User>> ForReceivedInfoAboutUser = (userId, callback) =>
                 {
@@ -856,6 +865,10 @@ namespace VK_Unicorn
                 {
                     return left.IsLikeToSomething().CompareTo(right.IsLikeToSomething());
                 });
+
+                // Счётчик сколько нашли новых полезных пользователей и ботов
+                var newUsersCount = 0;
+                var botsCount = 0;
 
                 // Обрабатываем интересующие нас активности: записи, лайки, комментарии и т.п.
                 while (userActivitiesToProcess.Count > 0)
@@ -941,9 +954,13 @@ namespace VK_Unicorn
                             // Это анкета бота? Эвристический анализ
                             if (false)
                             {
-                                // Похоже что это бот. Удаляем всю активность этого пользователя из
-                                // очереди на проверку и завершаем сканирование активности
+                                // Похоже что это бот. Удаляем всю активность бота из очереди на проверку
                                 DeleteAllActivitiesToProcessFromThisUser();
+
+                                // Увеличиваем счётчик найденных ботов
+                                ++botsCount;
+
+                                // Завершаем сканирование активности
                                 return;
                             }
 
@@ -992,6 +1009,9 @@ namespace VK_Unicorn
                                 FromGroupId = group.Id,
                                 IsDeactivated = isDeactivated,
                             });
+
+                            // Увеличиваем счётчик полезных пользователей
+                            ++newUsersCount;
 
                             // Помечаем сообщество как только что активное
                             group.MarkAsJustActive();
@@ -1050,6 +1070,8 @@ namespace VK_Unicorn
 
                 // Сообщество просканировано
                 Utils.Log("Сообщество " + group.Name + " успешно просканировано", LogLevel.SUCCESS);
+                Utils.Log("Новых пользователей: " + newUsersCount, LogLevel.SUCCESS);
+                Utils.Log("Отсеяно ботов: " + botsCount, LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {

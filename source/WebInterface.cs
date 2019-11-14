@@ -268,7 +268,7 @@ namespace VK_Unicorn
                                         // Сортируем по давности
                                         .OrderByDescending(_ => _.WhenHappened)
                                         // Берём несколько
-                                        .Take(5)
+                                        .Take(4)
                                         // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
                                         .Select(_ => new Database.UserActivityWithContent(_))
                                     ;
@@ -328,12 +328,12 @@ namespace VK_Unicorn
                         case "user_activities":
                             {
                                 var userId = long.Parse(query.Get("id"));
-                                var noTimeLimit = bool.Parse(query.Get("noTimeLimit"));
+                                var noLimit = bool.Parse(query.Get("noLimit"));
 
                                 // Получаем список активностей пользователя
                                 var userActivites = Database.Instance.GetAllWhere<Database.UserActivity>(_ => _.UserId == userId);
 
-                                if (!noTimeLimit)
+                                if (!noLimit)
                                 {
                                     // Удаляем слишком старые активности
                                     userActivites.RemoveAll(_ => Utils.GetNowAsUniversalTime() - _.WhenHappened > Constants.MAX_SCANNING_DEPTH_IN_TIME);
@@ -348,6 +348,10 @@ namespace VK_Unicorn
                                     // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
                                     .Select(_ => new Database.UserActivityWithContent(_))
                                 ;
+                                if (!noLimit)
+                                {
+                                    postActivities = postActivities.Take(8);
+                                }
 
                                 // Соcтавляем список недавних лайков пользователя
                                 var likeActivities = userActivites
@@ -358,6 +362,10 @@ namespace VK_Unicorn
                                     // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
                                     .Select(_ => new Database.UserActivityWithContent(_))
                                 ;
+                                if (!noLimit)
+                                {
+                                    likeActivities = likeActivities.Take(5);
+                                }
 
                                 // Добавляем пользователя в ответ
                                 resultObjects.Add(new Dictionary<string, object>()
