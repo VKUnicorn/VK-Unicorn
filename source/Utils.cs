@@ -90,7 +90,7 @@ namespace VK_Unicorn
         /// </summary>
         public static string GenerateSeparatedString<T>(this IEnumerable<T> self, string separator)
         {
-            var result = "";
+            var result = string.Empty;
 
             var index = 0;
             foreach (var item in self)
@@ -181,10 +181,10 @@ namespace VK_Unicorn
             if (url.StartsWith(Constants.VK_WEB_PAGE))
             {
                 // Удаляем начальный адрес до имени файла
-                url = Regex.Replace(url, @".+\/", "");
+                url = Regex.Replace(url, @".+\/", string.Empty);
 
                 // Удаляем параметры запроса. Например ?ava=1 и т.п.
-                url = Regex.Replace(url, @"\?.+$", "");
+                url = Regex.Replace(url, @"\?.+$", string.Empty);
             }
 
             return url;

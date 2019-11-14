@@ -395,6 +395,7 @@ namespace VK_Unicorn
             result = result
                 .Replace("$APP_NAME$", Constants.APP_NAME)
                 .Replace("$APP_VERSION$", Constants.APP_VERSION)
+                .Replace("$DONATION_ALERTS_WEB_PAGE$", Constants.DONATION_ALERTS_WEB_PAGE)
             ;
 
             // Отправляем результат в UTF8 кодировке

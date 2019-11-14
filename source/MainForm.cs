@@ -26,6 +26,9 @@ namespace VK_Unicorn
             VersionLabel.Text = Constants.APP_VERSION;
             Utils.Log(Text + " успешно загружен", LogLevel.SUCCESS);
 
+            Utils.Log("Репозиторий проекта: " + Constants.PROJECT_WEB_PAGE, LogLevel.SUCCESS);
+            Utils.Log("Поддержать проект: " + Constants.DONATION_ALERTS_WEB_PAGE, LogLevel.SUCCESS);
+
             // Готовим базу данных
             Utils.Log("Подготавливаем базу данных к работе", LogLevel.GENERAL);
             database = new Database();

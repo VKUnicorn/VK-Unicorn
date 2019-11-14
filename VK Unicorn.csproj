@@ -172,6 +172,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="media\da.png" />
     <EmbeddedResource Include="media\community_200.png" />
     <EmbeddedResource Include="media\community_400.png" />
     <EmbeddedResource Include="media\camera_400.png" />

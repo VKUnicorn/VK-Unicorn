@@ -325,7 +325,7 @@ function loadUsers(favorites) {
                 animation: false,
                 html: true,
                 offset: userShortInfoPopoverOffset,
-                delay: { "show": 50, "hide": 25 },
+                delay: { "show": 40, "hide": 25 },
                 content: function() {
                     return fillUserActionsCard(recentPosts, recentLikes, false);
                 }
@@ -497,7 +497,7 @@ function loadUsers(favorites) {
                             trigger: 'hover',
                             placement: 'bottom',
                             html: true,
-                            delay: { "show": 500, "hide": 100 },
+                            delay: { "show": 600, "hide": 100 },
                             content: 'Редактировать заметку о пользователе'
                         });
                         notesButton.click(function() {

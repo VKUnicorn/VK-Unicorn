@@ -824,8 +824,8 @@ namespace VK_Unicorn
                                 // Заполняем контакты пользователя
                                 user.Contacts = new Contacts()
                                 {
-                                    MobilePhone = userAsResponse.ContainsKey("mobile_phone") ? userAsResponse["mobile_phone"] : "",
-                                    HomePhone = userAsResponse.ContainsKey("home_phone") ? userAsResponse["home_phone"] : "",
+                                    MobilePhone = userAsResponse.ContainsKey("mobile_phone") ? userAsResponse["mobile_phone"] : string.Empty,
+                                    HomePhone = userAsResponse.ContainsKey("home_phone") ? userAsResponse["home_phone"] : string.Empty,
                                 };
 
                                 usersInfo.Add(user);
@@ -913,7 +913,7 @@ namespace VK_Unicorn
 
                             // Определяем Id города
                             var cityId = userInfo.City != null ? userInfo.City.Id.GetValueOrDefault(0) : 0;
-                            var cityName = userInfo.City != null ? userInfo.City.Title : "";
+                            var cityName = userInfo.City != null ? userInfo.City.Title : string.Empty;
 
                             // Проверяем город учитывая настройки пользователя
                             switch (settings.SearchMethod)
@@ -953,11 +953,12 @@ namespace VK_Unicorn
 
                             try
                             {
-                                // Проверяем, указан ли год вообще
+                                // Проверяем, указан ли год вообще.
+                                // Для этого считаем количество точек в дате. Если "1.1.1990" то год есть, а если "1.1", то нету
                                 if (userInfo.BirthDate.Count(_ => _ == '.') == 2)
                                 {
                                     // Пробуем сконвертировать дату рождения
-                                    if (DateTime.TryParseExact(userInfo.BirthDate,"d.M.yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out birthDate))
+                                    if (DateTime.TryParseExact(userInfo.BirthDate, "d.M.yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out birthDate))
                                     {
                                         birthDateSet = true;
                                     }
@@ -969,8 +970,8 @@ namespace VK_Unicorn
                             }
 
                             // Определяем мобильный телефон
-                            var mobilePhone = userInfo.Contacts != null ? userInfo.Contacts.MobilePhone : "";
-                            var homePhone = userInfo.Contacts != null ? userInfo.Contacts.HomePhone : "";
+                            var mobilePhone = userInfo.Contacts != null ? userInfo.Contacts.MobilePhone : string.Empty;
+                            var homePhone = userInfo.Contacts != null ? userInfo.Contacts.HomePhone : string.Empty;
 
                             // Всё нормально, все условия и тесты пройдены, сохраняем пользователя
                             Database.Instance.InsertOrReplace(new Database.User()
@@ -1098,7 +1099,7 @@ namespace VK_Unicorn
         public void RegisterNewGroupToReceiveInfo(string groupWebUrl)
         {
             // Удаляем все символы перед доменным именем
-            var domainName = Regex.Replace(groupWebUrl, @".+\/", "").Trim();
+            var domainName = Regex.Replace(groupWebUrl, @".+\/", string.Empty).Trim();
 
             // Это сообщество начинающееся с public?
             if (Regex.Match(domainName.ToLowerInvariant(), @"public\d+$").Success)

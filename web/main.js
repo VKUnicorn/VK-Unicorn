@@ -40,6 +40,15 @@ function main() {
         content: 'Привет!'
     });
 
+    $('#donate-button').popover({
+        template: getPopoverTemplateWithClass("donate-button-popover"),
+        trigger: 'hover',
+        placement: 'bottom',
+        html: true,
+        delay: { "show": 300, "hide": 100 },
+        content: '<center>Поддержать проект можно по этой ссылке.<br>Любая сумма будет способствовать дальнейшему развитию проекта.<br>Там же можно дописать сообщение, я его обязательно увижу и прочитаю!<br><h6 class="mb-0">Спасибо!</h6></center>'
+    });
+
     $('#add-group-button').popover({
         container: '#add-group-button',
         trigger: 'hover',
