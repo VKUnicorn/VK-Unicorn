@@ -91,6 +91,7 @@ function loadUsers(favorites) {
                         <div class="card-img-overlay px-1 py-1">
                             ${!user.IsDeactivated ? '<a class="btn btn-success float-left px-1 py-1" id="hide-button"><i class="lni-check-mark-circle size-sm text-white"></i></a>' : ''}
                             <a class="btn btn-danger float-right px-2 py-2" id="delete-button"><i class="lni-close text-white"></i></a>
+                            <a class="btn btn-notes float-right px-2 py-2 card-overlay" id="notes-button"><i class="lni-pencil-alt text-white"></i></a>
                         </div>
                         <a href="${userExtraInfo.URL}" target="_blank" id="user">
                             <img class="card-img-top" src="${user.PhotoURL}">
@@ -404,6 +405,38 @@ function loadUsers(favorites) {
                 });
             });
 
+            userCard.find('#notes-button').mayTriggerLongClicks().on('longClick', function(data) {
+                bootbox.prompt({
+                    title: "Добавить заметку",
+                    message: "Введите заметку о пользователе:",
+                    inputType: 'textarea',
+                    placeholder: "Заметка о пользователе",
+                    value: user.Notes,
+                    backdrop: 'static',
+                    callback: function(result) {
+                        if (result != null) {
+                            // Отправляем запрос на изменение заметки
+                            $.post("user_notes",
+                            {
+                                id: user.Id,
+                                notes: result,
+                            },
+                            function(data, status) {
+                                if (status) {
+                                    user.Notes = result;
+                                    RebuildFullInfoModalContent();
+                                }
+                                else {
+                                    $.hulla.send("Не удалось изменить заметку у пользователя \"" + fullName + "\"", "danger");
+                                }
+                            }).fail(function(result) {
+                                $.hulla.send("Не удалось изменить заметку у пользователя \"" + fullName + "\"", "danger");
+                            });
+                        }
+                    }
+                });
+            });
+
             let favoriteElement = userCard.find('#favorite');
             favoriteElement.click(function() {
                 // Отправляем запрос на изменение статуса "в избранном"
@@ -501,35 +534,7 @@ function loadUsers(favorites) {
                             content: 'Редактировать заметку о пользователе'
                         });
                         notesButton.click(function() {
-                            bootbox.prompt({
-                                title: "Добавить заметку",
-                                message: "Введите заметку о пользователе:",
-                                inputType: 'textarea',
-                                placeholder: "Заметка о пользователе",
-                                value: user.Notes,
-                                backdrop: true,
-                                callback: function(result) {
-                                    if (result != null) {
-                                        // Отправляем запрос на изменение заметки
-                                        $.post("user_notes",
-                                        {
-                                            id: user.Id,
-                                            notes: result,
-                                        },
-                                        function(data, status) {
-                                            if (status) {
-                                                user.Notes = result;
-                                                RebuildFullInfoModalContent();
-                                            }
-                                            else {
-                                                $.hulla.send("Не удалось изменить заметку у пользователя \"" + fullName + "\"", "danger");
-                                            }
-                                        }).fail(function(result) {
-                                            $.hulla.send("Не удалось изменить заметку у пользователя \"" + fullName + "\"", "danger");
-                                        });
-                                    }
-                                }
-                            });
+                            userCard.find('#notes-button').trigger('longClick');
                         });
 
                         // Тултип и действие на кнопку "Удалить"
@@ -561,6 +566,15 @@ function loadUsers(favorites) {
 
         // Общие тултипы на все элементы
         $('*[id=delete-button]').popover(deletePopover);
+
+        $('*[id=notes-button]').popover({
+            template: getPopoverTemplateWithClass("no-weight-limit"),
+            trigger: 'hover',
+            placement: 'bottom',
+            html: true,
+            delay: { "show": 1100, "hide": 100 },
+            content: 'Редактировать заметку о пользователе<br><small class="text-muted">Удерживайте кнопку нажатой для редактирования</small>'
+        });
 
         $('*[id=likes-counter]').popover({
             trigger: 'hover',

@@ -104,7 +104,7 @@ namespace VK_Unicorn
                                 var paramKey = splittedParam[0];
                                 var paramValue = splittedParam[1];
 
-                                Utils.Log("    параметр " + paramKey + "=" + paramValue, LogLevel.NOTIFY);
+                                Utils.Log("    параметр " + paramKey + "=" + WebUtility.UrlDecode(paramValue), LogLevel.NOTIFY);
 
                                 parametersDictionary.Add(paramKey, paramValue);
                             }
