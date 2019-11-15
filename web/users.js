@@ -28,6 +28,13 @@ function loadUsers(favorites) {
             content: 'Временно скрыть пользователя пока не появится любая новая активность<br><small class="text-muted">Удерживайте кнопку нажатой для скрытия</small>'
         };
 
+        let favoritePopover = {
+            trigger: 'hover',
+            placement: 'top',
+            delay: { "show": 1000, "hide": 100 },
+            content: 'Добавить или удалить из избранного'
+        }
+
         // Добавляем отдельные категории для пользователей
         function addUserCategory(isForNew) {
             $(`
@@ -109,7 +116,7 @@ function loadUsers(favorites) {
                                 </small>
                             </div>
                             <div class="float-right pt-p-3">
-                                <i class="${user.IsFavorite ? 'lni-star-filled text-warning stroke-red' : 'lni-star text-muted'} opaque-4" id="favorite"></i>
+                                <i class="${user.IsFavorite ? 'lni-star-filled text-warning stroke-red' : 'lni-star text-muted'} opaque-4" id="favorite-button"></i>
                             </div>
                         </div>
                     </div>
@@ -130,9 +137,8 @@ function loadUsers(favorites) {
                                 </a>
                             `;
 
-                            ++count;
-
                             // Максимум пять фотографий
+                            ++count;
                             if (count >= 5) {
                                 break;
                             }
@@ -424,6 +430,8 @@ function loadUsers(favorites) {
                             function(data, status) {
                                 if (status) {
                                     user.Notes = result;
+
+                                    // Обновляем окно с полной информацией
                                     RebuildFullInfoModalContent();
                                 }
                                 else {
@@ -437,7 +445,7 @@ function loadUsers(favorites) {
                 });
             });
 
-            let favoriteElement = userCard.find('#favorite');
+            let favoriteElement = userCard.find('#favorite-button');
             favoriteElement.click(function() {
                 // Отправляем запрос на изменение статуса "в избранном"
                 $.post("favorite_user",
@@ -454,6 +462,12 @@ function loadUsers(favorites) {
                         favoriteElement.removeClass();
                         favoriteElement.addClass(user.IsFavorite ? "lni-star-filled text-warning stroke-red" : "lni-star text-muted");
                         favoriteElement.addClass("opaque-4");
+
+                        // Обновляем интерфейс в модальном окне
+                        favoriteElementInModal = $('#user-full-info-modal').find('#favorite-star');
+                        favoriteElementInModal.removeClass();
+                        favoriteElementInModal.addClass(user.IsFavorite ? "lni-star-filled text-warning stroke-red" : "lni-star text-muted");
+                        favoriteElementInModal.addClass("opaque-4");
                     }
                     else {
                         $.hulla.send("Не удалось изменить статус избранного у пользователя \"" + fullName + "\"", "danger");
@@ -508,6 +522,10 @@ function loadUsers(favorites) {
                                         ${user.IsDeactivated ? '' : '<button type="button" class="btn btn-success opaque-8" id="hide-button">Скрыть</button>'}
                                         <button type="button" class="btn btn-danger opaque-8" id="delete-button">Удалить</button>
                                         <button type="button" class="btn btn-notes opaque-6" id="notes-button">Заметка</button>
+                                        <button type="button" class="btn btn-light" id="favorite-button">
+                                            <i class="${user.IsFavorite ? 'lni-star-filled text-warning stroke-red' : 'lni-star text-muted'} opaque-4" id="favorite-star"></i>
+                                            Избранное
+                                        </button>
                                         <button type="button" class="btn btn-light" data-dismiss="modal">Закрыть</button>
                                     </div>
                                 </div>
@@ -542,6 +560,13 @@ function loadUsers(favorites) {
                         deleteButton.popover(deletePopover);
                         deleteButton.mayTriggerLongClicks().on('longClick', function(data) {
                             userCard.find('#delete-button').trigger('longClick');
+                        });
+
+                        // Тултип и действие на кнопку "Избранное"
+                        let favoriteButton = userFullInfoModalContent.find('#favorite-button');
+                        favoriteButton.popover(favoritePopover);
+                        favoriteButton.click(function() {
+                            favoriteElement.click();
                         });
                     }
 
@@ -597,12 +622,7 @@ function loadUsers(favorites) {
             content: 'Количество комментариев'
         });
 
-        $('*[id=favorite]').popover({
-            trigger: 'hover',
-            placement: 'top',
-            delay: { "show": 1000, "hide": 100 },
-            content: 'Добавить или удалить из избранного'
-        });
+        $('*[id=favorite-button]').popover(favoritePopover);
 
         // Заполняем баджи с количеством пользователей
         updateBadgeRelative('#users-header-new-true', newUsersCount);
