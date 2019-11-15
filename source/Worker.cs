@@ -29,12 +29,26 @@ namespace VK_Unicorn
         // Количество ошибок. Если слишком много, то перестаём что-то делать
         int errorsCount;
 
+        // Переменная для хранения последней информации о успешной авторизации
+        string lastAuthorizationInformation;
+
         public Worker()
         {
             if (Instance == null)
             {
                 Instance = this;
             }
+        }
+
+        void PrepareVkApi()
+        {
+            api = new VkApi();
+            api.OnTokenExpires += (sender) =>
+            {
+                isAuthorized = false;
+
+                Utils.Log("Токен авторизации стал недействительным. Будет необходимо авторизироваться заново", LogLevel.WARNING);
+            };
         }
 
         async public void RunMainThread()
@@ -49,13 +63,7 @@ namespace VK_Unicorn
             }
 
             // Создаём класс VkApi для дальнейшей работы
-            api = new VkApi();
-            api.OnTokenExpires += (sender) =>
-            {
-                isAuthorized = false;
-
-                Utils.Log("Токен авторизации стал недействительным. Будет необходимо авторизироваться заново", LogLevel.WARNING);
-            };
+            PrepareVkApi();
 
             // Запускаем основной поток выполнения. Тут определяем что в данный момент нужно делать и делаем это
             while (true)
@@ -74,13 +82,22 @@ namespace VK_Unicorn
                 {
                     Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
                     {
+                        // Нужно авторизироваться заново т.к. поменялись настройки авторизации?
+                        if (isAuthorized)
+                        {
+                            if (settings.GetCombinedAuthorizationInformation() != lastAuthorizationInformation)
+                            {
+                                isAuthorized = false;
+                            }
+                        }
+
                         // Готовим список задач, которые вообще можно делать. Задачи будут проверяться в порядке их объявления
                         var possibleTaskConditions = new List<Callback>()
                         {
                             // Временная задача-заглушка для разработки. Мешает выполнению методов, требующих авторизацию
                             () =>
                             {
-                                currentTask = async () => { await WaitAndSlack(); };
+                                //currentTask = async () => { await WaitAndSlack(); };
                             },
 
                             // Проверяем, авторизированы ли мы вообще. Если нет, то авторизируемся
@@ -179,6 +196,9 @@ namespace VK_Unicorn
 
                 isAuthorized = true;
 
+                // Запоминаем последнюю успешную авторизацию
+                lastAuthorizationInformation = settings.GetCombinedAuthorizationInformation();
+
                 var apiTokenShort = api.Token.Length > 8 ? api.Token.Substring(0, 4) + "..." + api.Token.Substring(api.Token.Length - 4) : api.Token;
                 Utils.Log("Авторизация прошла успешно. Токен авторизации: " + apiTokenShort, LogLevel.SUCCESS);
 
@@ -186,6 +206,12 @@ namespace VK_Unicorn
             }
             catch (Exception ex)
             {
+                // Обновляем VkApi т.к. со старым больше подключаться не получится
+                PrepareVkApi();
+
+                // Стираем информацию о последней успешной авторизации
+                lastAuthorizationInformation = string.Empty;
+
                 Utils.Log("не удалось авторизироваться. Причина: " + ex.Message, LogLevel.ERROR);
                 await WaitAlotAfterError();
             }
@@ -398,6 +424,13 @@ namespace VK_Unicorn
                         // Обходим все записи
                         foreach (var post in posts)
                         {
+                            // Пропускаем удалённые записи
+                            if (post.Text == null)
+                            {
+                                Utils.Log("Пропускаем удалённую запись " + post.Id, LogLevel.NOTIFY);
+                                continue;
+                            }
+
                             // Ограничиваем количество лайков которые "видны" нам в дальнейшем
                             post.Likes.Count = Math.Min(post.Likes.Count, Constants.MAX_LIKES_TO_SCAN);
                             // Ограничиваем количество комментариев которые "видны" нам в дальнейшем
@@ -540,6 +573,13 @@ namespace VK_Unicorn
 
                                         foreach (var comment in commentsResult.Items)
                                         {
+                                            // Пропускаем удалённые записи
+                                            if (comment.Text == null)
+                                            {
+                                                Utils.Log("Пропускаем удалённый комментарий " + comment.Id, LogLevel.NOTIFY);
+                                                continue;
+                                            }
+
                                             // Ограничиваем количество лайков которые "видны" нам в дальнейшем
                                             comment.Likes.Count = Math.Min(comment.Likes.Count, Constants.MAX_COMMENT_LIKES_TO_SCAN);
 
@@ -1070,7 +1110,7 @@ namespace VK_Unicorn
                     {
                         activitiesLogCounter = 0;
 
-                        Utils.Log("Осталось обработать: " + userActivitiesToProcess.Count, LogLevel.GENERAL);
+                        Utils.Log("Обработка результатов. Осталось обработать: " + userActivitiesToProcess.Count, LogLevel.GENERAL);
                         await Task.Delay(TimeSpan.FromSeconds(0.1d));
                     }
                 }

@@ -457,6 +457,12 @@ namespace VK_Unicorn
 
             // Стоп слова
             public string StopWords { get; set; }
+
+            // Возвращает комбинацию Id приложения, логина и пароля. Нужно для определения изменилось ли что-то
+            public string GetCombinedAuthorizationInformation()
+            {
+                return ApplicationId + Login.Trim() + Password.Trim();
+            }
         }
 
         // Таблица для служебного использования

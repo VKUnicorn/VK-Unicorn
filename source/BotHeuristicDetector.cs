@@ -12,6 +12,20 @@ namespace VK_Unicorn
                 var status = user.Status != null ? user.Status.ToLowerInvariant() : string.Empty;
                 var site = user.Site != null ? user.Site : string.Empty;
 
+                // Эмодзи "мешок с деньгами"
+                if (status.Contains("&#128176;"))
+                {
+                    reason = "эмодзи \"мешок с деньгами\"";
+                    return true;
+                }
+
+                // Эмодзи "рука вниз"
+                if (status.Contains("&#128071;&#127995;"))
+                {
+                    reason = "эмодзи \"рука вниз\"";
+                    return true;
+                }
+
                 // vk.cc сокращатель спам ссылок
                 if (site.StartsWith("https://vk.cc") || site.StartsWith("http://vk.cc") || site.StartsWith("vk.cc"))
                 {
@@ -49,6 +63,34 @@ namespace VK_Unicorn
 
                 // Ссылка в описании
                 if (status.Contains("ссылк") && status.Contains("описани"))
+                {
+                    reason = "ссылка на сайт";
+                    return true;
+                }
+
+                // Ссылка в контактах
+                if (status.Contains("ссылк") && status.Contains("контакт"))
+                {
+                    reason = "ссылка на сайт";
+                    return true;
+                }
+
+                // Появился сайт
+                if (status.Contains("появился") && status.Contains("сайт"))
+                {
+                    reason = "ссылка на сайт";
+                    return true;
+                }
+
+                // Пиши мне и ты узнаешь как зарабатывать от 100$ в месяц без вложений
+                if (status.Contains("без вложений"))
+                {
+                    reason = "ссылка на сайт";
+                    return true;
+                }
+
+                // Зарабатывай\заработай
+                if (status.Contains("зарабатыва") || status.Contains("заработ"))
                 {
                     reason = "ссылка на сайт";
                     return true;
