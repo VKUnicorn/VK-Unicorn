@@ -8,7 +8,7 @@ namespace VK_Unicorn
         public const string APP_VERSION = "v1.0.0";
         public const string PROJECT_WEB_PAGE = "https://github.com/VKUnicorn/VK-Unicorn";
         public const string VK_WEB_PAGE = "https://vk.com/";
-        public const string DONATION_ALERTS_WEB_PAGE = "https://www.donationalerts.com/r/vkunicorn";
+        public const string DONATION_ALERTS_WEB_PAGE = "https://www.donationalerts.com/r/VKUnicorn";
 
         public const int WEB_PORT = 5051;
         public static readonly string RESULTS_WEB_PAGE = "http://localhost:" + WEB_PORT + "/";
