@@ -467,7 +467,7 @@ function loadUsers(favorites) {
                         favoriteElementInModal = $('#user-full-info-modal').find('#favorite-star');
                         favoriteElementInModal.removeClass();
                         favoriteElementInModal.addClass(user.IsFavorite ? "lni-star-filled text-warning stroke-red" : "lni-star text-muted");
-                        favoriteElementInModal.addClass("opaque-4");
+                        favoriteElementInModal.addClass("opaque-4 rel-t-1");
                     }
                     else {
                         $.hulla.send("Не удалось изменить статус избранного у пользователя \"" + fullName + "\"", "danger");
@@ -523,7 +523,7 @@ function loadUsers(favorites) {
                                         <button type="button" class="btn btn-danger opaque-8" id="delete-button">Удалить</button>
                                         <button type="button" class="btn btn-notes opaque-6" id="notes-button">Заметка</button>
                                         <button type="button" class="btn btn-light" id="favorite-button">
-                                            <i class="${user.IsFavorite ? 'lni-star-filled text-warning stroke-red' : 'lni-star text-muted'} opaque-4" id="favorite-star"></i>
+                                            <i class="${user.IsFavorite ? 'lni-star-filled text-warning stroke-red' : 'lni-star text-muted'} opaque-4 rel-t-1" id="favorite-star"></i>
                                             Избранное
                                         </button>
                                         <button type="button" class="btn btn-light" data-dismiss="modal">Закрыть</button>

@@ -374,6 +374,11 @@ body {
     padding-right: 5px;
 }
 
+.rel-t-1 {
+    position: relative;
+    top: 1px;
+}
+
 /*
  * Bootstrap анимация
  */
