@@ -9,8 +9,8 @@ namespace VK_Unicorn
         {
             try
             {
-                var status = user.Status.ToLowerInvariant();
-                var site = user.Site;
+                var status = user.Status != null ? user.Status.ToLowerInvariant() : string.Empty;
+                var site = user.Site != null ? user.Site : string.Empty;
 
                 // vk.cc сокращатель спам ссылок
                 if (site.StartsWith("https://vk.cc") || site.StartsWith("http://vk.cc") || site.StartsWith("vk.cc"))

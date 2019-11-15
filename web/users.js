@@ -125,8 +125,8 @@ function loadUsers(favorites) {
                         let count = 0;
                         for (let attachment of attachments) {
                             result += `
-                                <a href="${attachment}" target="_blank">
-                                    <img src="${attachment}" class="${isBigMode ? 'attachment-big' : 'attachment'}">
+                                <a href="${attachment.Value}" target="_blank">
+                                    <img src="${attachment.Key}" class="${isBigMode ? 'attachment-big' : 'attachment'}">
                                 </a>
                             `;
 

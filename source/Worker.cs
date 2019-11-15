@@ -587,7 +587,7 @@ namespace VK_Unicorn
                                                 }
 
                                                 // В комментарии есть фото вложения? Сохраняем их
-                                                var commentPhotoAttachments = new List<string>();
+                                                var commentPhotoAttachments = new List<KeyValuePair<string, string>>();
                                                 if (comment.Attachments != null)
                                                 {
                                                     foreach (var attachment in comment.Attachments)
@@ -597,11 +597,12 @@ namespace VK_Unicorn
                                                             var attachmentAsPhoto = attachment.Instance as VkNet.Model.Attachments.Photo;
                                                             if (attachmentAsPhoto.Sizes != null)
                                                             {
-                                                                var lastSizePhoto = attachmentAsPhoto.Sizes.Last();
-                                                                if (lastSizePhoto != null)
-                                                                {
-                                                                    commentPhotoAttachments.Add(lastSizePhoto.Url.ToString());
-                                                                }
+                                                                // Сохраняем ссылку на изображение в минимальном и максимальном разрешениях
+                                                                commentPhotoAttachments.Add(new KeyValuePair<string, string>
+                                                                (
+                                                                    attachmentAsPhoto.GetPreviewSizePhotoURL(),
+                                                                    attachmentAsPhoto.GetMaxSizePhotoURL()
+                                                                ));
                                                             }
                                                         }
                                                     }
@@ -646,7 +647,7 @@ namespace VK_Unicorn
                                 }
 
                                 // В записи есть фото вложения? Сохраняем их
-                                var photoAttachments = new List<string>();
+                                var photoAttachments = new List<KeyValuePair<string, string>>();
                                 if (post.Attachments != null)
                                 {
                                     foreach (var attachment in post.Attachments)
@@ -656,11 +657,12 @@ namespace VK_Unicorn
                                             var attachmentAsPhoto = attachment.Instance as VkNet.Model.Attachments.Photo;
                                             if (attachmentAsPhoto.Sizes != null)
                                             {
-                                                var lastSizePhoto = attachmentAsPhoto.Sizes.Last();
-                                                if (lastSizePhoto != null)
-                                                {
-                                                    photoAttachments.Add(lastSizePhoto.Url.ToString());
-                                                }
+                                                // Сохраняем ссылку на изображение в минимальном и максимальном разрешениях
+                                                photoAttachments.Add(new KeyValuePair<string, string>
+                                                (
+                                                    attachmentAsPhoto.GetPreviewSizePhotoURL(),
+                                                    attachmentAsPhoto.GetMaxSizePhotoURL()
+                                                ));
                                             }
                                         }
                                     }

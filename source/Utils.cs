@@ -118,6 +118,18 @@ namespace VK_Unicorn
             return Constants.VK_WEB_PAGE + "id" + self.Id;
         }
 
+        public static string GetPreviewSizePhotoURL(this VkNet.Model.Attachments.Photo self)
+        {
+            // Берём какое-нибудь среднее изображение из всех возможных размеров
+            var chunk = self.Sizes.Take(3);
+            return chunk.Last() != null ? chunk.Last().Url.ToString() : string.Empty;
+        }
+
+        public static string GetMaxSizePhotoURL(this VkNet.Model.Attachments.Photo self)
+        {
+            return self.Sizes.Last() != null ? self.Sizes.Last().Url.ToString() : string.Empty;
+        }
+
         public static bool IsOneOf<T>(this T valueToFind, params T[] valuesToCheck)
         {
             foreach (var value in valuesToCheck)
