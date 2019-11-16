@@ -259,6 +259,7 @@ function loadUsers(favorites) {
                         let index = 0;
                         for (let paramPostOrComment of paramPostsOrComments) {
                             let isPost = paramPostOrComment.Activity.Type == 0;
+                            let groupName = paramPostOrComment.Group ? '"' + paramPostOrComment.Group.Name + '"' : 'club' + paramPostOrComment.Activity.GroupId;
                             result += `
                                 ${index > 0 ? '<hr class="mx-0 my-1">' : ''}
                                 <div class="block-with-text-4">
@@ -268,7 +269,7 @@ function loadUsers(favorites) {
                                 <span class="text-muted block-with-text-1 opaque-5">
                                     <i class="${isPost ? "lni-popup" : "lni-comment-reply"} mr-0 text-dark"></i>
                                     <a href="${paramPostOrComment.URL}" target="_blank" class="text-dark">
-                                        ${isoTimeToLocalDeltaAsString(paramPostOrComment.Activity.WhenHappened)} назад в сообществе "${paramPostOrComment.Group.Name}"
+                                        ${isoTimeToLocalDeltaAsString(paramPostOrComment.Activity.WhenHappened)} назад в сообществе ${groupName}
                                     </a>
                                 </span>
                             `;
@@ -293,6 +294,7 @@ function loadUsers(favorites) {
                         let index = 0;
                         for (let paramLike of paramLikes) {
                             let isLikeToPost = paramLike.Activity.Type == 1;
+                            let groupName = paramLike.Group ? '"' + paramLike.Group.Name + '"' : 'club' + paramLike.Activity.GroupId;
                             result += `
                                 ${index > 0 ? '<hr class="mx-0 my-1">' : ''}
                                 <div class="block-with-text-4 text-like">
@@ -302,7 +304,7 @@ function loadUsers(favorites) {
                                 <span class="text-muted block-with-text-1 opaque-5">
                                     <i class="lni-heart mr-0"></i>
                                     <a href="${paramLike.URL}" target="_blank" class="text-dark">
-                                        ${isoTimeToLocalDeltaAsString(paramLike.Activity.WhenHappened)} назад в сообществе "${paramLike.Group.Name}"
+                                        ${isoTimeToLocalDeltaAsString(paramLike.Activity.WhenHappened)} назад в сообществе ${groupName}
                                     </a>
                                 </span>
                             `;
