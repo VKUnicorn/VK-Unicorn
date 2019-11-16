@@ -13,14 +13,14 @@ namespace VK_Unicorn
                 var site = user.Site != null ? user.Site : string.Empty;
 
                 // Эмодзи "мешок с деньгами"
-                if (status.Contains("&#128176;"))
+                if (status.Contains(char.ConvertFromUtf32(0x1F4B0)))
                 {
                     reason = "эмодзи \"мешок с деньгами\"";
                     return true;
                 }
 
                 // Эмодзи "рука вниз"
-                if (status.Contains("&#128071;&#127995;"))
+                if (status.Contains(char.ConvertFromUtf32(0x1F447)))
                 {
                     reason = "эмодзи \"рука вниз\"";
                     return true;
