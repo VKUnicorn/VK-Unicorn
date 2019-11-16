@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace VK_Unicorn
 {
@@ -622,6 +623,20 @@ namespace VK_Unicorn
             ForDatabaseLocked((db) =>
             {
                 rowsModified = db.InsertOrReplace(target);
+            });
+
+            return rowsModified > 0;
+        }
+
+        /// <summary>
+        /// Добавляет иного записей в таблицу
+        /// </summary>
+        public bool InsertAll(IEnumerable target)
+        {
+            var rowsModified = 0;
+            ForDatabaseLocked((db) =>
+            {
+                rowsModified = db.InsertAll(target, " OR IGNORE ");
             });
 
             return rowsModified > 0;

@@ -573,10 +573,9 @@ namespace VK_Unicorn
 
                                         foreach (var comment in commentsResult.Items)
                                         {
-                                            // Пропускаем удалённые записи
+                                            // Пропускаем удалённые комментарии
                                             if (comment.Text == null)
                                             {
-                                                Utils.Log("Пропускаем удалённый комментарий " + comment.Id, LogLevel.NOTIFY);
                                                 continue;
                                             }
 
@@ -1116,13 +1115,10 @@ namespace VK_Unicorn
                 }
 
                 // Помечаем всех пользователей о которых мы получили информацию как просканированных
-                foreach (var userInfo in usersInfo)
+                Database.Instance.InsertAll(usersInfo.Select(_ => new Database.ScannedUser()
                 {
-                    Database.Instance.InsertOrReplace(new Database.ScannedUser()
-                    {
-                        UserId = userInfo.Id
-                    });
-                }
+                    UserId = _.Id
+                }));
 
                 // Помечаем сообщество как только что просканированное
                 group.MarkAsJustScanned();
@@ -1142,7 +1138,7 @@ namespace VK_Unicorn
             }
 
             // DEBUG Для отладки
-            inFatalErrorState = true;
+            //inFatalErrorState = true;
         }
 
         async Task WaitAndSlack()
