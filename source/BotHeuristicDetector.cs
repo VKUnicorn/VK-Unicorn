@@ -48,7 +48,14 @@ namespace VK_Unicorn
                 }
 
                 // Быстрее читай мою стену, чтобы узнать как провести со мной время!!!
-                if (status.Contains("читай") && status.Contains("стен"))
+                if ((status.Contains("читай") || status.Contains("читат")) && status.Contains("стен"))
+                {
+                    reason = "спам на стене";
+                    return true;
+                }
+
+                // Только НЕ крайний пост на стене
+                if (status.Contains("пост") && status.Contains("стен"))
                 {
                     reason = "спам на стене";
                     return true;
@@ -98,6 +105,13 @@ namespace VK_Unicorn
 
                 // Хочу подробностей
                 if (status.Contains("хочу подробностей"))
+                {
+                    reason = "бот - автоответчик";
+                    return true;
+                }
+
+                // Я очень редкий исчезающий вид женщин - у меня свои ногти, волосы, брови, ресницы, губы и все остальное!)))
+                if (status.Contains("исчезающий вид женщин"))
                 {
                     reason = "бот - автоответчик";
                     return true;
