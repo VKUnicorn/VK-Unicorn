@@ -26,9 +26,6 @@ namespace VK_Unicorn
         // Произошла какая-то фатальная ошибка. Ничего не делаем
         bool inFatalErrorState;
 
-        // Количество ошибок. Если слишком много, то перестаём что-то делать
-        int errorsCount;
-
         // Переменная для хранения последней информации о успешной авторизации
         string lastAuthorizationInformation;
 
@@ -1142,9 +1139,6 @@ namespace VK_Unicorn
                 Utils.Log("не удалось просканировать сообщество " + group.Name + ". Причина: " + ex.Message, LogLevel.ERROR);
                 await WaitAlotAfterError();
             }
-
-            // DEBUG Для отладки
-            //inFatalErrorState = true;
         }
 
         async Task WaitAndSlack()

@@ -481,13 +481,10 @@ function loadUsers(favorites) {
 
             // Событие клика на карточку пользователя. Если кликаем левой кнопкой мыши - открываем полную инорфмацию.
             // Если кликаем средней кнопкой, то открываем сразу профиль пользователя в новой вкладке
-            userCard.find('#user').click(function(e) {
-                e.preventDefault();
-
+            let requestUserActivities = function(noLimitParam) {
                 $.getJSON('user_activities', {
                     id: user.Id,
-                    // Если зажат shift, то загружаем вообще всю активность, без лимита по времени
-                    noLimit: event.shiftKey
+                    noLimit: noLimitParam
                 }, function(result) {
                     let allPosts = result[0].Posts;
                     let allLikes = result[0].Likes;
@@ -524,6 +521,7 @@ function loadUsers(favorites) {
                                         ${user.IsDeactivated ? '' : '<button type="button" class="btn btn-success opaque-8" id="hide-button">Скрыть</button>'}
                                         <button type="button" class="btn btn-danger opaque-8" id="delete-button">Удалить</button>
                                         <button type="button" class="btn btn-notes opaque-6" id="notes-button">Заметка</button>
+                                        ${!noLimitParam ? '<button type="button" class="btn btn-primary opaque-6" id="history-button">История</button>' : ''}
                                         <button type="button" class="btn btn-light" id="favorite-button">
                                             <i class="${user.IsFavorite ? 'lni-star-filled text-warning stroke-red' : 'lni-star text-muted'} opaque-4 rel-t-1" id="favorite-star"></i>
                                             Избранное
@@ -564,6 +562,23 @@ function loadUsers(favorites) {
                             userCard.find('#delete-button').trigger('longClick');
                         });
 
+                        // Тултип и действие на кнопку "История"
+                        if (!noLimitParam) {
+                            let historyButton = userFullInfoModalContent.find('#history-button');
+                            historyButton.popover({
+                                template: getPopoverTemplateWithClass("no-weight-limit"),
+                                trigger: 'hover',
+                                placement: 'bottom',
+                                html: true,
+                                delay: { "show": 600, "hide": 100 },
+                                content: 'Показать все действия пользователя, без лимита по количеству и времени'
+                            });
+                            historyButton.click(function() {
+                                historyButton.popover('hide');
+                                requestUserActivities(true);
+                            });
+                        }
+
                         // Тултип и действие на кнопку "Избранное"
                         let favoriteButton = userFullInfoModalContent.find('#favorite-button');
                         favoriteButton.popover(favoritePopover);
@@ -580,6 +595,13 @@ function loadUsers(favorites) {
                 }).fail(function(result) {
                     $.hulla.send("Ошибка при загрузке полной информации о пользователе. Главный модуль программы не запущен или пользователь был удалён", "danger");
                 })
+            };
+
+            userCard.find('#user').click(function(e) {
+                e.preventDefault();
+
+                // Если зажат shift, то загружаем вообще всю активность, без лимита по времени
+                requestUserActivities(event.shiftKey);
             });
 
             // Увеличиваем счётчики
