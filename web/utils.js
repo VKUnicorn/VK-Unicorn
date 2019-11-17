@@ -155,7 +155,7 @@ function fixExternalUrl(url) {
 (function($) {
     var defaultSettings = {
         NS: 'jquery.longclick-',
-        delay: 350
+        delay: 400
     };
 
     $.fn.mayTriggerLongClicks = function(userSettings) {
