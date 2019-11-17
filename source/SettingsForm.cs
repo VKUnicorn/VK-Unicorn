@@ -20,7 +20,7 @@ namespace VK_Unicorn
 
             // Значения по умолчанию для некоторых полей
             StopWordsTextBox.Text = Constants.DEFAULT_STOP_WORDS;
-            SearchByCityRadioButton.Checked = true;
+            SearchSmartRadioButton.Checked = true;
 
             // Загружаем настройки
             Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
@@ -33,8 +33,8 @@ namespace VK_Unicorn
 
                 switch (settings.SearchMethod)
                 {
-                    case Database.Settings.SearchMethodType.SMART:
-                        SearchSmartRadioButton.Checked = true;
+                    case Database.Settings.SearchMethodType.BY_CITY:
+                        SearchByCityRadioButton.Checked = true;
                         break;
 
                     case Database.Settings.SearchMethodType.ALL_OF_TARGET_SEX:
@@ -42,7 +42,7 @@ namespace VK_Unicorn
                         break;
 
                     default:
-                        SearchByCityRadioButton.Checked = true;
+                        SearchSmartRadioButton.Checked = true;
                         break;
                 }
             });
@@ -51,10 +51,10 @@ namespace VK_Unicorn
         void ApplyButton_Click(object sender, EventArgs e)
         {
             // Определяем метод поиска пользователей
-            var searchMethod = Database.Settings.SearchMethodType.BY_CITY;
-            if (SearchSmartRadioButton.Checked)
+            var searchMethod = Database.Settings.SearchMethodType.SMART;
+            if (SearchByCityRadioButton.Checked)
             {
-                searchMethod = Database.Settings.SearchMethodType.SMART;
+                searchMethod = Database.Settings.SearchMethodType.BY_CITY;
             }
             if (SearchAllRadioButton.Checked)
             {

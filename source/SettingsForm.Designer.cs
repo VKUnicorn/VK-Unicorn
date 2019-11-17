@@ -351,23 +351,25 @@
             // SearchSmartRadioButton
             // 
             this.SearchSmartRadioButton.AutoSize = true;
-            this.SearchSmartRadioButton.Location = new System.Drawing.Point(11, 122);
+            this.SearchSmartRadioButton.Location = new System.Drawing.Point(11, 102);
             this.SearchSmartRadioButton.Name = "SearchSmartRadioButton";
-            this.SearchSmartRadioButton.Size = new System.Drawing.Size(448, 20);
+            this.SearchSmartRadioButton.Size = new System.Drawing.Size(751, 20);
             this.SearchSmartRadioButton.TabIndex = 20;
             this.SearchSmartRadioButton.TabStop = true;
-            this.SearchSmartRadioButton.Text = "Все пользователи из закрытых сообществ, остальные по городу";
+            this.SearchSmartRadioButton.Text = "Все пользователи из закрытых сообществ, остальные по городу, включая закрытые про" +
+    "фили (рекомендуется)";
             this.SearchSmartRadioButton.UseVisualStyleBackColor = true;
             // 
             // SearchByCityRadioButton
             // 
             this.SearchByCityRadioButton.AutoSize = true;
-            this.SearchByCityRadioButton.Location = new System.Drawing.Point(11, 102);
+            this.SearchByCityRadioButton.Location = new System.Drawing.Point(11, 122);
             this.SearchByCityRadioButton.Name = "SearchByCityRadioButton";
-            this.SearchByCityRadioButton.Size = new System.Drawing.Size(550, 20);
+            this.SearchByCityRadioButton.Size = new System.Drawing.Size(629, 20);
             this.SearchByCityRadioButton.TabIndex = 19;
             this.SearchByCityRadioButton.TabStop = true;
-            this.SearchByCityRadioButton.Text = "По городу. Только пользователи, у которых указан твой город (рекомендуется)";
+            this.SearchByCityRadioButton.Text = "По городу. Только пользователи, у которых указан твой город, включая закрытые про" +
+    "фили";
             this.SearchByCityRadioButton.UseVisualStyleBackColor = true;
             // 
             // CityFilterLabel

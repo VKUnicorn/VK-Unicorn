@@ -975,27 +975,33 @@ namespace VK_Unicorn
                             var cityId = userInfo.City != null ? userInfo.City.Id.GetValueOrDefault(0) : 0;
                             var cityName = userInfo.City != null ? userInfo.City.Title : string.Empty;
 
-                            // Проверяем город учитывая настройки пользователя
-                            switch (settings.SearchMethod)
-                            {
-                                case Database.Settings.SearchMethodType.BY_CITY:
-                                    if (cityId != settings.CityId)
-                                    {
-                                        DeleteAllActivitiesToProcessFromThisUser();
-                                        return;
-                                    }
-                                    break;
+                            // Закрытый профиль?
+                            var isClosed = userInfo.IsClosed.GetValueOrDefault(false);
 
-                                case Database.Settings.SearchMethodType.SMART:
-                                    if (!group.IsClosed)
-                                    {
+                            // Проверяем город учитывая настройки пользователя
+                            if (!isClosed)
+                            {
+                                switch (settings.SearchMethod)
+                                {
+                                    case Database.Settings.SearchMethodType.BY_CITY:
                                         if (cityId != settings.CityId)
                                         {
                                             DeleteAllActivitiesToProcessFromThisUser();
                                             return;
                                         }
-                                    }
-                                    break;
+                                        break;
+
+                                    case Database.Settings.SearchMethodType.SMART:
+                                        if (!group.IsClosed)
+                                        {
+                                            if (cityId != settings.CityId)
+                                            {
+                                                DeleteAllActivitiesToProcessFromThisUser();
+                                                return;
+                                            }
+                                        }
+                                        break;
+                                }
                             }
 
                             // Это анкета бота? Эвристический анализ
