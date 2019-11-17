@@ -587,8 +587,8 @@ function loadUsers(favorites) {
 
                         // Тултипы на превью вложений
                         userFullInfoModalContent.find('*[id=attachmentPreview]').popover({
-                            trigger: 'hover',
                             template: getPopoverTemplateWithClass("attachment-preview", "px-2"),
+                            trigger: 'hover',
                             html: true,
                             offset: userShortInfoPopoverOffset,
                             placement: userShortInfoPopoverPlecement,

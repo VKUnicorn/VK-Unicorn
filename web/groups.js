@@ -61,33 +61,13 @@ function loadGroups() {
             `).appendTo($('#groups-closed-' + group.IsClosed));
 
             // Тултипы
-            groupCard.find('#delete-button').popover({
-                trigger: 'hover',
-                placement: 'bottom',
-                delay: { "show": 450, "hide": 100 },
-                content: 'Удалить сообщество навсегда'
-            });
-
-            groupCard.find('#efficiency').popover({
-                trigger: 'hover',
-                placement: 'top',
-                delay: { "show": 450, "hide": 100 },
-                content: 'Сколько пользователей было найдено из этого сообщества'
-            });
-
             groupCard.find('#last-activity').popover({
+                template: getPopoverTemplateWithClass("no-weight-limit"),
                 trigger: 'hover',
                 placement: 'top',
                 html: true,
                 delay: { "show": 450, "hide": 100 },
                 content: 'Как давно было найдено что-нибудь полезное в этом сообществе' + lockHintElement
-            });
-
-            groupCard.find('#last-scanned').popover({
-                trigger: 'hover',
-                placement: 'top',
-                delay: { "show": 450, "hide": 100 },
-                content: 'Как давно было последнее сканирование сообщества'
             });
 
             // Оработчики событий
@@ -130,6 +110,30 @@ function loadGroups() {
                 ++openGroupsCount;
             }
         }
+
+        // Общие тултипы на все элементы
+        $('*[id=delete-button]').popover({
+            trigger: 'hover',
+            placement: 'bottom',
+            delay: { "show": 450, "hide": 100 },
+            content: 'Удалить сообщество навсегда'
+        });
+
+        $('*[id=efficiency]').popover({
+            template: getPopoverTemplateWithClass("no-weight-limit"),
+            trigger: 'hover',
+            placement: 'top',
+            delay: { "show": 450, "hide": 100 },
+            content: 'Сколько пользователей было найдено из этого сообщества'
+        });
+
+        $('*[id=last-scanned]').popover({
+            template: getPopoverTemplateWithClass("no-weight-limit"),
+            trigger: 'hover',
+            placement: 'top',
+            delay: { "show": 450, "hide": 100 },
+            content: 'Как давно было последнее сканирование сообщества'
+        });
 
         // Заполняем баджи с количеством сообществ
         updateBadgeRelative('#groups-header-closed-true', closedGroupsCount);
