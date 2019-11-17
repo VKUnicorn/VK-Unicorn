@@ -133,7 +133,7 @@ function loadUsers(favorites) {
                         for (let attachment of attachments) {
                             result += `
                                 <a href="${attachment.Value}" target="_blank" class="text-white">
-                                    <img src="${attachment.Key}" class="${isBigMode ? 'attachment-big' : 'attachment'}">
+                                    <img src="${attachment.Key}" class="${isBigMode ? 'attachment-big' : 'attachment'}" data-content="<img src='${attachment.Value}' class='attachment-hover-preview'>" id="attachmentPreview">
                                 </a>
                             `;
 
@@ -479,8 +479,7 @@ function loadUsers(favorites) {
                 });
             });
 
-            // Событие клика на карточку пользователя. Если кликаем левой кнопкой мыши - открываем полную инорфмацию.
-            // Если кликаем средней кнопкой, то открываем сразу профиль пользователя в новой вкладке
+            // Функция загрузки более подробной информации о действиях пользователя
             let requestUserActivities = function(noLimitParam) {
                 $.getJSON('user_activities', {
                     id: user.Id,
@@ -571,7 +570,7 @@ function loadUsers(favorites) {
                                 placement: 'bottom',
                                 html: true,
                                 delay: { "show": 600, "hide": 100 },
-                                content: 'Показать все действия пользователя, без лимита по количеству и времени'
+                                content: 'Показать все действия пользователя, без лимита по количеству и времени<br><small class="text-muted">Можно вызвать сразу через Shift-Click по карточке пользователя</small>'
                             });
                             historyButton.click(function() {
                                 historyButton.popover('hide');
@@ -581,9 +580,19 @@ function loadUsers(favorites) {
 
                         // Тултип и действие на кнопку "Избранное"
                         let favoriteButton = userFullInfoModalContent.find('#favorite-button');
-                        favoriteButton.popover(favoritePopover);
+                        favoriteButton.popover($.extend(favoritePopover, { placement: 'bottom' }));
                         favoriteButton.click(function() {
                             favoriteElement.click();
+                        });
+
+                        // Тултипы на превью вложений
+                        userFullInfoModalContent.find('*[id=attachmentPreview]').popover({
+                            trigger: 'hover',
+                            template: getPopoverTemplateWithClass("attachment-preview", "px-2"),
+                            html: true,
+                            offset: userShortInfoPopoverOffset,
+                            placement: userShortInfoPopoverPlecement,
+                            delay: { "show": 200, "hide": 100 },
                         });
                     }
 
@@ -592,11 +601,18 @@ function loadUsers(favorites) {
 
                     // Открываем модальное окно
                     userFullInfoModal.modal();
+
+                    // Сообщение о том что загружена полная информация
+                    if (noLimitParam) {
+                        $.hulla.send("Загружена полная информация о пользователе " + fullName, "success");
+                    }
                 }).fail(function(result) {
                     $.hulla.send("Ошибка при загрузке полной информации о пользователе. Главный модуль программы не запущен или пользователь был удалён", "danger");
                 })
             };
 
+            // Событие клика на карточку пользователя. Если кликаем левой кнопкой мыши - открываем полную инорфмацию.
+            // Если кликаем средней кнопкой, то открываем сразу профиль пользователя в новой вкладке
             userCard.find('#user').click(function(e) {
                 e.preventDefault();
 

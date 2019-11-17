@@ -130,6 +130,11 @@ body {
     max-height: 9rem;
 }
 
+.attachment-hover-preview {
+    object-fit: cover;
+    max-width: 34rem;
+}
+
 .lni-plus {
     color: white;
 }
@@ -233,6 +238,10 @@ body {
 .popover.user-short-info {
     max-width: 35rem !important;
     min-width: 35rem !important;
+}
+
+.popover.attachment-preview {
+    max-width: 35rem !important;
 }
 
 /*
