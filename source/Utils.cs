@@ -39,7 +39,7 @@ namespace VK_Unicorn
                     break;
 
                 case LogLevel.WARNING:
-                    color = Color.DarkSalmon;
+                    color = Color.DarkViolet;
                     break;
 
                 case LogLevel.NOTIFY:

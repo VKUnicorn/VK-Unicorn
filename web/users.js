@@ -1,9 +1,10 @@
-function loadUsers(favorites) {
+function loadUsers(clickEvent, favorites) {
     clear_workspace();
     start_loading();
 
     $.getJSON('users', {
-        favorites: favorites
+        favorites: favorites,
+        noLimit: clickEvent && clickEvent.shiftKey
     }, function(result) {
         // Позиция тултипа с информацией о пользователе. По умолчанию - справа
         // Если ширина окна браузера слишком маленькая, то будем отображать тултип с информацией о пользователе снизу, а не справа
@@ -33,7 +34,7 @@ function loadUsers(favorites) {
             placement: 'top',
             delay: { "show": 1000, "hide": 100 },
             content: 'Добавить или удалить из избранного'
-        }
+        };
 
         // Добавляем отдельные категории для пользователей
         function addUserCategory(isForNew) {
@@ -642,6 +643,7 @@ function loadUsers(favorites) {
         });
 
         $('*[id=likes-counter]').popover({
+            template: getPopoverTemplateWithClass("no-weight-limit"),
             trigger: 'hover',
             placement: 'top',
             delay: { "show": 450, "hide": 100 },

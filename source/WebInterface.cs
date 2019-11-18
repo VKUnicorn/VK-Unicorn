@@ -205,124 +205,131 @@ namespace VK_Unicorn
 
                         // Получение списка пользователей
                         case "users":
-                            var onlyFavorites = query.Get("favorites") == "true";
-
-                            // Получаем настройки для того чтобы проверять город в дальнейшем
-                            Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
                             {
-                                // Составляем список стоп слов
-                                var stopWords = settings.StopWords.Split(';');
+                                var onlyFavorites = query.Get("favorites") == "true";
+                                var noLimit = false;
+                                bool.TryParse(query.Get("noLimit"), out noLimit);
 
-                                // Функция для проверки было ли найдено какое-то стоп слово в строке
-                                CallbackWithReturn<bool, string> IsAnyOfStopWordsFound = (target) =>
+                                // Получаем настройки для того чтобы проверять город в дальнейшем
+                                Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
                                 {
-                                    foreach (var stopWord in stopWords)
-                                    {
-                                        if (target.Contains(stopWord))
-                                        {
-                                            return true;
-                                        }
-                                    }
+                                    // Составляем список стоп слов
+                                    var stopWords = settings.StopWords.Split(';');
 
-                                    return false;
-                                };
-
-                                // Обходим всех пользователей
-                                Database.Instance.ForEach<Database.User>((user) =>
-                                {
-                                    // Не показывать пользователей не в избранном, если загружаем только избранных
-                                    if (onlyFavorites)
+                                    // Функция для проверки было ли найдено какое-то стоп слово в строке
+                                    CallbackWithReturn<bool, string> IsAnyOfStopWordsFound = (target) =>
                                     {
-                                        if (!user.IsFavorite)
+                                        foreach (var stopWord in stopWords)
                                         {
-                                            return;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        // Не показывать скрытых по каким-либо причинам пользователей
-                                        if (user.IsHidden != Database.HiddenStatus.NOT_HIDDEN)
-                                        {
-                                            return;
+                                            if (target.Contains(stopWord))
+                                            {
+                                                return true;
+                                            }
                                         }
 
-                                        // Не показываем старых пользователей
-                                        if (Utils.GetNowAsUniversalTime() - user.LastActivity > Constants.MAX_SCANNING_DEPTH_IN_TIME)
-                                        {
-                                            return;
-                                        }
-                                    }
+                                        return false;
+                                    };
 
-                                    // Заменяем ссылку на фото, если нужно
-                                    user.PhotoURL = Utils.FixPhotoURL(user.PhotoURL);
-
-                                    // Получаем список активностей пользователя за последнее время
-                                    var userActivites = Database.Instance.GetAllWhere<Database.UserActivity>(_ => _.UserId == user.Id);
-
-                                    // Соcтавляем список недавних записей пользователя
-                                    var recentPostActivities = userActivites
-                                        // Ищем только записи или комментарии
-                                        .Where(_ => _.IsPostOrComment())
-                                        // Недавние
-                                        .Where(_ => Utils.GetNowAsUniversalTime() - _.WhenHappened <= Constants.MAX_SCANNING_DEPTH_IN_TIME)
-                                        // Сортируем по давности
-                                        .OrderByDescending(_ => _.WhenHappened)
-                                        // Берём несколько
-                                        .Take(4)
-                                        // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
-                                        .Select(_ => new Database.UserActivityWithContent(_))
-                                    ;
-
-                                    // Соcтавляем список недавних лайков пользователя
-                                    var recentLikeActivities = userActivites
-                                        // Ищем только лайки
-                                        .Where(_ => _.IsLikeToSomething())
-                                        // Недавние
-                                        .Where(_ => Utils.GetNowAsUniversalTime() - _.WhenHappened <= Constants.MAX_SCANNING_DEPTH_IN_TIME)
-                                        // Сортируем по давности
-                                        .OrderByDescending(_ => _.WhenHappened)
-                                        // Берём несколько
-                                        .Take(3)
-                                        // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
-                                        .Select(_ => new Database.UserActivityWithContent(_))
-                                    ;
-
-                                    // Проверяем не было ли в записях и комментариях слов из стоп листа
-                                    var isStopWordsFound = userActivites
-                                        // Ищем только записи или комментарии
-                                        .Where(_ => _.IsPostOrComment())
-                                        // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
-                                        .Select(_ => new Database.UserActivityWithContent(_))
-                                        // Проверяем на вхождение стоп слов
-                                        .FirstOrDefault(_ => IsAnyOfStopWordsFound(_.Activity.IsRelatedToComment() ? _.Comment.Content : _.Post.Content))
-                                        // Была ли найдена хотя бы одна такая активность?
-                                        != null
-                                    ;
-
-                                    // Добавляем пользователя в ответ
-                                    resultObjects.Add(new Dictionary<string, object>()
+                                    // Обходим всех пользователей
+                                    Database.Instance.ForEach<Database.User>((user) =>
                                     {
-                                        { "data", user },
-                                        { "URL", user.GetURL() },
-                                        { "Likes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.LIKE) },
-                                        { "CommentLikes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT_LIKE) },
-                                        { "Posts", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.POST) },
-                                        { "Comments", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT) },
-                                        { "RecentPosts", recentPostActivities },
-                                        { "RecentLikes", recentLikeActivities },
-                                        { "IsDifferentCity", (user.CityId != Constants.UNKNOWN_CITY_ID) && (user.CityId != settings.CityId) },
-                                        { "IsStopWordsFound", isStopWordsFound },
+                                        // Не показывать пользователей не в избранном, если загружаем только избранных
+                                        if (onlyFavorites)
+                                        {
+                                            if (!user.IsFavorite)
+                                            {
+                                                return;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // Не показывать скрытых по каким-либо причинам пользователей
+                                            if (user.IsHidden != Database.HiddenStatus.NOT_HIDDEN)
+                                            {
+                                                return;
+                                            }
+
+                                            if (!noLimit)
+                                            {
+                                                // Не показываем старых пользователей
+                                                if (Utils.GetNowAsUniversalTime() - user.LastActivity > Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                                {
+                                                    return;
+                                                }
+                                            }
+                                        }
+
+                                        // Заменяем ссылку на фото, если нужно
+                                        user.PhotoURL = Utils.FixPhotoURL(user.PhotoURL);
+
+                                        // Получаем список активностей пользователя за последнее время
+                                        var userActivites = Database.Instance.GetAllWhere<Database.UserActivity>(_ => _.UserId == user.Id);
+
+                                        // Соcтавляем список недавних записей пользователя
+                                        var recentPostActivities = userActivites
+                                            // Ищем только записи или комментарии
+                                            .Where(_ => _.IsPostOrComment())
+                                            // Недавние или без лимита по времени
+                                            .Where(_ => noLimit ? true : Utils.GetNowAsUniversalTime() - _.WhenHappened <= Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                            // Сортируем по давности
+                                            .OrderByDescending(_ => _.WhenHappened)
+                                            // Берём несколько
+                                            .Take(4)
+                                            // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
+                                            .Select(_ => new Database.UserActivityWithContent(_))
+                                        ;
+
+                                        // Соcтавляем список недавних лайков пользователя
+                                        var recentLikeActivities = userActivites
+                                            // Ищем только лайки
+                                            .Where(_ => _.IsLikeToSomething())
+                                            // Недавние или без лимита по времени
+                                            .Where(_ => noLimit ? true : Utils.GetNowAsUniversalTime() - _.WhenHappened <= Constants.MAX_SCANNING_DEPTH_IN_TIME)
+                                            // Сортируем по давности
+                                            .OrderByDescending(_ => _.WhenHappened)
+                                            // Берём несколько
+                                            .Take(3)
+                                            // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
+                                            .Select(_ => new Database.UserActivityWithContent(_))
+                                        ;
+
+                                        // Проверяем не было ли в записях и комментариях слов из стоп листа
+                                        var isStopWordsFound = userActivites
+                                            // Ищем только записи или комментарии
+                                            .Where(_ => _.IsPostOrComment())
+                                            // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
+                                            .Select(_ => new Database.UserActivityWithContent(_))
+                                            // Проверяем на вхождение стоп слов
+                                            .FirstOrDefault(_ => IsAnyOfStopWordsFound(_.Activity.IsRelatedToComment() ? _.Comment.Content : _.Post.Content))
+                                            // Была ли найдена хотя бы одна такая активность?
+                                            != null
+                                        ;
+
+                                        // Добавляем пользователя в ответ
+                                        resultObjects.Add(new Dictionary<string, object>()
+                                        {
+                                            { "data", user },
+                                            { "URL", user.GetURL() },
+                                            { "Likes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.LIKE) },
+                                            { "CommentLikes", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT_LIKE) },
+                                            { "Posts", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.POST) },
+                                            { "Comments", userActivites.Count(_ => _.Type == Database.UserActivity.ActivityType.COMMENT) },
+                                            { "RecentPosts", recentPostActivities },
+                                            { "RecentLikes", recentLikeActivities },
+                                            { "IsDifferentCity", (user.CityId != Constants.UNKNOWN_CITY_ID) && (user.CityId != settings.CityId) },
+                                            { "IsStopWordsFound", isStopWordsFound },
+                                        });
                                     });
                                 });
-                            });
 
-                            // Сортируем пользователей по их последней активноси
-                            resultObjects = resultObjects
-                                .OrderByDescending(_ => (_["data"] as Database.User).LastActivity)
-                                .ToList()
-                            ;
+                                // Сортируем пользователей по их последней активноси
+                                resultObjects = resultObjects
+                                    .OrderByDescending(_ => (_["data"] as Database.User).LastActivity)
+                                    .ToList()
+                                ;
 
-                            handled = true;
+                                handled = true;
+                            }
                             break;
 
                         case "user_activities":

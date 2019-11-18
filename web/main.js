@@ -57,6 +57,26 @@ function main() {
         content: '<center>Добавить сообщество</center>'
     });
 
+    let loadUsersButton = $('#load-users-button');
+    loadUsersButton.popover({
+        template: getPopoverTemplateWithClass("no-weight-limit"),
+        trigger: 'hover',
+        placement: 'bottom',
+        html: true,
+        delay: { "show": 550, "hide": 100 },
+        content: 'По умолчанию загружаются только те пользователи, которые что-то<br>написали или поставили лайк за последние 60 дней<br><small class="text-muted">Shift-Click - загрузить всех сохранённых пользователей без лимита по времени</small>'
+    });
+
+    // Оработчики событий
+    loadUsersButton.click(function(e) {
+        // Если зажат shift, то загружаем вообще всех пользователей, без лимита по времени
+        loadUsers(e);
+    });
+
+    $('#load-favorite-users-button').click(function(e) {
+        loadUsers(e, true);
+    });
+
     // Загружаем пользователей как действие по умолчанию
     loadUsers();
 }

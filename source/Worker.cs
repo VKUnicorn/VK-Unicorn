@@ -376,6 +376,9 @@ namespace VK_Unicorn
             {
                 MainForm.Instance.SetStatus("сканируем сообщество", StatusType.GENERAL);
 
+                Utils.Log("Сканируем сообщество " + group.Name, LogLevel.SUCCESS);
+                Utils.Log("Не закрывайте программу до завершения сканирования, это может привести к неправильной работе с этим сообществом в дальнешем", LogLevel.WARNING);
+
                 // Список интересующей нас активности пользователей
                 var userActivitiesToProcess = new List<Database.UserActivity>();
 
