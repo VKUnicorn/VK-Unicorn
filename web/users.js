@@ -316,6 +316,12 @@ function loadUsers(clickEvent, favorites) {
                     }
                 };
 
+                function fillAdditionalInfo() {
+                    if (result == '') {
+                        result = '<div class="mx-2"><i>Не найдено никакой активностей пользователя за недавний период. Попробуйте загрузить полную историю</i></div>';
+                    }
+                };
+
                 var result = '';
                 fillNotes();
                 fillStatus();
@@ -324,6 +330,7 @@ function loadUsers(clickEvent, favorites) {
                 fillPhone();
                 fillPostsAndComments();
                 fillLikes();
+                fillAdditionalInfo();
                 return result;
             }
 
