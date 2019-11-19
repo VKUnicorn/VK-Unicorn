@@ -62,6 +62,8 @@ namespace VK_Unicorn
             {
                 var logTextBox = MainForm.Instance.GetLogTextBox();
 
+                logTextBox.SelectionStart = logTextBox.TextLength;
+                logTextBox.SelectionLength = 0;
                 logTextBox.SuspendLayout();
 
                 var previousSelectionColor = logTextBox.SelectionColor;
