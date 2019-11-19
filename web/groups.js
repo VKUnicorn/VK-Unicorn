@@ -164,7 +164,7 @@ function showAddGroupDialog() {
         message: "Введите адрес сообщества или его короткое имя. Можно в виде списка из нескольких сообществ:",
         inputType: 'textarea',
         placeholder: "https://vk.com/club123456\nhttps://vk.com/public123456\nhttps://vk.com/apiclub\napiclub",
-        backdrop: true,
+        backdrop: 'static',
         callback: function(groupNames) {
             if (groupNames) {
                 // Отправляем запрос на добавление нового сообщества
