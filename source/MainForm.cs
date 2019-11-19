@@ -144,6 +144,9 @@ namespace VK_Unicorn
             ShowInTaskbar = true;
 
             TrayNotifyIcon.Visible = false;
+
+            LogTextBox.SelectionStart = LogTextBox.Text.Length;
+            LogTextBox.ScrollToCaret();
         }
     }
 }
