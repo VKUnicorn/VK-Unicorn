@@ -277,7 +277,7 @@ function loadUsers(clickEvent, favorites) {
                             ++index;
                         }
 
-                        result += `</div>`
+                        result += `</div>`;
                     }
                 };
 
@@ -312,7 +312,7 @@ function loadUsers(clickEvent, favorites) {
                             ++index;
                         }
 
-                        result += `</div>`
+                        result += `</div>`;
                     }
                 };
 
