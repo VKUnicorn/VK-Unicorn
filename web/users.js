@@ -256,7 +256,7 @@ function loadUsers(clickEvent, favorites) {
                             <h6 class="mx-2 mb-1 mt-0">Написала:</h6>
                         `;
 
-                        result += `<div class="mx-2">`
+                        result += `<div class="mx-2">`;
                         let index = 0;
                         for (let paramPostOrComment of paramPostsOrComments) {
                             let isPost = paramPostOrComment.Activity.Type == 0;
@@ -275,6 +275,8 @@ function loadUsers(clickEvent, favorites) {
                                 </span>
                             `;
                             ++index;
+
+                            activitiesFound = true;
                         }
 
                         result += `</div>`;
@@ -291,7 +293,7 @@ function loadUsers(clickEvent, favorites) {
                             <h6 class="mx-2 mb-1 mt-0">Поставила лайк:</h6>
                         `;
 
-                        result += `<div class="mx-2">`
+                        result += `<div class="mx-2">`;
                         let index = 0;
                         for (let paramLike of paramLikes) {
                             let isLikeToPost = paramLike.Activity.Type == 1;
@@ -310,6 +312,8 @@ function loadUsers(clickEvent, favorites) {
                                 </span>
                             `;
                             ++index;
+
+                            activitiesFound = true;
                         }
 
                         result += `</div>`;
@@ -317,12 +321,16 @@ function loadUsers(clickEvent, favorites) {
                 };
 
                 function fillAdditionalInfo() {
-                    if (result == '') {
-                        result = '<div class="mx-2"><i>Не найдено никакой активности пользователя за недавний период. Попробуйте загрузить полную историю</i></div>';
+                    if (!activitiesFound) {
+                        if (result != '') {
+                            result += '<div class="mx-2"><hr class="mx-0 my-1"></div>';
+                        }
+                        result += '<div class="mx-2 text-muted"><i>Не найдено никакой активности пользователя за недавний период. Попробуйте загрузить полную историю</i></div>';
                     }
                 };
 
                 var result = '';
+                var activitiesFound = false;
                 fillNotes();
                 fillStatus();
                 fillCity();
