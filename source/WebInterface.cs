@@ -128,6 +128,27 @@ namespace VK_Unicorn
                             handled = true;
                         }
                         break;
+
+                    // Изменение настроек
+                    case "save_settings":
+                        {
+                            var stopWords = JsonConvert.DeserializeObject<List<Value>>(WebUtility.UrlDecode(parametersDictionary["stopWords"])).Select(_ => _.value);
+
+                            // Сохраняем настройки в базу
+                            Database.Instance.InsertOrReplace(new Database.Settings
+                            {
+                                Id = Database.INTERNAL_DB_MARKER,
+                                ApplicationId = long.Parse(parametersDictionary["applicationId"]),
+                                Login = WebUtility.UrlDecode(parametersDictionary["login"]),
+                                Password = WebUtility.UrlDecode(parametersDictionary["password"]),
+                                CityId = long.Parse(parametersDictionary["cityId"]),
+                                StopWords = string.Join(Constants.STOP_WORDS_SEPARATOR.ToString(), stopWords),
+                                SearchMethod = (Database.Settings.SearchMethodType)int.Parse(parametersDictionary["searchType"]),
+                            });
+
+                            handled = true;
+                        }
+                        break;
                 }
 
                 // Запрос обработан?
@@ -382,6 +403,33 @@ namespace VK_Unicorn
                                 });
 
                                 handled = true;
+                            }
+                            break;
+
+                        case "is_settings_valid":
+                            {
+                                resultObjects.Add(new Dictionary<string, object>()
+                                {
+                                    { "Result", Database.Instance.IsSettingsValid() },
+                                });
+
+                                handled = true;
+                            }
+                            break;
+
+                        case "settings":
+                            {
+                                Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
+                                {
+                                    resultObjects.Add(new Dictionary<string, object>()
+                                    {
+                                        { "Result", settings },
+                                        { "DatabaseFilename", Constants.DATABASE_FILENAME },
+                                        { "StopWordsSeparator", Constants.STOP_WORDS_SEPARATOR },
+                                    });
+
+                                    handled = true;
+                                });
                             }
                             break;
                     }

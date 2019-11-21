@@ -535,6 +535,20 @@ namespace VK_Unicorn
                 db.CreateTables<User, ScannedUser, UserActivity>();
                 db.CreateTables<GroupToReceiveInfo, Group>();
                 db.CreateTables<Post, Comment>();
+
+                // Сохраняем настройки по умолчанию, если нужно
+                if (!IsAlreadyExists<Settings>(INTERNAL_DB_MARKER))
+                {
+                    InsertOrReplace(new Settings
+                    {
+                        Id = INTERNAL_DB_MARKER,
+                        CityId = 1,
+                        Login = string.Empty,
+                        Password = string.Empty,
+                        StopWords = Constants.DEFAULT_STOP_WORDS,
+                        SearchMethod = Settings.SearchMethodType.SMART,
+                    });
+                }
             });
         }
 

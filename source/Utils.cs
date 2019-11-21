@@ -24,6 +24,11 @@ namespace VK_Unicorn
         ERROR,
     }
 
+    class Value
+    {
+        public string value;
+    }
+
     public static class Utils
     {
         public static void Log(string text, LogLevel logLevel = LogLevel.GENERAL)

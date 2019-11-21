@@ -1,17 +1,17 @@
 function clear_workspace() {
     // Очищаем все элементы из основного рабочего контейнера
-    $('#workspace').empty()
+    $('#workspace').empty();
 
     // Скрываем кнопку добавления нового сообщества
-    $('#add-group-button').hide()
+    $('#add-group-button').hide();
 }
 
 function start_loading() {
-    $('#loading').show()
+    $('#loading').show();
 }
 
 function finish_loading() {
-    $('#loading').fadeOut()
+    $('#loading').fadeOut();
 }
 
 function main() {

@@ -49,10 +49,20 @@ namespace VK_Unicorn
             }
             catch (Exception e)
             {
-                Utils.Log("ошибка веб сервера " + e.Message, LogLevel.ERROR);
+                Utils.Log("фатальный сбой при запуске веб сервера: " + e.Message, LogLevel.ERROR);
+
+                MainForm.Instance.DisableStartWorkingButton();
+
+                if (Worker.Instance != null)
+                {
+                    Worker.Instance.inFatalErrorState = true;
+                }
+
                 threadActive = false;
                 return;
             }
+
+            Utils.Log("Веб сервер подключен по адресу " + Constants.RESULTS_WEB_PAGE, LogLevel.SUCCESS);
 
             // Ожидаем запросы
             while (threadActive)
@@ -91,6 +101,12 @@ namespace VK_Unicorn
                 case "POST":
                     Utils.Log("Получен API запрос " + request, LogLevel.NOTIFY);
 
+                    var showParams = request != "save_settings";
+                    if (!showParams)
+                    {
+                        Utils.Log("    для безопасности параметры этого запроса не будут показаны в логе", LogLevel.NOTIFY);
+                    }
+
                     // Параметры запроса
                     var parametersDictionary = new Dictionary<string, string>();
                     using (var streamReader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
@@ -104,7 +120,10 @@ namespace VK_Unicorn
                                 var paramKey = splittedParam[0];
                                 var paramValue = splittedParam[1];
 
-                                Utils.Log("    параметр " + paramKey + "=" + WebUtility.UrlDecode(paramValue), LogLevel.NOTIFY);
+                                if (showParams)
+                                {
+                                    Utils.Log("    параметр " + paramKey + "=" + WebUtility.UrlDecode(paramValue), LogLevel.NOTIFY);
+                                }
 
                                 parametersDictionary.Add(paramKey, paramValue);
                             }

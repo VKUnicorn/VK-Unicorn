@@ -36,7 +36,6 @@
             this.LogGroupBox = new System.Windows.Forms.GroupBox();
             this.VersionLabel = new System.Windows.Forms.Label();
             this.StatusLabel = new System.Windows.Forms.Label();
-            this.SettingsButton = new System.Windows.Forms.Button();
             this.TrayNotifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.LogGroupBox.SuspendLayout();
             this.SuspendLayout();
@@ -74,7 +73,7 @@
             this.StartWorkingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.StartWorkingButton.Enabled = false;
             this.StartWorkingButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.StartWorkingButton.Location = new System.Drawing.Point(496, 447);
+            this.StartWorkingButton.Location = new System.Drawing.Point(620, 447);
             this.StartWorkingButton.Name = "StartWorkingButton";
             this.StartWorkingButton.Size = new System.Drawing.Size(118, 38);
             this.StartWorkingButton.TabIndex = 2;
@@ -122,19 +121,6 @@
             this.StatusLabel.TabIndex = 5;
             this.StatusLabel.Text = "Статус";
             // 
-            // SettingsButton
-            // 
-            this.SettingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.SettingsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.SettingsButton.Location = new System.Drawing.Point(620, 447);
-            this.SettingsButton.Name = "SettingsButton";
-            this.SettingsButton.Size = new System.Drawing.Size(118, 38);
-            this.SettingsButton.TabIndex = 6;
-            this.SettingsButton.TabStop = false;
-            this.SettingsButton.Text = "Настройки";
-            this.SettingsButton.UseVisualStyleBackColor = true;
-            this.SettingsButton.Click += new System.EventHandler(this.SettingsButton_Click);
-            // 
             // TrayNotifyIcon
             // 
             this.TrayNotifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("TrayNotifyIcon.Icon")));
@@ -145,7 +131,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(862, 487);
-            this.Controls.Add(this.SettingsButton);
             this.Controls.Add(this.StatusLabel);
             this.Controls.Add(this.VersionLabel);
             this.Controls.Add(this.LogGroupBox);
@@ -173,7 +158,6 @@
         private System.Windows.Forms.GroupBox LogGroupBox;
         private System.Windows.Forms.Label VersionLabel;
         private System.Windows.Forms.Label StatusLabel;
-        private System.Windows.Forms.Button SettingsButton;
         private System.Windows.Forms.NotifyIcon TrayNotifyIcon;
     }
 }

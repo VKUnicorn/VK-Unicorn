@@ -45,8 +45,6 @@ namespace VK_Unicorn
                 new HTTPServer(Constants.WEB_PORT);
 
                 StartWorkingButton.Enabled = true;
-
-                Utils.Log("Веб сервер подключен по адресу " + Constants.RESULTS_WEB_PAGE, LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -64,11 +62,6 @@ namespace VK_Unicorn
         void ExitButton_Click(object sender, EventArgs e)
         {
             Close();
-        }
-
-        void SettingsButton_Click(object sender, EventArgs e)
-        {
-            OpenSettingsWindow();
         }
 
         void StartWorkingButton_Click(object sender, EventArgs e)
@@ -91,20 +84,11 @@ namespace VK_Unicorn
             return LogTextBox;
         }
 
-        public void OpenSettingsWindow()
-        {
-            using (var settingsForm = new SettingsForm())
-            {
-                settingsForm.ShowInTaskbar = false;
-                settingsForm.ShowDialog(this);
-            }
-        }
-
-        public void ShowErrorIfSettingsAreInvalid()
+        public void ShowWarningIfSettingsAreInvalid()
         {
             if (!database.IsSettingsValid())
             {
-                Utils.Log("Неправильные настройки программы. Сканирование начнётся только после установки правильных настроек", LogLevel.ERROR);
+                Utils.Log("Программа пока не настроена. Сканирование начнётся только после установки правильных настроек. Нажмите \"Начать работу\" для первоначальной настройки", LogLevel.WARNING);
             }
         }
 
@@ -147,6 +131,14 @@ namespace VK_Unicorn
 
             LogTextBox.SelectionStart = LogTextBox.Text.Length;
             LogTextBox.ScrollToCaret();
+        }
+
+        public void DisableStartWorkingButton()
+        {
+            Invoke((MethodInvoker)delegate
+            {
+                StartWorkingButton.Enabled = false;
+            });
         }
     }
 }

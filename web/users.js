@@ -1,4 +1,12 @@
 function loadUsers(clickEvent, favorites) {
+    // Сначала определяем правильные ли настройки у программы. Если настройки не правильные, то загружаем экран настроек
+    if (!isSettingsValid()) {
+        $.hulla.send("Программа пока ещё не настроена. Загружаем окно настроек", "success");
+        loadSettings(true);
+        return;
+    }
+
+    // Настройки правильные, загружаем пользователей
     clear_workspace();
     start_loading();
 
@@ -716,5 +724,5 @@ function loadUsers(clickEvent, favorites) {
         finish_loading();
 
         $.hulla.send("Ошибка при загрузке списка пользователей.<br>Главный модуль программы не запущен или в нём произошла внутренняя ошибка", "danger");
-    })
+    });
 }

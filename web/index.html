@@ -19,6 +19,9 @@
     <!-- LineIcons -->
     <link rel="stylesheet" href="https://cdn.lineicons.com/1.0.1/LineIcons.min.css">
 
+    <!-- Tagify -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yaireo/tagify@2.31.6/dist/tagify.css">
+
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -39,6 +42,7 @@
             <a class="nav-link btn text-white pb-1" id="load-users-button">Пользователи</a>
             <a class="nav-link btn text-white pb-1" id="load-favorite-users-button">Избранное</a>
             <a class="nav-link btn text-white pb-1" onclick="loadGroups()">Сообщества</a>
+            <a class="nav-link btn text-white pb-1" onclick="loadSettings()">Настройки</a>
 
             <!-- Разделитель -->
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0"></ul>
@@ -51,7 +55,7 @@
     </nav>
 
     <div class="container">
-        <!-- Основное рабочее место. Сюда будут загружаться пользователи и сообщества -->
+        <!-- Основное рабочее место. Сюда будут загружаться пользователи, сообщества и элементы настроек -->
         <div class="grid" id="workspace">
         </div>
 
@@ -81,8 +85,11 @@
     <!-- Основные скрипты -->
     <script src="utils.js"></script>
     <script src="main.js"></script>
+    <script src="settings.js"></script>
     <script src="groups.js"></script>
     <script src="users.js"></script>
     <script src="hullabaloo.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify@2.31.6/dist/tagify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify@2.31.6/dist/jQuery.tagify.min.js"></script>
 </body>
 </html>

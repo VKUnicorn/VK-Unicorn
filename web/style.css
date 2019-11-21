@@ -244,6 +244,10 @@ body {
     max-width: 35rem !important;
 }
 
+.settings-img {
+    border: 1px solid rgba(225, 225, 225, 0.8);
+}
+
 /*
  * Индикатор загрузки в виде радуги
  */

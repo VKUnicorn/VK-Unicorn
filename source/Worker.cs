@@ -24,7 +24,7 @@ namespace VK_Unicorn
         bool isAuthorized;
 
         // Произошла какая-то фатальная ошибка. Ничего не делаем
-        bool inFatalErrorState;
+        public bool inFatalErrorState;
 
         // Переменная для хранения последней информации о успешной авторизации
         string lastAuthorizationInformation;
@@ -53,10 +53,10 @@ namespace VK_Unicorn
             // Ждём чуть-чуть пока не появится главное окно программы
             await Task.Delay(TimeSpan.FromSeconds(0.1f));
 
-            // Если настройки ещё не установлены, то показываем окно настроек сразу же после запуска программы
-            if (!Database.Instance.IsSettingsValid())
+            // Если настройки ещё не установлены, то показываем предупреждение после запуска программы
+            if (!inFatalErrorState)
             {
-                MainForm.Instance.OpenSettingsWindow();
+                MainForm.Instance.ShowWarningIfSettingsAreInvalid();
             }
 
             // Создаём класс VkApi для дальнейшей работы
@@ -71,7 +71,7 @@ namespace VK_Unicorn
                 // Фатальная ошибка. Ничего не делаем вообще
                 if (inFatalErrorState)
                 {
-                    currentTask = async () => { await WaitAlotAfterError(); };
+                    currentTask = async () => { await WaitAlotBecauseOfFatalError(); };
                 }
 
                 // Если программа успешно настроена, то кэшируем эти настройки и используем их для выполнения текущей задачи
@@ -1155,6 +1155,13 @@ namespace VK_Unicorn
         async Task WaitAlotAfterError()
         {
             MainForm.Instance.SetStatus("ожидание после ошибки", StatusType.ERROR);
+
+            await Task.Delay(TimeSpan.FromSeconds(20d));
+        }
+
+        async Task WaitAlotBecauseOfFatalError()
+        {
+            MainForm.Instance.SetStatus("фатальная ошибка", StatusType.ERROR);
 
             await Task.Delay(TimeSpan.FromSeconds(20d));
         }
