@@ -87,29 +87,6 @@ namespace VK_Unicorn
             });
         }
 
-        /// <summary>
-        /// Получаем "1,2,3" из листа "1" "2" 3", если разделитель ","
-        /// </summary>
-        public static string GenerateSeparatedString<T>(this IEnumerable<T> self, string separator)
-        {
-            var result = string.Empty;
-
-            var index = 0;
-            foreach (var item in self)
-            {
-                result += item.ToString();
-
-                if (index != self.Count() - 1)
-                {
-                    result += separator;
-                }
-
-                ++index;
-            }
-
-            return result;
-        }
-
         public static string GetURL(this VkNet.Model.Group self)
         {
             return Constants.VK_WEB_PAGE + self.ScreenName;

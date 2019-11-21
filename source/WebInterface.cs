@@ -214,7 +214,7 @@ namespace VK_Unicorn
                                 Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
                                 {
                                     // Составляем список стоп слов
-                                    var stopWords = settings.StopWords.Split(';');
+                                    var stopWords = settings.StopWords.Split(Constants.STOP_WORDS_SEPARATOR);
 
                                     // Функция для проверки было ли найдено какое-то стоп слово в строке
                                     CallbackWithReturn<bool, string> IsAnyOfStopWordsFound = (target) =>

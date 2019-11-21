@@ -228,7 +228,7 @@ namespace VK_Unicorn
                 {
                     MainForm.Instance.SetStatus("получаем информацию о сообществах", StatusType.GENERAL);
 
-                    Utils.Log("Получаем информацию о сообществах " + groupIds.GenerateSeparatedString(", "), LogLevel.GENERAL);
+                    Utils.Log("Получаем информацию о сообществах: " + string.Join(", ", groupIds), LogLevel.GENERAL);
 
                     var groupsInfo = await api.Groups.GetByIdAsync(groupIds, null, null);
                     if (groupsInfo != null)
@@ -776,7 +776,7 @@ namespace VK_Unicorn
                         // Вызываем execute запрос
                         var response = await api.CallAsync("execute", new VkParameters()
                         {
-                            { "code", "return[" + listOfAPICalls.GenerateSeparatedString(",") + "];" },
+                            { "code", "return[" + string.Join(",", listOfAPICalls) + "];" },
                         });
                         await WaitMinimumTimeout();
 
@@ -856,7 +856,7 @@ namespace VK_Unicorn
                         // Не используем api.Users.GetAsync потому что из-за бага эта функция не может обработать контакты пользователя
                         var response = await api.CallAsync("users.get", new VkParameters()
                         {
-                            { "user_ids", chunkOfUserIdsToReceiveInfo.GenerateSeparatedString(",") },
+                            { "user_ids", string.Join(",", chunkOfUserIdsToReceiveInfo) },
                             { "fields", "sex,city,photo_max_orig,site,bdate,status,contacts" },
                         });
                         await WaitMinimumTimeout();
@@ -978,19 +978,12 @@ namespace VK_Unicorn
                             // Закрытый профиль?
                             var isClosed = userInfo.IsClosed.GetValueOrDefault(false);
 
-                            // Проверяем город учитывая настройки пользователя
+                            // Проверяем город учитывая настройки пользователя. Пользователей с закрытым профилем
+                            // добавляем в любом случае
                             if (!isClosed)
                             {
                                 switch (settings.SearchMethod)
                                 {
-                                    case Database.Settings.SearchMethodType.BY_CITY:
-                                        if (cityId != settings.CityId)
-                                        {
-                                            DeleteAllActivitiesToProcessFromThisUser();
-                                            return;
-                                        }
-                                        break;
-
                                     case Database.Settings.SearchMethodType.SMART:
                                         if (!group.IsClosed)
                                         {
@@ -999,6 +992,14 @@ namespace VK_Unicorn
                                                 DeleteAllActivitiesToProcessFromThisUser();
                                                 return;
                                             }
+                                        }
+                                        break;
+
+                                    case Database.Settings.SearchMethodType.BY_CITY:
+                                        if (cityId != settings.CityId)
+                                        {
+                                            DeleteAllActivitiesToProcessFromThisUser();
+                                            return;
                                         }
                                         break;
                                 }
