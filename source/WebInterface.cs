@@ -132,7 +132,16 @@ namespace VK_Unicorn
                     // Изменение настроек
                     case "save_settings":
                         {
-                            var stopWords = JsonConvert.DeserializeObject<List<Value>>(WebUtility.UrlDecode(parametersDictionary["stopWords"])).Select(_ => _.value);
+                            var stopWords = new List<string>();
+
+                            try
+                            {
+                                stopWords = JsonConvert.DeserializeObject<List<Value>>(WebUtility.UrlDecode(parametersDictionary["stopWords"])).Select(_ => _.value).ToList();
+                            }
+                            catch (Exception)
+                            {
+                                // Пустой список стоп слов?
+                            }
 
                             // Сохраняем настройки в базу
                             Database.Instance.InsertOrReplace(new Database.Settings
@@ -235,16 +244,19 @@ namespace VK_Unicorn
                                 Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
                                 {
                                     // Составляем список стоп слов
-                                    var stopWords = settings.StopWords.Split(Constants.STOP_WORDS_SEPARATOR);
+                                    var stopWords = settings.StopWords.Split(Constants.STOP_WORDS_SEPARATOR).Select(_ => _.Trim());
 
                                     // Функция для проверки было ли найдено какое-то стоп слово в строке
                                     CallbackWithReturn<bool, string> IsAnyOfStopWordsFound = (target) =>
                                     {
                                         foreach (var stopWord in stopWords)
                                         {
-                                            if (target.Contains(stopWord))
+                                            if (stopWord != string.Empty)
                                             {
-                                                return true;
+                                                if (target.Contains(stopWord))
+                                                {
+                                                    return true;
+                                                }
                                             }
                                         }
 
