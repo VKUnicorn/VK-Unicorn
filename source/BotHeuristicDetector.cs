@@ -110,6 +110,13 @@ namespace VK_Unicorn
                     return true;
                 }
 
+                // Пришлю сексуальные фото, если поставишь лайк на последний пост на стене
+                if ((status.Contains("постав") || status.Contains("ставь")) && status.Contains("лайк"))
+                {
+                    reason = "ссылка на сайт";
+                    return true;
+                }
+
                 // Хочу подробностей
                 if (status.Contains("хочу подробностей"))
                 {
