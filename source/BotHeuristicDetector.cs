@@ -47,6 +47,13 @@ namespace VK_Unicorn
                     return true;
                 }
 
+                // Я правда стеснялась этого, но проспорила.. Выложила все в последней записи!!!
+                if (status.Contains("выложи") && status.Contains("запис"))
+                {
+                    reason = "спам на стене";
+                    return true;
+                }
+
                 // Быстрее читай мою стену, чтобы узнать как провести со мной время!!!
                 if ((status.Contains("читай") || status.Contains("читат")) && status.Contains("стен"))
                 {
@@ -129,6 +136,13 @@ namespace VK_Unicorn
                 if (status.Contains("фот") && status.Contains("последн") && status.Contains("пост"))
                 {
                     reason = "ссылка на сайт";
+                    return true;
+                }
+
+                // Вышлю сексуальные фото, если лайкнешь последнюю запись на стене
+                if (status.Contains("фот") && status.Contains("последн") && status.Contains("запи"))
+                {
+                    reason = "спам на стене";
                     return true;
                 }
 
