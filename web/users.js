@@ -458,7 +458,7 @@ function loadUsers(clickEvent, favorites) {
                                     user.Notes = result;
 
                                     // Обновляем окно с полной информацией
-                                    RebuildFullInfoModalContent();
+                                    requestUserActivities(false);
                                 }
                                 else {
                                     $.hulla.send("Не удалось изменить заметку у пользователя \"" + fullName + "\"", "danger");
