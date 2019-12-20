@@ -132,8 +132,8 @@ namespace VK_Unicorn
                     // Изменение настроек
                     case "save_settings":
                         {
+                            // Список слов, которые просто показывают предупреждение
                             var stopWords = new List<string>();
-
                             try
                             {
                                 stopWords = JsonConvert.DeserializeObject<List<Value>>(WebUtility.UrlDecode(parametersDictionary["stopWords"])).Select(_ => _.value).ToList();
@@ -141,6 +141,17 @@ namespace VK_Unicorn
                             catch (Exception)
                             {
                                 // Пустой список стоп слов?
+                            }
+
+                            // Список слов, которые будем сразу же игнорировать
+                            var blacklistWords = new List<string>();
+                            try
+                            {
+                                blacklistWords = JsonConvert.DeserializeObject<List<Value>>(WebUtility.UrlDecode(parametersDictionary["blacklistWords"])).Select(_ => _.value).ToList();
+                            }
+                            catch (Exception)
+                            {
+                                // Пустой список слов для чёрного списка?
                             }
 
                             // Сохраняем настройки в базу
@@ -151,8 +162,10 @@ namespace VK_Unicorn
                                 Login = WebUtility.UrlDecode(parametersDictionary["login"]),
                                 Password = WebUtility.UrlDecode(parametersDictionary["password"]),
                                 CityId = long.Parse(parametersDictionary["cityId"]),
-                                StopWords = string.Join(Constants.STOP_WORDS_SEPARATOR.ToString(), stopWords),
                                 SearchMethod = (Database.Settings.SearchMethodType)int.Parse(parametersDictionary["searchType"]),
+                                StopWords = string.Join(Constants.WORDS_SEPARATOR.ToString(), stopWords),
+                                BlacklistWords = string.Join(Constants.WORDS_SEPARATOR.ToString(), blacklistWords),
+                                IgnoreOnlyImagePosts = bool.Parse(parametersDictionary["ignoreOnlyImagePosts"]),
                             });
 
                             handled = true;
@@ -244,7 +257,7 @@ namespace VK_Unicorn
                                 Database.Instance.For<Database.Settings>(Database.INTERNAL_DB_MARKER, (settings) =>
                                 {
                                     // Составляем список стоп слов
-                                    var stopWords = settings.StopWords.Split(Constants.STOP_WORDS_SEPARATOR).Select(_ => _.Trim());
+                                    var stopWords = settings.StopWords.Split(Constants.WORDS_SEPARATOR).Select(_ => _.Trim().ToLowerInvariant());
 
                                     // Функция для проверки было ли найдено какое-то стоп слово в строке
                                     CallbackWithReturn<bool, string> IsAnyOfStopWordsFound = (target) =>
@@ -437,7 +450,7 @@ namespace VK_Unicorn
                                     {
                                         { "Result", settings },
                                         { "DatabaseFilename", Constants.DATABASE_FILENAME },
-                                        { "StopWordsSeparator", Constants.STOP_WORDS_SEPARATOR },
+                                        { "WordsSeparator", Constants.WORDS_SEPARATOR },
                                     });
 
                                     handled = true;

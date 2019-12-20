@@ -5,7 +5,7 @@ namespace VK_Unicorn
     public class Constants
     {
         public const string APP_NAME = "VK Unicorn";
-        public const string APP_VERSION = "v1.1.0";
+        public const string APP_VERSION = "v1.2.0";
         public const string PROJECT_WEB_PAGE = "https://github.com/VKUnicorn/VK-Unicorn";
         public const string VK_WEB_PAGE = "https://vk.com/";
         public const string DONATION_ALERTS_WEB_PAGE = "https://www.donationalerts.com/r/VKUnicorn";
@@ -16,7 +16,8 @@ namespace VK_Unicorn
         public const string DATABASE_FILENAME = "database.db";
 
         public const string DEFAULT_STOP_WORDS = "выберу;лайкам;репост;прогноз;ставк;http;.com;.ru;фотограф;свинг;подработ;проездом;архив;видео;порно;прон;вирт;бесплатно";
-        public const char STOP_WORDS_SEPARATOR = ';';
+        public const string DEFAULT_BLACKLIST_WORDS = "секс не интересует;кунилингус без секса;работа молодым девушкам";
+        public const char WORDS_SEPARATOR = ';';
 
         /// <summary>
         /// Id пола ВКонтакте который нам интересен

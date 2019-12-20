@@ -11,7 +11,7 @@ namespace VK_Unicorn
     {
         // Версия базы данных. Увеличивается если база как-то кардинально меняется
         // Не нужно увеличивать если в таблицу просто добавляется новая колонка
-        const int SCHEME_VERSION = 1;
+        const int SCHEME_VERSION = 2;
 
         public enum HiddenStatus
         {
@@ -261,7 +261,30 @@ namespace VK_Unicorn
             // Эта активность связана с комментарием?
             public bool IsRelatedToComment()
             {
-                return Type.IsOneOf(UserActivity.ActivityType.COMMENT, UserActivity.ActivityType.COMMENT_LIKE);
+                return Type.IsOneOf(ActivityType.COMMENT, ActivityType.COMMENT_LIKE);
+            }
+
+            // Эта активность - запись, в которой лишь одна картинка без текста?
+            public bool IsOnlyImagePost()
+            {
+                var result = false;
+                switch (Type)
+                {
+                    case ActivityType.POST:
+                        Instance.For<Post>(Post.MakeId(GroupId, PostId), (post) =>
+                        {
+                            if (post.Content.Trim() == string.Empty)
+                            {
+                                if (post.Attachments.Length == 1)
+                                {
+                                    result = true;
+                                }
+                            }
+                        });
+                        break;
+                }
+
+                return result;
             }
 
             // Возвращает клон активности
@@ -456,8 +479,14 @@ namespace VK_Unicorn
             // Метод поиска пользователей
             public SearchMethodType SearchMethod { get; set; }
 
-            // Стоп слова
+            // Стоп слова. Для предупреждающей жёлтой рамочки
             public string StopWords { get; set; }
+
+            // Чёрный список. Проверяются записи, комментарии и статус пользователей
+            public string BlacklistWords { get; set; }
+
+            // Игнорировать записи, в которых только одна картинка и ничего больше
+            public bool IgnoreOnlyImagePosts { get; set; }
 
             // Возвращает комбинацию Id приложения, логина и пароля. Нужно для определения изменилось ли что-то
             public string GetCombinedAuthorizationInformation()
@@ -545,8 +574,10 @@ namespace VK_Unicorn
                         CityId = 1,
                         Login = string.Empty,
                         Password = string.Empty,
-                        StopWords = Constants.DEFAULT_STOP_WORDS,
                         SearchMethod = Settings.SearchMethodType.SMART,
+                        StopWords = Constants.DEFAULT_STOP_WORDS,
+                        BlacklistWords = Constants.DEFAULT_BLACKLIST_WORDS,
+                        IgnoreOnlyImagePosts = false
                     });
                 }
             });
@@ -568,6 +599,23 @@ namespace VK_Unicorn
 
                         // Тут код миграции ДБ, если будет необходимо в дальнейшем.
                         // Миграция по добавлению столбцов в таблицы происходит автоматически
+                        if (query.SchemeVersion == 1)
+                        {
+                            // Добавляем поля BlacklistWords и IgnoreOnlyImagePosts в Settings
+                            ModifyFields<Settings>(INTERNAL_DB_MARKER, (settings) =>
+                            {
+                                settings.BlacklistWords = Constants.DEFAULT_BLACKLIST_WORDS;
+                                settings.IgnoreOnlyImagePosts = false;
+                            });
+                        }
+
+                        // Увеличиваем версию
+                        ModifyFields<_System>(INTERNAL_DB_MARKER, (system) =>
+                        {
+                            system.SchemeVersion = SCHEME_VERSION;
+                        });
+
+                        Utils.Log("База данных успешно обновлена до версии " + SCHEME_VERSION, LogLevel.SUCCESS);
                     }
                     else
                     {

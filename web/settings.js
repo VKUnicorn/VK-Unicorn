@@ -22,7 +22,7 @@ function loadSettings(wasInvalidSettings) {
     }, function(result) {
         let settings = result[0]['Result'];
         let databaseFilename = result[0]['DatabaseFilename'];
-        let stopWordsSeparator = result[0]['StopWordsSeparator'];
+        let wordsSeparator = result[0]['WordsSeparator'];
 
         function addCity(cityName, cityId) {
             return `<div class="col text-muted" id="cityHelper" data-city-help-id="${cityId}">${cityName} - ${cityId}</div>`;
@@ -44,7 +44,7 @@ function loadSettings(wasInvalidSettings) {
                     <br>Получить ID приложения совсем несложно.
                     Сначала логинимся на наш фейковый аккаунт ВКонтакте, который будет не жалко потерять в случае чего. На этом аккаунте должа быть отключена двухфакторная авторизация. Она пока не поддерживается так как нужно будет вводить СМС код подтверждения каждый раз.
                     <br>Залогинился на фейковый аккаунт? Далее делаем по пунктам:</p>
-                    <a href="https://vk.com/editapp?act=create">1. Открываем эту ссылку или вручную заходим в "Управление" - "Создать приложение"</a>
+                    1. Открываем <a href="https://vk.com/editapp?act=create">эту ссылку</a> или вручную заходим в "Управление" - "Создать приложение"
                     <br>2. Устанавливаем настройки как тут и жмём "Подключить приложение". Название можно выбрать любое
                     <br><img src="settings_1.png" class="settings-img">
                     <br>3. Копируем ID приложения отсюда и вставляем его в поле ввода ниже
@@ -124,7 +124,7 @@ function loadSettings(wasInvalidSettings) {
                 <h5 class="mb-1 mt-2"><i class="lni-target-audience rel-t-1"></i> Тип поиска</h5>
                 <hr class="mx-0 my-0">
                 <div>
-                    <p align="justify" class="mb-0">По умолчанию отбираются пользователи, у которых указан город и он совпадает с твоим. Если группа закрытая, то из неё берутся все пользователи. Ещё город не учитывается если пользователь сделал свой профиль закрытым. Если поставить поиск "все", то результатов будет больше, но будет огромное количество спама. Не рекомендуется, если у тебя много сообществ.</p>
+                    <p align="justify" class="mb-0">По умолчанию отбираются пользователи, у которых указан город и он совпадает с твоим. Если сообщество закрытое, то из него берутся все пользователи. Ещё город не учитывается если пользователь сделал свой профиль закрытым.</p>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="searchTypeRadios" id="searchTypeRadio0" value="0" ${settings.SearchMethod == 0 ? 'checked' : ''}>
                         <label class="form-check-label" for="searchTypeRadio0">
@@ -140,16 +140,33 @@ function loadSettings(wasInvalidSettings) {
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="searchTypeRadios" id="searchTypeRadio2" value="2" ${settings.SearchMethod == 2 ? 'checked' : ''}>
                         <label class="form-check-label" for="searchTypeRadio2">
-                            Все. Ищет всех пользователей женского пола. Огромное количество спама и ботов
+                            Все. Ищет всех пользователей женского пола.
                         </label>
                     </div>
                 </div>
 
-                <h5 class="mb-1 mt-2"><i class="lni-trash rel-t-1"></i> Стоп слова</h5>
+                <h5 class="mb-1 mt-2"><i class="lni-warning rel-t-1"></i> Стоп слова</h5>
                 <hr class="mx-0 my-0">
                 <div>
-                    <p align="justify" class="mb-0">Если в сообщении будет найдено стоп слово, то пользователь будет отмечен специальной жёлтой рамкой, но всё равно будет виден в результатах поиска. Регистр стоп слов не учитывается. По умолчанию было добавлено несколько стоп слов для примера.</p>
-                    <input name="tags" id="stop-words" value="${settings.StopWords.split(stopWordsSeparator)}">
+                    <p align="justify" class="mb-0">Если в записи будет найдено стоп слово, то пользователь будет отмечен специальной жёлтой рамкой, но всё равно будет виден в результатах поиска. Регистр стоп слов не учитывается. По умолчанию было добавлено несколько стоп слов для примера.</p>
+                    <input name="tags-stop-words" id="stop-words" value="${settings.StopWords.split(wordsSeparator)}">
+                </div>
+
+                <h5 class="mb-1 mt-2"><i class="lni-trash rel-t-1"></i> Чёрный список</h5>
+                <hr class="mx-0 my-0">
+                <div>
+                    <p align="justify" class="mb-0">Если в записи или статусе пользователя будет найдено слово из чёрного списка, то эта запись или пользователь не будут видны в результатах поиска. Какая-то девушка постоянно спамит своим номером телефона со взломанных страниц? Самое время добавить этот номер телефона в чёрный список. Регистр слов в чёрном списке не учитывается. Эти настройки не повлияют на уже добавленные записи и пользователей. По умолчанию было добавлено несколько слов для примера.</p>
+                    <input name="tags-blacklist-words" id="blacklist-words" value="${settings.BlacklistWords.split(wordsSeparator)}">
+                </div>
+
+                <h5 class="mb-1 mt-2"><i class="lni-image rel-t-1"></i> Посты-картинки</h5>
+                <hr class="mx-0 my-0">
+                <div>
+                    <p align="justify" class="mb-0">Многие боты очень любят часто постить однотипные картинки, в которых содержатся только лишь реклама. Эта опция позволяет автоматически игнорировать подобные записи. Не повлияет на уже добавленные записи и пользователей.</p>
+                    <input type="checkbox" id="ignoreOnlyImagePosts" ${settings.IgnoreOnlyImagePosts ? 'checked' : ''}>
+                    <label class="form-check-label" for="ignoreOnlyImagePosts">
+                        Игнорировать пустые записи, в которых содержится только одно изображение <span class="text-success">(рекомендуется)</span>
+                    </label>
                 </div>
 
                 <div class="mt-3 mb-5">
@@ -171,7 +188,9 @@ function loadSettings(wasInvalidSettings) {
                 password : $('#password').val(),
                 cityId : $('#city-id').val(),
                 searchType : $("input:radio:checked").val(),
-                stopWords : $('#stop-words').val()
+                stopWords : $('#stop-words').val(),
+                blacklistWords : $('#blacklist-words').val(),
+                ignoreOnlyImagePosts : $('#ignoreOnlyImagePosts').is(':checked')
             },
             function(data, status) {
                 if (status) {
@@ -191,7 +210,8 @@ function loadSettings(wasInvalidSettings) {
         });
 
         // Создаём и настраиваем плагин для стоп-слов
-        var tagify = new Tagify(document.querySelector('input[name=tags]'));
+        new Tagify(document.querySelector('input[name=tags-stop-words]'));
+        new Tagify(document.querySelector('input[name=tags-blacklist-words]'));
 
         finish_loading();
     }).fail(function(result) {

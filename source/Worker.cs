@@ -379,6 +379,9 @@ namespace VK_Unicorn
                 Utils.Log("Сканируем сообщество " + group.Name, LogLevel.SUCCESS);
                 Utils.Log("Не закрывайте программу до завершения сканирования, это может привести к неправильной работе с этим сообществом в дальнешем", LogLevel.WARNING);
 
+                // Составляем чёрный список слов
+                var blacklistWords = settings.BlacklistWords.Split(Constants.WORDS_SEPARATOR).Select(_ => _.Trim().ToLowerInvariant());
+
                 // Список интересующей нас активности пользователей
                 var userActivitiesToProcess = new List<Database.UserActivity>();
 
@@ -926,10 +929,96 @@ namespace VK_Unicorn
                     // Нужно ли будет сохранить данные об активности?
                     var needToSaveActivity = false;
 
+                    // Локальная функция на игнорирование активности, если эта активность - пустая запись с одной картинкой
+                    CallbackWithReturn<bool> CheckToIgnoreOnlyImagePosts = () =>
+                    {
+                        // Нужно игнорировать записи в которых содержится только одна картинка?
+                        if (settings.IgnoreOnlyImagePosts)
+                        {
+                            if (userActivityToProcess.IsOnlyImagePost())
+                            {
+                                Database.Instance.For<Database.Post>(Database.Post.MakeId(userActivityToProcess.GroupId, userActivityToProcess.PostId), (post) =>
+                                {
+                                    // Выводим причину в лог
+                                    Utils.Log("Отсеяна запись: " + post.GetURL() + " причина - игнорирование постов-картинок", LogLevel.NOTIFY);
+                                });
+
+                                needToSaveActivity = false;
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    };
+
+                    // Локальная функция на игнорирование активности, если эта активность - запись или комментарий со словом из чёрного списка
+                    CallbackWithReturn<bool> CheckToIgnorePostOrCommentActivityWithBlacklistedWord = () =>
+                    {
+                        var result = false;
+                        switch (userActivityToProcess.Type)
+                        {
+                            case Database.UserActivity.ActivityType.POST:
+                                Database.Instance.For<Database.Post>(Database.Post.MakeId(userActivityToProcess.GroupId, userActivityToProcess.PostId), (post) =>
+                                {
+                                    var content = post.Content.ToLowerInvariant();
+
+                                    // Любое слово из чёрного списка в содержимом записи?
+                                    foreach (var blacklistWord in blacklistWords)
+                                    {
+                                        if (blacklistWord != string.Empty)
+                                        {
+                                            if (content.Contains(blacklistWord))
+                                            {
+                                                // Выводим причину в лог
+                                                Utils.Log("Отсеяна запись: " + post.GetURL() + " причина - найдено слово из чёрного списка - " + blacklistWord, LogLevel.NOTIFY);
+
+                                                needToSaveActivity = false;
+                                                result = true;
+                                                return;
+                                            }
+                                        }
+                                    }
+                                });
+                                break;
+
+                            case Database.UserActivity.ActivityType.COMMENT:
+                                Database.Instance.For<Database.Comment>(Database.Comment.MakeId(userActivityToProcess.GroupId, userActivityToProcess.PostId, userActivityToProcess.CommentId), (comment) =>
+                                {
+                                    var content = comment.Content.ToLowerInvariant();
+
+                                    // Любое слово из чёрного списка в содержимом комментария?
+                                    foreach (var blacklistWord in blacklistWords)
+                                    {
+                                        if (blacklistWord != string.Empty)
+                                        {
+                                            if (content.Contains(blacklistWord))
+                                            {
+                                                // Выводим причину в лог
+                                                Utils.Log("Отсеян комментарий: " + comment.GetURL() + " причина - найдено слово из чёрного списка - " + blacklistWord, LogLevel.NOTIFY);
+
+                                                needToSaveActivity = false;
+                                                result = true;
+                                                return;
+                                            }
+                                        }
+                                    }
+                                });
+                                break;
+                        }
+
+                        return result;
+                    };
+
                     // Пользователь уже был добавлен ранее?
                     if (Database.Instance.IsAlreadyExists<Database.User>(userActivityToProcess.UserId))
                     {
                         needToSaveActivity = true;
+
+                        // Нужно игнорировать записи в которых содержится только одна картинка и это как раз такая запись?
+                        CheckToIgnoreOnlyImagePosts();
+
+                        // Эта активность - запись или комментарий в котором содержится слово из чёрного списка?
+                        CheckToIgnorePostOrCommentActivityWithBlacklistedWord();
                     }
                     else
                     {
@@ -940,6 +1029,20 @@ namespace VK_Unicorn
                             {
                                 userActivitiesToProcess.RemoveAll(_ => _.UserId == userActivityToProcess.UserId);
                             };
+
+                            // Нужно игнорировать записи в которых содержится только одна картинка и это как раз такая запись?
+                            if (CheckToIgnoreOnlyImagePosts())
+                            {
+                                // Завершаем сканирование активности
+                                return;
+                            }
+
+                            // Запись или комментарий в котором содержится слово из чёрного списка?
+                            if (CheckToIgnorePostOrCommentActivityWithBlacklistedWord())
+                            {
+                                // Завершаем сканирование активности
+                                return;
+                            }
 
                             // Проверяем не деактивирован ли пользователь
                             var isDeactivated = false;
@@ -1009,17 +1112,35 @@ namespace VK_Unicorn
                             var botReason = string.Empty;
                             if (BotHeuristicDetector.Process(userInfo, out botReason))
                             {
-                                // Похоже что это бот. Удаляем всю активность бота из очереди на проверку
-                                DeleteAllActivitiesToProcessFromThisUser();
-
                                 // Увеличиваем счётчик найденных ботов
                                 ++botsCount;
 
                                 // Выводим причину в лог
                                 Utils.Log("Отсеян бот: " + userInfo.GetURL() + " причина - " + botReason, LogLevel.NOTIFY);
 
-                                // Завершаем сканирование активности
+                                // Удаляем всю активность этого пользователя из очереди на проверку и завершаем сканирование активности
+                                DeleteAllActivitiesToProcessFromThisUser();
                                 return;
+                            }
+
+                            // В статусе найдено слово из чёрного списка?
+                            var status = userInfo.Status != null ? userInfo.Status.ToLowerInvariant() : string.Empty;
+
+                            // Любое слово из чёрного списка в статусе?
+                            foreach (var blacklistWord in blacklistWords)
+                            {
+                                if (blacklistWord != string.Empty)
+                                {
+                                    if (status.Contains(blacklistWord))
+                                    {
+                                        // Выводим причину в лог
+                                        Utils.Log("Отсеян пользователь: " + userInfo.GetURL() + " причина - в статусе найдено слово из чёрного списка - " + blacklistWord, LogLevel.NOTIFY);
+
+                                        // Удаляем всю активность этого пользователя из очереди на проверку и завершаем сканирование активности
+                                        DeleteAllActivitiesToProcessFromThisUser();
+                                        return;
+                                    }
+                                }
                             }
 
                             // Определяем дату рождения
@@ -1074,12 +1195,12 @@ namespace VK_Unicorn
                             // Помечаем сообщество как только что активное
                             group.MarkAsJustActive();
 
-                            // Нужно так же сохранить это активность пользователя
+                            // Нужно так же сохранить эту активность пользователя
                             needToSaveActivity = true;
                         });
                     }
 
-                    // Нужно ли сохранить данные о активности?
+                    // Нужно ли сохранить данные об активности?
                     if (needToSaveActivity)
                     {
                         // Эта активность не была ещё добавлена ранее?
