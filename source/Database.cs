@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace VK_Unicorn
 {
@@ -275,7 +276,7 @@ namespace VK_Unicorn
                         {
                             if (post.Content.Trim() == string.Empty)
                             {
-                                if (post.Attachments.Length == 1)
+                                if (Regex.Matches(post.Attachments, "Value").Count == 1)
                                 {
                                     result = true;
                                 }
