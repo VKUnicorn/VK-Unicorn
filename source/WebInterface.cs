@@ -346,7 +346,7 @@ namespace VK_Unicorn
                                             // Трансформируем их в новый класс, который поддерживает хранение поля с содержимым
                                             .Select(_ => new Database.UserActivityWithContent(_))
                                             // Проверяем на вхождение стоп слов
-                                            .FirstOrDefault(_ => IsAnyOfStopWordsFound(_.Activity.IsRelatedToComment() ? _.Comment.Content : _.Post.Content))
+                                            .FirstOrDefault(_ => IsAnyOfStopWordsFound(_.Activity.IsRelatedToComment() ? _.Comment.Content.ToLowerInvariant() : _.Post.Content.ToLowerInvariant()))
                                             // Была ли найдена хотя бы одна такая активность?
                                             != null
                                         ;
