@@ -56,16 +56,27 @@ namespace VK_Unicorn
                     break;
             }
 
-            Log(prefix + text, color);
+            Log(prefix + text, color, Constants.LOG_MAX_LINES);
         }
 
-        public static void Log(string text, Color? color = null)
+        public static void Log(string text, Color? color = null, int? maxLines = null)
         {
             text = "[" + DateTime.Now.ToLongTimeString() + "] " + text;
 
             MainForm.Instance.Invoke((MethodInvoker)delegate
             {
                 var logTextBox = MainForm.Instance.GetLogTextBox();
+
+                // Проверка на лимит глубины лога
+                if (maxLines != null && maxLines > 0)
+                {
+                    if (logTextBox.Lines.Count() >= maxLines)
+                    {
+                        var lines = logTextBox.Lines.ToList();
+                        lines.RemoveAt(0);
+                        logTextBox.Lines = lines.ToArray();
+                    }
+                }
 
                 logTextBox.SelectionStart = logTextBox.TextLength;
                 logTextBox.SelectionLength = 0;
