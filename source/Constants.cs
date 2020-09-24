@@ -5,7 +5,7 @@ namespace VK_Unicorn
     public class Constants
     {
         public const string APP_NAME = "VK Unicorn";
-        public const string APP_VERSION = "v1.2.0";
+        public const string APP_VERSION = "v1.2.1";
         public const string PROJECT_WEB_PAGE = "https://github.com/VKUnicorn/VK-Unicorn";
         public const string VK_WEB_PAGE = "https://vk.com/";
         public const string DONATION_ALERTS_WEB_PAGE = "https://www.donationalerts.com/r/VKUnicorn";

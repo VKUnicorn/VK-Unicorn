@@ -47,8 +47,10 @@ function loadSettings(wasInvalidSettings) {
                     1. Открываем <a href="https://vk.com/editapp?act=create">эту ссылку</a> или вручную заходим в "Управление" - "Создать приложение"
                     <br>2. Устанавливаем настройки как тут и жмём "Подключить приложение". Название можно выбрать любое
                     <br><img src="settings_1.png" class="settings-img">
-                    <br>3. Копируем ID приложения отсюда и вставляем его в поле ввода ниже
+                    <br>3. Заходим в настройки и устанавливаем статус "Состояние" в "Приложение включено и видно всем"
                     <br><img src="settings_2.png" class="settings-img">
+                    <br>4. Из поля выше копируем ID приложения и вставляем его в поле ввода ниже
+                    <br><img src="settings_3.png" class="settings-img">
                     <br>
                     <div class="form-row">
                         <div class="col-md-4 mb-1">

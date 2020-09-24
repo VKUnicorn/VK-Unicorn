@@ -163,6 +163,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="media\settings_3.png" />
     <EmbeddedResource Include="media\settings_1.png" />
     <EmbeddedResource Include="media\settings_2.png" />
     <EmbeddedResource Include="web\settings.js" />
