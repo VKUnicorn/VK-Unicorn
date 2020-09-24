@@ -4,7 +4,7 @@
 > VK Unicorn это программа для автоматического сканирования сообществ в социальной сети "ВКонтакте"<br>Из сообществ выбираются ссылки на пользователей, подходящие под определённые критерии и составляется удобный каталог этих пользователей для дальнейшего взаимодействия<br>Проще говоря - это бот, который сканирует паблики знакомств твоего города и ищет там странички девушек, которые не против познакомиться
 
 ### Скриншоты:
-<a href="./docs/screenshot_1.png?raw=true"><img src="https://i.imgur.com/TxYCdRO.png" width="280"></a> <a href="./docs/screenshot_2.png?raw=true"><img src="https://i.imgur.com/Cve189y.png" width="280"></a> <a href="./docs/screenshot_3.png?raw=true"><img src="https://i.imgur.com/A5YYA4e.png" width="280"></a>
+<a href="./docs/screenshot_1.png?raw=true"><img src="https://i.imgur.com/TxYCdRO.png" width="260"></a> <a href="./docs/screenshot_2.png?raw=true"><img src="https://i.imgur.com/Cve189y.png" width="260"></a> <a href="./docs/screenshot_3.png?raw=true"><img src="https://i.imgur.com/A5YYA4e.png" width="260"></a>
 
 ### Скачать последнюю версию:
 <a href="https://github.com/VKUnicorn/VK-Unicorn/releases/download/v1.2.1/VKUnicorn.exe"><img src="./docs/download.png"></a>
