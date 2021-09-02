@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Text;
 
 namespace VK_Unicorn
 {
@@ -72,9 +73,13 @@ namespace VK_Unicorn
                 {
                     if (logTextBox.Lines.Count() >= maxLines)
                     {
+                        logTextBox.SelectionLength = 0;
+                        logTextBox.SelectionColor = Color.Black;
+                        logTextBox.SuspendLayout();
                         var lines = logTextBox.Lines.ToList();
                         lines.RemoveAt(0);
                         logTextBox.Lines = lines.ToArray();
+                        logTextBox.ResumeLayout();
                     }
                 }
 
@@ -205,6 +210,20 @@ namespace VK_Unicorn
         public static DateTime GetNowAsUniversalTime()
         {
             return DateTime.Now.ToUniversalTime();
+        }
+
+        public static string ConvertEncoding(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return input;
+            }
+
+            var utf8 = Encoding.GetEncoding("UTF-8");
+            var win1251 = Encoding.GetEncoding("Windows-1251");
+            var utf8Bytes = win1251.GetBytes(input);
+            var win1251Bytes = Encoding.Convert(utf8, win1251, utf8Bytes);
+            return win1251.GetString(win1251Bytes);
         }
     }
 

@@ -9,8 +9,8 @@ namespace VK_Unicorn
         {
             try
             {
-                var status = user.Status != null ? user.Status.ToLowerInvariant() : string.Empty;
-                var site = user.Site != null ? user.Site : string.Empty;
+                var status = user.Status != null ? Utils.ConvertEncoding(user.Status).ToLowerInvariant() : string.Empty;
+                var site = user.Site != null ? Utils.ConvertEncoding(user.Site) : string.Empty;
 
                 // Эмодзи "мешок с деньгами"
                 if (status.Contains(char.ConvertFromUtf32(0x1F4B0)))

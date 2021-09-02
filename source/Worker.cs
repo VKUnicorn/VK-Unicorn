@@ -253,7 +253,7 @@ namespace VK_Unicorn
                                 var newGroup = new Database.Group()
                                 {
                                     Id = groupInfo.Id,
-                                    Name = groupInfo.Name,
+                                    Name = Utils.ConvertEncoding(groupInfo.Name),
                                     ScreenName = groupInfo.ScreenName,
                                     IsClosed = groupInfo.IsClosed.HasValue ? groupInfo.IsClosed == VkNet.Enums.GroupPublicity.Closed : false,
                                     IsMember = groupInfo.IsMember.GetValueOrDefault(true),
@@ -660,7 +660,7 @@ namespace VK_Unicorn
                                                     LikesCount = comment.Likes.Count,
                                                     // Не сохраняем какое-то новое содержимое или вложения т.к. комментарий могли отредактировать
                                                     // в худшую сторону - удалить что-то или зацензурить
-                                                    Content = savedCommentContent != string.Empty ? savedCommentContent : comment.Text,
+                                                    Content = savedCommentContent != string.Empty ? savedCommentContent : Utils.ConvertEncoding(comment.Text),
                                                     Attachments = savedCommentAttachments != string.Empty ? savedCommentAttachments : JsonConvert.SerializeObject(commentPhotoAttachments),
                                                 });
 
@@ -720,7 +720,7 @@ namespace VK_Unicorn
                                     CommentsCount = post.Comments.Count,
                                     // Не сохраняем какое-то новое содержимое или вложения т.к. запись могли отредактировать
                                     // в худшую сторону - удалить что-то или зацензурить
-                                    Content = savedPostContent != string.Empty ? savedPostContent : post.Text,
+                                    Content = savedPostContent != string.Empty ? savedPostContent : Utils.ConvertEncoding(post.Text),
                                     Attachments = savedPostAttachments != string.Empty ? savedPostAttachments : JsonConvert.SerializeObject(photoAttachments),
                                 });
                             }
@@ -1166,22 +1166,22 @@ namespace VK_Unicorn
                             }
 
                             // Определяем мобильный телефон
-                            var mobilePhone = userInfo.Contacts != null ? userInfo.Contacts.MobilePhone : string.Empty;
-                            var homePhone = userInfo.Contacts != null ? userInfo.Contacts.HomePhone : string.Empty;
+                            var mobilePhone = userInfo.Contacts != null ? Utils.ConvertEncoding(userInfo.Contacts.MobilePhone) : string.Empty;
+                            var homePhone = userInfo.Contacts != null ? Utils.ConvertEncoding(userInfo.Contacts.HomePhone) : string.Empty;
 
                             // Всё нормально, все условия и тесты пройдены, сохраняем пользователя
                             Database.Instance.InsertOrReplace(new Database.User()
                             {
                                 Id = userActivityToProcess.UserId,
-                                FirstName = userInfo.FirstName,
-                                LastName = userInfo.LastName,
+                                FirstName = Utils.ConvertEncoding(userInfo.FirstName),
+                                LastName = Utils.ConvertEncoding(userInfo.LastName),
                                 BirthDate = birthDateSet ? birthDate : default(DateTime),
                                 CityId = cityId,
-                                CityName = cityName,
-                                Status = userInfo.Status,
+                                CityName = Utils.ConvertEncoding(cityName),
+                                Status = Utils.ConvertEncoding(userInfo.Status),
                                 MobilePhone = mobilePhone,
                                 HomePhone = homePhone,
-                                Site = userInfo.Site,
+                                Site = Utils.ConvertEncoding(userInfo.Site),
                                 PhotoURL = userInfo.PhotoMaxOrig.ToString(),
                                 LastActivity = userActivityToProcess.WhenHappened,
                                 WhenAdded = DateTime.Now,
@@ -1261,7 +1261,7 @@ namespace VK_Unicorn
             }
             catch (Exception ex)
             {
-                Utils.Log("не удалось просканировать сообщество " + group.Name + ". Причина: " + ex.Message, LogLevel.ERROR);
+                Utils.Log("не удалось просканировать сообщество " + group.Name + ". Причина: " + ex.Message + ". Трейс: " + ex.StackTrace, LogLevel.ERROR);
                 await WaitAlotAfterError();
             }
         }
