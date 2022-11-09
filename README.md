@@ -6,8 +6,8 @@
 ### Скриншоты:
 <a href="./docs/screenshot_1.png?raw=true"><img src="https://i.imgur.com/TxYCdRO.png" width="265"></a> <a href="./docs/screenshot_2.png?raw=true"><img src="https://i.imgur.com/Cve189y.png" width="265"></a> <a href="./docs/screenshot_3.png?raw=true"><img src="https://i.imgur.com/A5YYA4e.png" width="265"></a>
 
-### Скачать последнюю версию v1.3.0:
-<a href="https://github.com/VKUnicorn/VK-Unicorn/releases/download/v1.3.0/VKUnicorn.exe"><img src="./docs/download.png"></a>
+### Скачать последнюю версию v1.4.0:
+<a href="https://github.com/VKUnicorn/VK-Unicorn/releases/download/v1.4.0/VKUnicorn.exe"><img src="./docs/download.png"></a>
 
 ### Особенности и основные ориентиры при разработке:
 - Бесплатно и для всех. Никаких "премиум" версий с расширенным функционалом за деньги
