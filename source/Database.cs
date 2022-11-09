@@ -692,7 +692,7 @@ namespace VK_Unicorn
         }
 
         /// <summary>
-        /// Добавляет иного записей в таблицу
+        /// Добавляет много записей в таблицу
         /// </summary>
         public bool InsertAll(IEnumerable target)
         {

@@ -74,7 +74,7 @@ function loadSettings(wasInvalidSettings) {
                         <div class="col-md-4 mb-1">
                             <label for="password" class="mb-1"><b>Пароль</b></label>
                             <input type="password" class="form-control" id="password" value="${settings.Password}">
-                            <small class="form-text text-danger" align="justify">Логин и пароль будут сохранёны в открытом виде в файле ${databaseFilename} в папке рядом с программой. Никому не высылай этот файл</small>
+                            <small class="form-text text-danger" align="justify">Логин и пароль будут сохранены в открытом виде в файле ${databaseFilename} в папке рядом с программой. Никому не высылай этот файл</small>
                         </div>
                     </div>
                 </div>

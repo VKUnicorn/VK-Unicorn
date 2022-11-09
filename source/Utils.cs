@@ -214,6 +214,10 @@ namespace VK_Unicorn
 
         public static string ConvertEncoding(string input)
         {
+            return input;
+
+            // Стало не актуально в последней версии. Код сохранён для совместимости
+            /*
             if (string.IsNullOrEmpty(input))
             {
                 return input;
@@ -224,6 +228,7 @@ namespace VK_Unicorn
             var utf8Bytes = win1251.GetBytes(input);
             var win1251Bytes = Encoding.Convert(utf8, win1251, utf8Bytes);
             return win1251.GetString(win1251Bytes);
+            */
         }
     }
 

@@ -10,6 +10,8 @@ using VkNet.Enums.Filters;
 using VkNet.Enums.SafetyEnums;
 using VkNet.Model.RequestParams;
 using Newtonsoft.Json;
+using VkNet.AudioBypassService.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace VK_Unicorn
 {
@@ -39,7 +41,10 @@ namespace VK_Unicorn
 
         void PrepareVkApi()
         {
-            api = new VkApi();
+            var services = new ServiceCollection();
+            services.AddAudioBypass();
+
+            api = new VkApi(services);
             api.OnTokenExpires += (sender) =>
             {
                 isAuthorized = false;

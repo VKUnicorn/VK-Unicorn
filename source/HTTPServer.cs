@@ -141,10 +141,15 @@ namespace VK_Unicorn
                     {
                         statusCode = HttpStatusCode.NotFound;
                     }
+                    else
+                    {
+                        statusCode = HttpStatusCode.OK;
+                    }
                     break;
             }
 
             // Отправляем ответ
+            context.Response.StatusCode = (int)statusCode;
             if (data != null)
             {
                 context.Response.ContentLength64 = data.Length;
@@ -156,7 +161,6 @@ namespace VK_Unicorn
 
                 context.Response.OutputStream.Flush();
             }
-            context.Response.StatusCode = (int)statusCode;
             context.Response.OutputStream.Close();
         }
     }
